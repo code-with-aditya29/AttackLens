@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+AttackLens | Assets
+{% endblock %}
+
+{% block page_title %}
+Assets
+{% endblock %}
+
+{% block page_subtitle %}
+View and manage discovered assets from authorized security scans
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-overview">
+
+    <div class="welcome-section">
+        <div>
+            <h3>Discovered Assets</h3>
+            <p>
+                Assets discovered during authorized security scans will appear here.
+            </p>
+        </div>
+    </div>
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <div>
+                <h3>Asset Inventory</h3>
+                <p>
+                    Review discovered hosts, services, and security exposure.
+                </p>
+            </div>
+        </div>
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ◇
+            </div>
+
+            <h4>No Assets Available</h4>
+
+            <p>
+                Run an authorized security scan to discover and analyze assets.
+            </p>
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}

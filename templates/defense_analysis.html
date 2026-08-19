@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+AttackLens | Defense Analysis
+{% endblock %}
+
+{% block page_title %}
+Defense Analysis
+{% endblock %}
+
+{% block page_subtitle %}
+Prioritize defensive actions to reduce potential attack paths
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-overview">
+
+    <div class="welcome-section">
+        <div>
+            <h3>Defense Prioritization</h3>
+            <p>
+                Identify defensive actions that can reduce the greatest number of potential attack paths.
+            </p>
+        </div>
+    </div>
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <div>
+                <h3>Recommended Defensive Actions</h3>
+                <p>
+                    Recommendations will be prioritized based on their potential impact on identified attack paths.
+                </p>
+            </div>
+        </div>
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ⛨
+            </div>
+
+            <h4>No Defense Analysis Available</h4>
+
+            <p>
+                Complete attack path analysis to generate prioritized defensive recommendations.
+            </p>
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}

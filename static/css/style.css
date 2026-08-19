@@ -1,0 +1,1070 @@
+/* =========================================
+   ATTACKLENS - MAIN STYLESHEET
+========================================= */
+
+
+/* =========================================
+   1. CSS VARIABLES - LIGHT MODE
+========================================= */
+
+:root {
+    --bg-primary: #f4f7fb;
+    --bg-secondary: #ffffff;
+    --bg-sidebar: #111827;
+
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-light: #9ca3af;
+
+    --border-color: #e5e7eb;
+
+    --accent-primary: #2563eb;
+    --accent-hover: #1d4ed8;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    --sidebar-text: #d1d5db;
+    --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-active: rgba(37, 99, 235, 0.25);
+
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+}
+
+
+/* =========================================
+   2. MANUAL THEME SUPPORT
+========================================= */
+
+:root[data-theme="light"] {
+    --bg-primary: #f4f7fb;
+    --bg-secondary: #ffffff;
+    --bg-sidebar: #111827;
+
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-light: #9ca3af;
+
+    --border-color: #e5e7eb;
+
+    --accent-primary: #2563eb;
+    --accent-hover: #1d4ed8;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    --sidebar-text: #d1d5db;
+    --sidebar-hover: rgba(255, 255, 255, 0.08);
+    --sidebar-active: rgba(37, 99, 235, 0.25);
+
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+
+:root[data-theme="dark"] {
+    --bg-primary: #0b1120;
+    --bg-secondary: #111827;
+    --bg-sidebar: #020617;
+
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --text-light: #6b7280;
+
+    --border-color: #1f2937;
+
+    --accent-primary: #3b82f6;
+    --accent-hover: #60a5fa;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    --sidebar-text: #cbd5e1;
+    --sidebar-hover: rgba(255, 255, 255, 0.06);
+    --sidebar-active: rgba(59, 130, 246, 0.20);
+
+    --card-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================
+   3. AUTOMATIC SYSTEM DARK MODE
+========================================= */
+
+@media (prefers-color-scheme: dark) {
+
+    :root:not([data-theme]) {
+        --bg-primary: #0b1120;
+        --bg-secondary: #111827;
+        --bg-sidebar: #020617;
+
+        --text-primary: #f9fafb;
+        --text-secondary: #9ca3af;
+        --text-light: #6b7280;
+
+        --border-color: #1f2937;
+
+        --accent-primary: #3b82f6;
+        --accent-hover: #60a5fa;
+
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+
+        --sidebar-text: #cbd5e1;
+        --sidebar-hover: rgba(255, 255, 255, 0.06);
+        --sidebar-active: rgba(59, 130, 246, 0.20);
+
+        --card-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
+    }
+
+}
+
+
+/* =========================================
+   4. RESET & GLOBAL
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+body {
+    font-family:
+        Inter,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    background: var(--bg-primary);
+    color: var(--text-primary);
+
+    min-height: 100vh;
+
+    transition:
+        background 0.3s ease,
+        color 0.3s ease;
+}
+
+
+button,
+input {
+    font: inherit;
+}
+
+
+/* =========================================
+   5. MAIN APPLICATION LAYOUT
+========================================= */
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* =========================================
+   6. SIDEBAR
+========================================= */
+
+.sidebar {
+    width: 260px;
+    min-height: 100vh;
+
+    background: var(--bg-sidebar);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 24px 16px;
+
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+
+/* Logo */
+
+.logo-section {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 8px 10px 30px;
+}
+
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #7c3aed
+    );
+
+    color: white;
+
+    font-weight: 700;
+    font-size: 14px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 8px 20px
+        rgba(37, 99, 235, 0.25);
+}
+
+
+.logo-text h1 {
+    font-size: 20px;
+    color: white;
+    font-weight: 700;
+}
+
+
+.logo-text span {
+    font-size: 11px;
+    color: #94a3b8;
+
+    display: block;
+    margin-top: 2px;
+}
+
+
+/* Navigation */
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    flex: 1;
+}
+
+
+.nav-item {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 14px;
+
+    color: var(--sidebar-text);
+
+    text-decoration: none;
+
+    border-radius: var(--radius-sm);
+
+    font-size: 14px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.nav-item:hover {
+    background: var(--sidebar-hover);
+    color: white;
+
+    transform: translateX(3px);
+}
+
+
+.nav-item.active {
+    background: var(--sidebar-active);
+
+    color: white;
+
+    font-weight: 600;
+
+    border-left: 3px solid var(--accent-primary);
+}
+
+
+.nav-icon {
+    width: 20px;
+
+    text-align: center;
+
+    font-size: 17px;
+}
+
+
+/* Sidebar Footer */
+
+.sidebar-footer {
+    padding: 18px 10px 5px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+}
+
+
+.system-status {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 12px;
+
+    color: #94a3b8;
+}
+
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+
+    background: var(--success);
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 10px
+        rgba(16, 185, 129, 0.8);
+}
+
+
+.status-pulse {
+    animation: statusPulse 1s ease-in-out;
+}
+
+
+@keyframes statusPulse {
+
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.4);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+}
+
+
+.app-version {
+    margin-top: 10px;
+
+    font-size: 11px;
+
+    color: #64748b;
+}
+
+
+/* =========================================
+   7. MAIN CONTENT
+========================================= */
+
+.main-content {
+    margin-left: 260px;
+
+    width: calc(100% - 260px);
+
+    min-height: 100vh;
+}
+
+
+/* =========================================
+   8. TOPBAR
+========================================= */
+
+.topbar {
+    min-height: 90px;
+
+    background: var(--bg-secondary);
+
+    border-bottom:
+        1px solid
+        var(--border-color);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 40px;
+}
+
+
+.page-info h2 {
+    font-size: 24px;
+
+    font-weight: 700;
+
+    letter-spacing: -0.5px;
+}
+
+
+.page-info p {
+    margin-top: 5px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+
+/* Topbar Actions */
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+}
+
+
+.icon-button,
+.profile-button {
+    border: none;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.icon-button {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+
+    background: var(--bg-primary);
+
+    color: var(--text-primary);
+
+    border:
+        1px solid
+        var(--border-color);
+
+    font-size: 18px;
+}
+
+
+.icon-button:hover {
+    transform: translateY(-2px);
+
+    border-color: var(--accent-primary);
+}
+
+
+.profile-button {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    background: transparent;
+
+    color: var(--text-primary);
+
+    padding: 5px;
+}
+
+
+.profile-avatar {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #7c3aed
+        );
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+.profile-name {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* =========================================
+   9. CONTENT AREA
+========================================= */
+
+.content-area {
+    padding: 32px 40px 50px;
+
+    max-width: 1600px;
+
+    margin: auto;
+}
+
+
+.dashboard-overview {
+    display: flex;
+    flex-direction: column;
+
+    gap: 28px;
+}
+
+
+/* =========================================
+   10. WELCOME SECTION
+========================================= */
+
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+}
+
+
+.welcome-section h3 {
+    font-size: 20px;
+
+    margin-bottom: 7px;
+}
+
+
+.welcome-section p {
+    font-size: 14px;
+
+    color: var(--text-secondary);
+
+    max-width: 650px;
+}
+
+
+/* =========================================
+   11. BUTTONS
+========================================= */
+
+.primary-button {
+    border: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #4f46e5
+        );
+
+    color: white;
+
+    padding: 11px 18px;
+
+    border-radius: 10px;
+
+    font-weight: 600;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 20px
+        rgba(37, 99, 235, 0.2);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.primary-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 25px
+        rgba(37, 99, 235, 0.3);
+}
+
+
+.secondary-button {
+    background: transparent;
+
+    border:
+        1px solid
+        var(--border-color);
+
+    color: var(--text-primary);
+
+    padding: 9px 14px;
+
+    border-radius: 9px;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border 0.2s ease;
+}
+
+
+.secondary-button:hover {
+    border-color: var(--accent-primary);
+
+    background:
+        rgba(37, 99, 235, 0.06);
+}
+
+
+/* =========================================
+   12. STATISTICS CARDS
+========================================= */
+
+.stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 20px;
+}
+
+
+.stat-card {
+    background: var(--bg-secondary);
+
+    border:
+        1px solid
+        var(--border-color);
+
+    border-radius: var(--radius-lg);
+
+    padding: 20px;
+
+    box-shadow: var(--card-shadow);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.stat-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.08);
+}
+
+
+.stat-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+.stat-label {
+    color: var(--text-secondary);
+
+    font-size: 13px;
+}
+
+
+.stat-icon {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background:
+        rgba(37, 99, 235, 0.1);
+
+    color: var(--accent-primary);
+
+    font-size: 16px;
+}
+
+
+.stat-value {
+    font-size: 30px;
+
+    font-weight: 700;
+
+    margin: 22px 0 8px;
+}
+
+
+.stat-description {
+    font-size: 12px;
+
+    color: var(--text-light);
+}
+
+
+/* =========================================
+   13. DASHBOARD GRID
+========================================= */
+
+.dashboard-grid {
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr;
+
+    gap: 24px;
+}
+
+
+/* =========================================
+   14. DASHBOARD CARDS
+========================================= */
+
+.dashboard-card {
+    background: var(--bg-secondary);
+
+    border:
+        1px solid
+        var(--border-color);
+
+    border-radius: var(--radius-lg);
+
+    padding: 24px;
+
+    box-shadow: var(--card-shadow);
+}
+
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding-bottom: 20px;
+
+    border-bottom:
+        1px solid
+        var(--border-color);
+}
+
+
+.card-header h3 {
+    font-size: 16px;
+
+    margin-bottom: 5px;
+}
+
+
+.card-header p {
+    font-size: 12px;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================
+   15. EMPTY STATES
+========================================= */
+
+.empty-state,
+.graph-empty-state {
+    min-height: 220px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 30px;
+}
+
+
+.empty-icon {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 16px;
+
+    background:
+        rgba(37, 99, 235, 0.08);
+
+    color: var(--accent-primary);
+
+    font-size: 24px;
+
+    margin-bottom: 15px;
+}
+
+
+.empty-state h4,
+.graph-empty-state h4 {
+    font-size: 15px;
+
+    margin-bottom: 7px;
+}
+
+
+.empty-state p,
+.graph-empty-state p {
+    max-width: 400px;
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   16. RISK SUMMARY
+========================================= */
+
+.risk-summary-card {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.risk-placeholder {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 35px 0 15px;
+}
+
+
+.risk-score {
+    width: 110px;
+    height: 110px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border:
+        8px solid
+        rgba(245, 158, 11, 0.2);
+
+    color: var(--warning);
+
+    font-size: 30px;
+
+    font-weight: 700;
+}
+
+
+.risk-placeholder span {
+    margin-top: 12px;
+
+    font-size: 13px;
+
+    color: var(--text-secondary);
+}
+
+
+.risk-message {
+    text-align: center;
+
+    color: var(--text-light);
+
+    font-size: 12px;
+
+    padding-bottom: 10px;
+}
+
+
+/* =========================================
+   17. ATTACK GRAPH
+========================================= */
+
+.attack-graph-placeholder {
+    min-height: 340px;
+
+    margin-top: 20px;
+
+    border:
+        1px dashed
+        var(--border-color);
+
+    border-radius: var(--radius-md);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(37, 99, 235, 0.02),
+            transparent
+        );
+}
+
+
+/* =========================================
+   18. RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 1200px) {
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 900px) {
+
+    .sidebar {
+        width: 80px;
+
+        padding: 20px 10px;
+    }
+
+
+    .logo-text,
+    .nav-item span:not(.nav-icon),
+    .sidebar-footer {
+        display: none;
+    }
+
+
+    .logo-section {
+        justify-content: center;
+
+        padding-bottom: 30px;
+    }
+
+
+    .nav-item {
+        justify-content: center;
+
+        padding: 14px 8px;
+    }
+
+
+    .main-content {
+        margin-left: 80px;
+
+        width: calc(100% - 80px);
+    }
+
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .sidebar {
+        display: none;
+    }
+
+
+    .main-content {
+        margin-left: 0;
+
+        width: 100%;
+    }
+
+
+    .topbar {
+        padding: 18px 20px;
+    }
+
+
+    .content-area {
+        padding: 24px 20px;
+    }
+
+
+    .welcome-section {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .profile-name {
+        display: none;
+    }
+
+
+    .page-info h2 {
+        font-size: 20px;
+    }
+
+}

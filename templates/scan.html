@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+AttackLens | Scan Target
+{% endblock %}
+
+{% block page_title %}
+Scan Target
+{% endblock %}
+
+{% block page_subtitle %}
+Configure an authorized target for security analysis
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-overview">
+
+    <div class="welcome-section">
+
+        <div>
+            <h3>Target Scanning</h3>
+
+            <p>
+                Select an authorized target to begin security analysis.
+            </p>
+        </div>
+
+    </div>
+
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+                <h3>New Security Scan</h3>
+
+                <p>
+                    Enter a hostname or IP address that you are authorized to scan.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ◉
+            </div>
+
+            <h4>Scan Configuration</h4>
+
+            <p>
+                Target scanning functionality will be implemented
+                in the scanning phase.
+            </p>
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}

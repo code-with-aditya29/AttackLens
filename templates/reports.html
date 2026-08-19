@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+AttackLens | Reports
+{% endblock %}
+
+{% block page_title %}
+Reports
+{% endblock %}
+
+{% block page_subtitle %}
+View and generate security analysis reports
+{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-overview">
+
+    <div class="welcome-section">
+        <div>
+            <h3>Security Reports</h3>
+            <p>
+                Generate and review reports based on authorized scans, discovered assets, attack paths, and defense analysis.
+            </p>
+        </div>
+    </div>
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <div>
+                <h3>Generated Reports</h3>
+                <p>
+                    Completed security analysis reports will appear here.
+                </p>
+            </div>
+        </div>
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ▤
+            </div>
+
+            <h4>No Reports Available</h4>
+
+            <p>
+                Complete a security analysis to generate an AttackLens report.
+            </p>
+
+        </div>
+
+    </section>
+
+</section>
+
+{% endblock %}
