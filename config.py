@@ -1,2 +1,7 @@
+import os
+
+
 class Config:
-    SECRET_KEY = "attacklens-development-key"
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    MONGO_URI = os.getenv("MONGO_URI")
