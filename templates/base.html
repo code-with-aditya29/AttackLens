@@ -12,9 +12,11 @@
     >
 
     <title>
+
         {% block title %}
         AttackLens
         {% endblock %}
+
     </title>
 
 
@@ -28,14 +30,22 @@
 </head>
 
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
+
+
+    <!-- ========================================
+         FULL PAGE CONTENT
+         USED FOR LOGIN PAGE
+    ========================================= -->
+
+    {% block full_page %}
 
     <div class="app-container">
 
 
-        <!-- ================================
+        <!-- ====================================
              SIDEBAR
-        ================================= -->
+        ===================================== -->
 
         <aside class="sidebar">
 
@@ -45,13 +55,17 @@
             <div class="logo-section">
 
                 <div class="logo-icon">
+
                     AL
+
                 </div>
 
 
                 <div class="logo-text">
 
-                    <h1>AttackLens</h1>
+                    <h1>
+                        AttackLens
+                    </h1>
 
                     <span>
                         Cybersecurity Analysis
@@ -70,7 +84,7 @@
                 <!-- Dashboard -->
 
                 <a
-                    href="/"
+                    href="{{ url_for('home') }}"
                     class="nav-item {% if current_page == 'dashboard' %}active{% endif %}"
                 >
 
@@ -88,7 +102,7 @@
                 <!-- Scan Target -->
 
                 <a
-                    href="/scan"
+                    href="{{ url_for('scan') }}"
                     class="nav-item {% if current_page == 'scan' %}active{% endif %}"
                 >
 
@@ -106,7 +120,7 @@
                 <!-- Assets -->
 
                 <a
-                    href="/assets"
+                    href="{{ url_for('assets') }}"
                     class="nav-item {% if current_page == 'assets' %}active{% endif %}"
                 >
 
@@ -124,7 +138,7 @@
                 <!-- Attack Paths -->
 
                 <a
-                    href="/attack-paths"
+                    href="{{ url_for('attack_paths') }}"
                     class="nav-item {% if current_page == 'attack_paths' %}active{% endif %}"
                 >
 
@@ -142,7 +156,7 @@
                 <!-- Defense Analysis -->
 
                 <a
-                    href="/defense-analysis"
+                    href="{{ url_for('defense_analysis') }}"
                     class="nav-item {% if current_page == 'defense_analysis' %}active{% endif %}"
                 >
 
@@ -160,7 +174,7 @@
                 <!-- Reports -->
 
                 <a
-                    href="/reports"
+                    href="{{ url_for('reports') }}"
                     class="nav-item {% if current_page == 'reports' %}active{% endif %}"
                 >
 
@@ -175,6 +189,28 @@
                 </a>
 
 
+                <!-- Admin Management -->
+
+                {% if session.get("role") == "super_admin" %}
+
+                <a
+                    href="{{ url_for('auth.admin_management') }}"
+                    class="nav-item {% if current_page == 'admin_management' %}active{% endif %}"
+                >
+
+                    <span class="nav-icon">
+                        ⚙
+                    </span>
+
+                    <span>
+                        Admin Management
+                    </span>
+
+                </a>
+
+                {% endif %}
+
+
             </nav>
 
 
@@ -184,8 +220,7 @@
 
                 <div class="system-status">
 
-                    <span class="status-indicator">
-                    </span>
+                    <span class="status-indicator"></span>
 
                     <span>
                         System Ready
@@ -206,9 +241,9 @@
         </aside>
 
 
-        <!-- ================================
+        <!-- ====================================
              MAIN CONTENT
-        ================================= -->
+        ===================================== -->
 
         <main class="main-content">
 
@@ -217,19 +252,24 @@
 
             <header class="topbar">
 
+
                 <div class="page-info">
 
                     <h2>
+
                         {% block page_title %}
                         Dashboard
                         {% endblock %}
+
                     </h2>
 
 
                     <p>
+
                         {% block page_subtitle %}
                         Cybersecurity attack path analysis dashboard
                         {% endblock %}
+
                     </p>
 
                 </div>
@@ -248,32 +288,90 @@
                         type="button"
                         title="Toggle Theme"
                     >
+
                         ◐
+
                     </button>
 
 
                     <!-- Profile -->
 
-                    <button
-                        class="profile-button"
-                        type="button"
-                    >
-
-                        <span class="profile-avatar">
-                            AT
-                        </span>
+                    <div class="profile-section">
 
 
-                        <span class="profile-name">
-                            Aditya
-                        </span>
+                        <button
+                            class="profile-button"
+                            type="button"
+                        >
 
-                    </button>
+                            <span class="profile-avatar">
+
+                                {{
+                                    session.get(
+                                        "username",
+                                        "AT"
+                                    )[:2].upper()
+                                }}
+
+                            </span>
+
+
+                            <span class="profile-name">
+
+                                {{
+                                    session.get(
+                                        "username",
+                                        "Admin"
+                                    )
+                                }}
+
+                            </span>
+
+                        </button>
+
+
+                        <a
+                            href="{{ url_for('auth.logout') }}"
+                            class="logout-button"
+                        >
+
+                            Logout
+
+                        </a>
+
+
+                    </div>
 
 
                 </div>
 
+
             </header>
+
+
+            <!-- Flash Messages -->
+
+            {% with messages = get_flashed_messages(
+                with_categories=true
+            ) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                    <div
+                        class="flash-message {{ category }}"
+                    >
+
+                        {{ message }}
+
+                    </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
 
 
             <!-- Page Content -->
@@ -291,11 +389,16 @@
 
     </div>
 
+    {% endblock %}
+
 
     <!-- JavaScript -->
 
     <script
-        src="{{ url_for('static', filename='js/theme.js') }}"
+        src="{{ url_for(
+            'static',
+            filename='js/theme.js'
+        ) }}"
     ></script>
 
 

@@ -1,0 +1,359 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+Admin Management | AttackLens
+{% endblock %}
+
+{% block page_title %}
+Admin Management
+{% endblock %}
+
+{% block page_subtitle %}
+Manage administrator accounts and system access
+{% endblock %}
+
+
+{% block content %}
+
+<div class="admin-page">
+
+    <!-- Page Introduction -->
+    <div class="page-section-header">
+
+        <div>
+            <h3>System Administrators</h3>
+
+            <p>
+                Manage administrator accounts with access to AttackLens.
+            </p>
+        </div>
+
+<br>    
+        <!--Add Admin Button -->
+        <a
+            href="{{ url_for('auth.add_admin') }}"
+            class="primary-button"
+        >
+            <span>+</span>
+            Add Admin
+        </a>
+
+    </div>
+
+
+    <!-- Administrator Table Card -->
+    <div class="admin-card">
+
+        <!-- Card Header -->
+        <div class="admin-card-header">
+
+            <div>
+
+                <h3>
+                    Administrator Accounts
+                </h3>
+
+                <p>
+                    View and manage system administrator access.
+                </p>
+
+            </div>
+
+
+            <div class="admin-count">
+
+                {{ admins|length }}
+
+                <span>
+                    Total
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- Table -->
+        <div class="table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Username
+                        </th>
+
+                        <th>
+                            Email Address
+                        </th>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th class="actions-column">
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% if admins %}
+
+                        {% for admin in admins %}
+
+                        <tr>
+
+                            <!-- Username -->
+                            <td>
+
+                                <div class="admin-user">
+
+                                    <div class="admin-avatar">
+
+                                        {{ admin.username[:2].upper() }}
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <strong>
+
+                                            {{ admin.username }}
+
+                                        </strong>
+
+                                        <span>
+
+                                            Administrator
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- Email -->
+                            <td>
+
+                                <span class="email-text">
+
+                                    {{ admin.email }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Role -->
+                            <td>
+
+                                {% if admin.role == "super_admin" %}
+
+                                    <span class="role-badge super-admin">
+
+                                        Super Admin
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="role-badge admin">
+
+                                        Admin
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Status -->
+                            <td>
+
+                                <span class="status-badge">
+
+                                    <span class="status-dot"></span>
+
+                                    Active
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Actions -->
+                            <td class="actions-column">
+
+                                {% if admin.role == "super_admin" %}
+
+                                    <span class="protected-label">
+
+                                        🔒 Protected
+
+                                    </span>
+
+                                {% else %}
+
+                                    <div class="table-actions">
+
+                                        <a
+                                            href="{{ url_for(
+                                                'auth.edit_admin',
+                                                admin_id=admin._id|string
+                                            ) }}"
+                                            class="action-button edit-button"
+                                        >
+
+                                            Edit
+
+                                        </a>
+
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'auth.delete_admin',
+                                                admin_id=admin._id|string
+                                            ) }}"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="action-button delete-button"
+                                                onclick="
+                                                    return confirm(
+                                                        'Are you sure you want to delete this administrator?'
+                                                    )
+                                                "
+                                            >
+
+                                                Delete
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+
+                    {% else %}
+
+                        <!-- Empty State -->
+
+                        <tr>
+
+                            <td
+                                colspan="5"
+                                class="empty-table"
+                            >
+
+                                <div class="empty-state">
+
+                                    <div class="empty-icon">
+
+                                        👥
+
+                                    </div>
+
+
+                                    <h3>
+
+                                        No Administrators Found
+
+                                    </h3>
+
+
+                                    <p>
+
+                                        Create an administrator account
+                                        to manage AttackLens access.
+
+                                    </p>
+
+
+                                    <a
+                                        href="{{ url_for('auth.add_admin') }}"
+                                        class="primary-button"
+                                    >
+
+                                        + Add Administrator
+
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Security Information -->
+    <div class="security-info-card">
+
+        <div class="security-info-icon">
+
+            🔐
+
+        </div>
+
+
+        <div>
+
+            <h4>
+
+                Administrative Access Security
+
+            </h4>
+
+
+            <p>
+
+                Super administrators have full access to system
+                configuration and administrator management.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+```

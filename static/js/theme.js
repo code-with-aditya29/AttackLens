@@ -1,149 +1,143 @@
-/* =========================================
-   ATTACKLENS - UI INTERACTIONS
-========================================= */
-
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    console.log("AttackLens UI loaded successfully");
-
+document.addEventListener("DOMContentLoaded", function () {
 
     /* =========================================
-       1. THEME TOGGLE
+       THEME MANAGEMENT
     ========================================= */
 
-    const themeToggle = document.getElementById("theme-toggle");
+    const themeToggle =
+        document.getElementById("theme-toggle");
 
 
-    function updateThemeIcon(theme) {
+    // Get saved theme
 
-        if (!themeToggle) return;
-
-        if (theme === "dark") {
-            themeToggle.textContent = "☀";
-        } else {
-            themeToggle.textContent = "◐";
-        }
-    }
+    const savedTheme =
+        localStorage.getItem("attacklens-theme");
 
 
-    function applyTheme(theme) {
+    // Detect system preference
+
+    const systemDarkMode =
+        window.matchMedia(
+            "(prefers-color-scheme: dark)"
+        ).matches;
+
+
+    // Apply initial theme
+
+    if (savedTheme) {
 
         document.documentElement.setAttribute(
             "data-theme",
-            theme
+            savedTheme
         );
 
-        localStorage.setItem(
-            "attacklens-theme",
-            theme
+    } else {
+
+        const defaultTheme =
+            systemDarkMode
+                ? "dark"
+                : "light";
+
+
+        document.documentElement.setAttribute(
+            "data-theme",
+            defaultTheme
         );
 
-        updateThemeIcon(theme);
     }
 
 
-    function getPreferredTheme() {
+    /* =========================================
+       UPDATE THEME BUTTON
+    ========================================= */
 
-        const savedTheme = localStorage.getItem(
-            "attacklens-theme"
-        );
+    function updateThemeIcon() {
 
-
-        if (savedTheme) {
-            return savedTheme;
+        if (!themeToggle) {
+            return;
         }
 
 
-        if (
-            window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            ).matches
-        ) {
-            return "dark";
+        const currentTheme =
+            document.documentElement.getAttribute(
+                "data-theme"
+            );
+
+
+        if (currentTheme === "dark") {
+
+            themeToggle.innerHTML = "☀";
+
+            themeToggle.title =
+                "Switch to Light Mode";
+
+            themeToggle.setAttribute(
+                "aria-label",
+                "Switch to Light Mode"
+            );
+
+        } else {
+
+            themeToggle.innerHTML = "☾";
+
+            themeToggle.title =
+                "Switch to Dark Mode";
+
+            themeToggle.setAttribute(
+                "aria-label",
+                "Switch to Dark Mode"
+            );
+
         }
 
-
-        return "light";
     }
 
 
-    const currentTheme = getPreferredTheme();
-
-    applyTheme(currentTheme);
-
+    /* =========================================
+       THEME TOGGLE
+    ========================================= */
 
     if (themeToggle) {
 
+        updateThemeIcon();
+
+
         themeToggle.addEventListener(
             "click",
-            () => {
+            function () {
 
-                const activeTheme =
+                const currentTheme =
                     document.documentElement.getAttribute(
                         "data-theme"
                     );
 
 
                 const newTheme =
-                    activeTheme === "dark"
+                    currentTheme === "dark"
                         ? "light"
                         : "dark";
 
 
-                applyTheme(newTheme);
+                // Apply new theme
 
-            }
-        );
-
-    }
-
-
-    /* =========================================
-       2. NAVIGATION INTERACTION
-    ========================================= */
-
-    const navItems =
-        document.querySelectorAll(".nav-item");
-
-
-    navItems.forEach((item) => {
-
-        item.addEventListener(
-            "click",
-            () => {
-
-                navItems.forEach((navItem) => {
-                    navItem.classList.remove("active");
-                });
-
-
-                item.classList.add("active");
-
-            }
-        );
-
-    });
-
-
-    /* =========================================
-       3. NEW SCAN BUTTON
-    ========================================= */
-
-    const newScanButton =
-        document.querySelector(".primary-button");
-
-
-    if (newScanButton) {
-
-        newScanButton.addEventListener(
-            "click",
-            () => {
-
-                alert(
-                    "Scan functionality will be added in Phase 4."
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    newTheme
                 );
 
+
+                // Save user preference
+
+                localStorage.setItem(
+                    "attacklens-theme",
+                    newTheme
+                );
+
+
+                // Update icon
+
+                updateThemeIcon();
+
             }
         );
 
@@ -151,56 +145,138 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =========================================
-       4. DASHBOARD CARD BUTTONS
+       FLASH MESSAGE / TOAST SYSTEM
     ========================================= */
 
-    const secondaryButtons =
+    const flashMessages =
         document.querySelectorAll(
-            ".secondary-button"
+            ".flash-message, .login-message"
         );
 
 
-    secondaryButtons.forEach((button) => {
+    flashMessages.forEach(function (message, index) {
 
-        button.addEventListener(
-            "click",
-            () => {
+        // Determine notification type
 
-                const action =
-                    button.textContent.trim();
+        let notificationType = "info";
 
 
-                alert(
-                    action +
-                    " functionality will be connected soon."
+        if (
+            message.classList.contains("success")
+        ) {
+
+            notificationType = "success";
+
+        } else if (
+            message.classList.contains("error")
+        ) {
+
+            notificationType = "error";
+
+        } else if (
+            message.classList.contains("warning")
+        ) {
+
+            notificationType = "warning";
+
+        }
+
+
+        // Add toast classes
+
+        message.classList.add(
+            "toast-notification",
+            notificationType
+        );
+
+
+        // Create close button
+
+        const closeButton =
+            document.createElement("button");
+
+
+        closeButton.type = "button";
+
+        closeButton.className =
+            "toast-close-button";
+
+
+        closeButton.innerHTML = "×";
+
+        closeButton.setAttribute(
+            "aria-label",
+            "Close notification"
+        );
+
+
+        message.appendChild(
+            closeButton
+        );
+
+
+        // Small delay for animation
+
+        setTimeout(
+            function () {
+
+                message.classList.add(
+                    "toast-show"
                 );
 
-            }
-        );
-
-    });
-
-
-    /* =========================================
-       5. SYSTEM STATUS ANIMATION
-    ========================================= */
-
-    const statusIndicator =
-        document.querySelector(
-            ".status-indicator"
+            },
+            100 + (index * 100)
         );
 
 
-    if (statusIndicator) {
+        // Close function
 
-        setInterval(() => {
+        function closeNotification() {
 
-            statusIndicator.classList.toggle(
-                "status-pulse"
+            message.classList.remove(
+                "toast-show"
             );
 
-        }, 1000);
 
-    }
+            message.classList.add(
+                "toast-hide"
+            );
+
+
+            setTimeout(
+                function () {
+
+                    message.remove();
+
+                },
+                300
+            );
+
+        }
+
+
+        // Manual close
+
+        closeButton.addEventListener(
+            "click",
+            closeNotification
+        );
+
+
+        // Automatically disappear
+
+        const autoCloseTime =
+            notificationType === "error"
+                ? 6000
+                : 4000;
+
+
+        setTimeout(
+            closeNotification,
+            autoCloseTime
+        );
+
+    });
+
 
 });

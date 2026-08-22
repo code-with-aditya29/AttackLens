@@ -1,108 +1,187 @@
 from dotenv import load_dotenv
 
-# Load .env FIRST
-load_dotenv()
+# Load environment variables first
+load_dotenv(override=True)
 
 from flask import Flask, render_template
 from pymongo import MongoClient
 
 from config import Config
 
+from routes.auth import (
+    auth_bp,
+    login_required
+)
+
+from routes.admin import admin_bp
 
 
-# Load environment variables from .env
-load_dotenv()
-
+# =================================
+# CREATE APPLICATION
+# =================================
 
 def create_app():
+
+    # Create Flask application
     app = Flask(__name__)
 
     # Load configuration
     app.config.from_object(Config)
 
-    # Connect to MongoDB Atlas
+
+    # =================================
+    # CONNECT TO MONGODB ATLAS
+    # =================================
+
     try:
-        client = MongoClient(app.config["MONGO_URI"])
+
+        client = MongoClient(
+            app.config["MONGO_URI"],
+            serverSelectionTimeoutMS=10000
+        )
 
         # Test MongoDB connection
         client.admin.command("ping")
 
-        print("MongoDB Atlas connected successfully!")
+        print(
+            "MongoDB Atlas connected successfully!"
+        )
 
         # Store MongoDB client
         app.config["MONGO_CLIENT"] = client
 
         # Select AttackLens database
-        db = client["attacklens"]
+        db = client.get_database(
+            app.config["MONGO_DB_NAME"]
+        )
 
-        # Store database reference
+        # Store database connection
         app.config["MONGO_DB"] = db
 
-        print("AttackLens database selected successfully!")
 
     except Exception as e:
-        print(f"MongoDB connection failed: {e}")
+
+        print(
+            f"MongoDB connection failed: {e}"
+        )
+
+        raise
 
 
-    # Dashboard / Home
+    # =================================
+    # REGISTER BLUEPRINTS
+    # =================================
+
+    app.register_blueprint(
+        auth_bp
+    )
+
+    app.register_blueprint(
+        admin_bp
+    )
+
+
+    # =================================
+    # DASHBOARD / HOME
+    # =================================
+
     @app.route("/")
+    @login_required
     def home():
+
         return render_template(
             "index.html",
             current_page="dashboard"
         )
 
 
-    # Scan page
+    # =================================
+    # SCAN TARGET
+    # =================================
+
     @app.route("/scan")
+    @login_required
     def scan():
+
         return render_template(
             "scan.html",
             current_page="scan"
         )
 
 
-    # Assets page
+    # =================================
+    # ASSETS
+    # =================================
+
     @app.route("/assets")
+    @login_required
     def assets():
+
         return render_template(
             "assets.html",
             current_page="assets"
         )
 
 
-    # Attack Paths page
+    # =================================
+    # ATTACK PATHS
+    # =================================
+
     @app.route("/attack-paths")
+    @login_required
     def attack_paths():
+
         return render_template(
             "attack_paths.html",
             current_page="attack_paths"
         )
 
 
-    # Defense Analysis page
+    # =================================
+    # DEFENSE ANALYSIS
+    # =================================
+
     @app.route("/defense-analysis")
+    @login_required
     def defense_analysis():
+
         return render_template(
             "defense_analysis.html",
             current_page="defense_analysis"
         )
 
 
-    # Reports page
+    # =================================
+    # REPORTS
+    # =================================
+
     @app.route("/reports")
+    @login_required
     def reports():
+
         return render_template(
             "reports.html",
             current_page="reports"
         )
 
 
+    # =================================
+    # RETURN APPLICATION
+    # =================================
+
     return app
 
 
+# =================================
+# CREATE APPLICATION INSTANCE
+# =================================
+
 app = create_app()
 
+
+# =================================
+# RUN APPLICATION
+# =================================
 
 if __name__ == "__main__":
     app.run(

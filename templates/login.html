@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+AttackLens | Login
+{% endblock %}
+
+
+{% block body_class %}
+login-body
+{% endblock %}
+
+
+{% block full_page %}
+
+<div class="login-container">
+
+    <div class="login-card">
+
+
+        <!-- LOGO -->
+
+        <div class="login-logo">
+
+            <div class="login-logo-icon">
+                AL
+            </div>
+
+            <h1>
+                AttackLens
+            </h1>
+
+            <p>
+                Cybersecurity Attack Path Analysis
+            </p>
+
+        </div>
+
+
+        <!-- LOGIN HEADER -->
+
+        <div class="login-header">
+
+            <h2>
+                Welcome Back
+            </h2>
+
+            <p>
+                Sign in to access your security dashboard
+            </p>
+
+        </div>
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(
+            with_categories=true
+        ) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                <div class="login-message {{ category }}">
+
+                    {{ message }}
+
+                </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- LOGIN FORM -->
+
+        <form
+            method="POST"
+            action="{{ url_for('auth.login') }}"
+            class="login-form"
+        >
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="login-button"
+            >
+                Sign In
+            </button>
+
+        </form>
+
+
+        <!-- SECURITY TEXT -->
+
+        <div class="login-security">
+
+            <span>
+                🔒
+            </span>
+
+            <span>
+                Secure AttackLens Access
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
