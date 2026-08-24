@@ -3,14 +3,16 @@ from dotenv import load_dotenv
 # Load environment variables first
 load_dotenv(override=True)
 
-from flask import Flask, render_template
+from flask import Flask, app, render_template
 from pymongo import MongoClient
 
 from config import Config
 
+from routes.scan import scan_bp
 from routes.auth import (
     auth_bp,
     login_required
+    
 )
 
 from routes.admin import admin_bp
@@ -80,6 +82,9 @@ def create_app():
         admin_bp
     )
 
+    app.register_blueprint(
+    scan_bp
+    )
 
     # =================================
     # DASHBOARD / HOME

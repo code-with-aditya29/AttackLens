@@ -1,65 +1,349 @@
 {% extends "base.html" %}
 
+
 {% block title %}
 AttackLens | Scan Target
 {% endblock %}
+
 
 {% block page_title %}
 Scan Target
 {% endblock %}
 
+
 {% block page_subtitle %}
 Configure an authorized target for security analysis
 {% endblock %}
 
+
 {% block content %}
 
-<section class="dashboard-overview">
+<section class="scan-page">
+
+
+    <!-- INTRODUCTION -->
 
     <div class="welcome-section">
 
         <div>
-            <h3>Target Scanning</h3>
+
+            <h3>
+                Target Scanning
+            </h3>
 
             <p>
-                Select an authorized target to begin security analysis.
+                Configure an authorized target and select the appropriate
+                scan profile before starting the security analysis.
             </p>
+
         </div>
 
     </div>
 
 
-    <section class="dashboard-card">
+
+    <!-- SCAN CONFIGURATION -->
+
+    <div class="dashboard-card scan-configuration-card">
+
 
         <div class="card-header">
 
             <div>
-                <h3>New Security Scan</h3>
+
+                <h3>
+                    New Security Scan
+                </h3>
 
                 <p>
-                    Enter a hostname or IP address that you are authorized to scan.
+                    Enter a valid hostname or IP address that you are
+                    authorized to scan.
                 </p>
+
             </div>
 
         </div>
 
 
-        <div class="empty-state">
 
-            <div class="empty-icon">
-                ◉
+        <form
+            method="POST"
+            action="{{ url_for('scan.scan_target') }}"
+            class="scan-form"
+        >
+
+
+            <!-- TARGET -->
+
+            <div class="form-group">
+
+                <label for="target">
+
+                    Target
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="target"
+                    name="target"
+                    placeholder="Example: 192.168.1.10 or scanme.nmap.org"
+                    required
+                    autocomplete="off"
+                >
+
+
+                <small class="form-help">
+
+                    Enter a valid IP address or hostname.
+
+                </small>
+
             </div>
 
-            <h4>Scan Configuration</h4>
+
+
+            <!-- SCAN PROFILE -->
+
+            <div class="form-group">
+
+                <label for="scan_profile">
+
+                    Scan Profile
+
+                </label>
+
+
+                <select
+                    id="scan_profile"
+                    name="scan_profile"
+                    required
+                >
+
+                    <option value="quick">
+
+                        Quick Scan
+
+                    </option>
+
+
+                    <option
+                        value="standard"
+                        selected
+                    >
+
+                        Standard Scan
+
+                    </option>
+
+
+                    <option value="detailed">
+
+                        Detailed Scan
+
+                    </option>
+
+                </select>
+
+
+                <small class="form-help">
+
+                    Select the level of security analysis to perform.
+
+                </small>
+
+            </div>
+
+
+
+            <!-- PROFILE INFORMATION -->
+
+            <div class="scan-profile-info">
+
+
+                <div class="profile-info-item">
+
+                    <div class="profile-info-icon">
+
+                        ⚡
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Quick Scan
+                        </strong>
+
+                        <span>
+                            Basic host and common port discovery.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="profile-info-item">
+
+                    <div class="profile-info-icon">
+
+                        ◉
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Standard Scan
+                        </strong>
+
+                        <span>
+                            Balanced service and port analysis.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="profile-info-item">
+
+                    <div class="profile-info-icon">
+
+                        ◈
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Detailed Scan
+                        </strong>
+
+                        <span>
+                            Extended service and security analysis.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- AUTHORIZATION -->
+
+            <div class="authorization-box">
+
+
+                <label class="authorization-label">
+
+                    <input
+                        type="checkbox"
+                        name="authorized"
+                        value="yes"
+                        required
+                    >
+
+
+                    <span>
+
+                        I confirm that I am authorized to scan this target.
+
+                    </span>
+
+                </label>
+
+
+                <p>
+
+                    AttackLens must only be used against systems,
+                    networks, and applications for which you have
+                    explicit permission.
+
+                </p>
+
+
+            </div>
+
+
+
+            <!-- ACTIONS -->
+
+            <div class="form-actions">
+
+                <button
+                    type="reset"
+                    class="secondary-button"
+                >
+
+                    Reset
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-button scan-submit-button"
+                >
+
+                    ◉ Start Security Scan
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+
+
+    <!-- SECURITY NOTICE -->
+
+    <div class="security-info-card">
+
+
+        <div class="security-info-icon">
+
+            🛡
+
+        </div>
+
+
+        <div>
+
+            <h4>
+
+                Authorized Security Testing Only
+
+            </h4>
+
 
             <p>
-                Target scanning functionality will be implemented
-                in the scanning phase.
+
+                Only scan systems that you own or have explicit
+                authorization to test. Unauthorized scanning may violate
+                organizational policies or applicable laws.
+
             </p>
 
         </div>
 
-    </section>
+
+    </div>
+
 
 </section>
 

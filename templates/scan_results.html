@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+AttackLens | Scan Results
+{% endblock %}
+
+
+{% block page_title %}
+Scan Results
+{% endblock %}
+
+
+{% block page_subtitle %}
+Review the configured security scan and discovered information
+{% endblock %}
+
+
+{% block content %}
+
+<section class="scan-results-page">
+
+
+    <!-- SCAN SUMMARY -->
+
+    <div class="welcome-section">
+
+        <div>
+
+            <h3>
+                Security Scan Summary
+            </h3>
+
+            <p>
+                Review the scan configuration and security analysis
+                information for the selected target.
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('scan.scan_target') }}"
+            class="primary-button"
+        >
+
+            + New Scan
+
+        </a>
+
+    </div>
+
+
+
+    <!-- SCAN INFORMATION -->
+
+    <div class="dashboard-card">
+
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Scan Information
+                </h3>
+
+                <p>
+                    Details of the configured security scan.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="scan-summary-grid">
+
+
+            <div class="scan-summary-item">
+
+                <span class="summary-label">
+
+                    Target
+
+                </span>
+
+
+                <strong class="summary-value">
+
+                    {{ scan.target }}
+
+                </strong>
+
+            </div>
+
+
+
+            <div class="scan-summary-item">
+
+                <span class="summary-label">
+
+                    Scan Profile
+
+                </span>
+
+
+                <strong class="summary-value">
+
+                    {{ scan.scan_profile|capitalize }}
+
+                </strong>
+
+            </div>
+
+
+
+            <div class="scan-summary-item">
+
+                <span class="summary-label">
+
+                    Status
+
+                </span>
+
+
+                <strong class="status-badge scan-status">
+
+                    {{ scan.status|capitalize }}
+
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- SCAN STATUS -->
+
+    <div class="dashboard-card">
+
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Security Analysis Status
+                </h3>
+
+                <p>
+                    Scan execution and discovered security information
+                    will appear here.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="scan-result-placeholder">
+
+
+            <div class="empty-icon">
+
+                ◉
+
+            </div>
+
+
+            <h4>
+
+                Scan Configuration Complete
+
+            </h4>
+
+
+            <p>
+
+                The target has been validated and the scan configuration
+                has been prepared successfully.
+
+            </p>
+
+
+            <p class="result-phase-note">
+
+                Nmap scanning and service discovery will be integrated
+                in the next Phase 4 implementation step.
+
+            </p>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- FUTURE DISCOVERY AREAS -->
+
+    <div class="scan-results-grid">
+
+
+        <div class="dashboard-card result-info-card">
+
+
+            <div class="result-card-icon">
+
+                ◌
+
+            </div>
+
+
+            <h3>
+
+                Open Ports
+
+            </h3>
+
+
+            <p>
+
+                Discovered open ports will be displayed here after
+                Nmap integration.
+
+            </p>
+
+
+            <span class="pending-label">
+
+                Pending Scan
+
+            </span>
+
+
+        </div>
+
+
+
+        <div class="dashboard-card result-info-card">
+
+
+            <div class="result-card-icon">
+
+                ⚙
+
+            </div>
+
+
+            <h3>
+
+                Services
+
+            </h3>
+
+
+            <p>
+
+                Detected services and versions will appear here after
+                service enumeration.
+
+            </p>
+
+
+            <span class="pending-label">
+
+                Pending Scan
+
+            </span>
+
+
+        </div>
+
+
+
+        <div class="dashboard-card result-info-card">
+
+
+            <div class="result-card-icon">
+
+                ⚠
+
+            </div>
+
+
+            <h3>
+
+                Vulnerabilities
+
+            </h3>
+
+
+            <p>
+
+                Potential CVEs and vulnerability information will be
+                analyzed in the later scanning stages.
+
+            </p>
+
+
+            <span class="pending-label">
+
+                Pending Analysis
+
+            </span>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+{% endblock %}
