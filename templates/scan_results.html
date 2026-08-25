@@ -2,7 +2,7 @@
 
 
 {% block title %}
-AttackLens | Scan Results
+Scan Results | AttackLens
 {% endblock %}
 
 
@@ -12,81 +12,206 @@ Scan Results
 
 
 {% block page_subtitle %}
-Review the configured security scan and discovered information
+Review the security analysis and discovered information
 {% endblock %}
 
 
 {% block content %}
 
+
 <section class="scan-results-page">
 
 
-    <!-- SCAN SUMMARY -->
+    <!-- RESULT HEADER -->
 
-    <div class="welcome-section">
+    <div class="scan-result-header">
+
 
         <div>
 
+            <div class="section-label">
+
+                SECURITY ANALYSIS
+
+            </div>
+
+
             <h3>
-                Security Scan Summary
+
+                Scan Results
+
             </h3>
 
+
             <p>
-                Review the scan configuration and security analysis
-                information for the selected target.
+
+                Security analysis results for the selected target.
+
             </p>
 
         </div>
 
 
-        <a
-            href="{{ url_for('scan.scan_target') }}"
-            class="primary-button"
+        <div
+            class="scan-result-status
+            {{ scan.status }}"
         >
 
-            + New Scan
+            <span class="status-dot"></span>
 
-        </a>
+            {{ scan.status|capitalize }}
+
+        </div>
+
 
     </div>
 
 
 
-    <!-- SCAN INFORMATION -->
+    <!-- SCAN OVERVIEW -->
 
-    <div class="dashboard-card">
+    <div class="scan-overview-grid">
 
 
-        <div class="card-header">
+        <!-- TARGET -->
 
-            <div>
+        <div class="scan-info-card">
 
-                <h3>
-                    Scan Information
-                </h3>
+            <span class="scan-info-label">
 
-                <p>
-                    Details of the configured security scan.
-                </p>
+                TARGET
 
-            </div>
+            </span>
+
+
+            <strong>
+
+                {{ scan.target }}
+
+            </strong>
 
         </div>
 
 
-        <div class="scan-summary-grid">
+
+        <!-- PROFILE -->
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+
+                SCAN PROFILE
+
+            </span>
 
 
-            <div class="scan-summary-item">
+            <strong>
 
-                <span class="summary-label">
+                {{ scan.scan_profile|capitalize }}
+
+            </strong>
+
+        </div>
+
+
+
+        <!-- STATUS -->
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+
+                STATUS
+
+            </span>
+
+
+            <strong>
+
+                {{ scan.status|capitalize }}
+
+            </strong>
+
+        </div>
+
+
+
+        <!-- RISK SCORE -->
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+
+                RISK SCORE
+
+            </span>
+
+
+            <strong>
+
+                {% if scan.risk_score is not none %}
+
+                    {{ scan.risk_score }}
+
+                {% else %}
+
+                    Pending
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- PENDING STATE -->
+
+    {% if scan.status == "pending" %}
+
+
+    <div class="scan-pending-card">
+
+
+        <div class="scan-pending-icon">
+
+            ◉
+
+        </div>
+
+
+        <h3>
+
+            Scan Ready
+
+        </h3>
+
+
+        <p>
+
+            The scan record has been created successfully.
+
+            Nmap execution will process the target and populate
+            discovered ports, services, operating system information,
+            and additional security findings.
+
+        </p>
+
+
+        <div class="scan-processing-info">
+
+            <div>
+
+                <span>
 
                     Target
 
                 </span>
 
-
-                <strong class="summary-value">
+                <strong>
 
                     {{ scan.target }}
 
@@ -95,17 +220,15 @@ Review the configured security scan and discovered information
             </div>
 
 
+            <div>
 
-            <div class="scan-summary-item">
+                <span>
 
-                <span class="summary-label">
-
-                    Scan Profile
+                    Profile
 
                 </span>
 
-
-                <strong class="summary-value">
+                <strong>
 
                     {{ scan.scan_profile|capitalize }}
 
@@ -113,49 +236,329 @@ Review the configured security scan and discovered information
 
             </div>
 
-
-
-            <div class="scan-summary-item">
-
-                <span class="summary-label">
-
-                    Status
-
-                </span>
-
-
-                <strong class="status-badge scan-status">
-
-                    {{ scan.status|capitalize }}
-
-                </strong>
-
-            </div>
-
-
         </div>
 
 
     </div>
 
 
-
-    <!-- SCAN STATUS -->
-
-    <div class="dashboard-card">
+    {% endif %}
 
 
-        <div class="card-header">
+
+    <!-- OPEN PORTS -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
 
             <div>
 
                 <h3>
-                    Security Analysis Status
+
+                    Open Ports
+
                 </h3>
 
+
                 <p>
-                    Scan execution and discovered security information
-                    will appear here.
+
+                    Network ports discovered during the scan.
+
+                </p>
+
+            </div>
+
+
+            <span class="result-count">
+
+                {{ scan.ports|length }}
+
+            </span>
+
+        </div>
+
+
+        {% if scan.ports %}
+
+
+        <div class="table-wrapper">
+
+            <table class="results-table">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+
+                            Port
+
+                        </th>
+
+
+                        <th>
+
+                            Protocol
+
+                        </th>
+
+
+                        <th>
+
+                            State
+
+                        </th>
+
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for port in scan.ports %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ port.port
+                            if port.port is defined
+                            else port }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ port.protocol
+                            if port.protocol is defined
+                            else "-" }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="open-status">
+
+                                Open
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="result-empty-state">
+
+            <span>
+
+                ◌
+
+            </span>
+
+
+            <p>
+
+                No port information available yet.
+
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+
+    <!-- SERVICES -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+
+                    Services
+
+                </h3>
+
+
+                <p>
+
+                    Detected services and application information.
+
+                </p>
+
+            </div>
+
+
+            <span class="result-count">
+
+                {{ scan.services|length }}
+
+            </span>
+
+        </div>
+
+
+        {% if scan.services %}
+
+
+        <div class="table-wrapper">
+
+            <table class="results-table">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+
+                            Port
+
+                        </th>
+
+
+                        <th>
+
+                            Service
+
+                        </th>
+
+
+                        <th>
+
+                            Version
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for service in scan.services %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ service.port
+                            if service.port is defined
+                            else "-" }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ service.name
+                            if service.name is defined
+                            else "-" }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ service.version
+                            if service.version is defined
+                            else "-" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="result-empty-state">
+
+            <span>
+
+                ◌
+
+            </span>
+
+
+            <p>
+
+                No service information available yet.
+
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+
+    <!-- OS DETECTION -->
+
+    <div class="result-card os-result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+
+                    Operating System Detection
+
+                </h3>
+
+
+                <p>
+
+                    Operating system information detected during scanning.
+
                 </p>
 
             </div>
@@ -163,37 +566,50 @@ Review the configured security scan and discovered information
         </div>
 
 
-        <div class="scan-result-placeholder">
+        <div class="os-result-content">
 
 
-            <div class="empty-icon">
+            <div class="os-result-icon">
 
-                ◉
+                ◈
 
             </div>
 
 
-            <h4>
+            <div>
 
-                Scan Configuration Complete
+                {% if scan.os_detection %}
 
-            </h4>
+                    <strong>
 
+                        {{ scan.os_detection }}
 
-            <p>
+                    </strong>
 
-                The target has been validated and the scan configuration
-                has been prepared successfully.
+                    <p>
 
-            </p>
+                        Operating system detection completed.
 
+                    </p>
 
-            <p class="result-phase-note">
+                {% else %}
 
-                Nmap scanning and service discovery will be integrated
-                in the next Phase 4 implementation step.
+                    <strong>
 
-            </p>
+                        Not Detected
+
+                    </strong>
+
+                    <p>
+
+                        OS detection results will appear here
+                        after scan execution.
+
+                    </p>
+
+                {% endif %}
+
+            </div>
 
 
         </div>
@@ -203,121 +619,25 @@ Review the configured security scan and discovered information
 
 
 
-    <!-- FUTURE DISCOVERY AREAS -->
+    <!-- ACTIONS -->
 
-    <div class="scan-results-grid">
-
-
-        <div class="dashboard-card result-info-card">
+    <div class="scan-result-actions">
 
 
-            <div class="result-card-icon">
+        <a
+            href="{{ url_for('scan.scan_target') }}"
+            class="secondary-button"
+        >
 
-                ◌
+            ← New Scan
 
-            </div>
-
-
-            <h3>
-
-                Open Ports
-
-            </h3>
-
-
-            <p>
-
-                Discovered open ports will be displayed here after
-                Nmap integration.
-
-            </p>
-
-
-            <span class="pending-label">
-
-                Pending Scan
-
-            </span>
-
-
-        </div>
-
-
-
-        <div class="dashboard-card result-info-card">
-
-
-            <div class="result-card-icon">
-
-                ⚙
-
-            </div>
-
-
-            <h3>
-
-                Services
-
-            </h3>
-
-
-            <p>
-
-                Detected services and versions will appear here after
-                service enumeration.
-
-            </p>
-
-
-            <span class="pending-label">
-
-                Pending Scan
-
-            </span>
-
-
-        </div>
-
-
-
-        <div class="dashboard-card result-info-card">
-
-
-            <div class="result-card-icon">
-
-                ⚠
-
-            </div>
-
-
-            <h3>
-
-                Vulnerabilities
-
-            </h3>
-
-
-            <p>
-
-                Potential CVEs and vulnerability information will be
-                analyzed in the later scanning stages.
-
-            </p>
-
-
-            <span class="pending-label">
-
-                Pending Analysis
-
-            </span>
-
-
-        </div>
+        </a>
 
 
     </div>
 
 
 </section>
+
 
 {% endblock %}

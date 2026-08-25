@@ -18,23 +18,44 @@ Configure an authorized target for security analysis
 
 {% block content %}
 
+
 <section class="scan-page">
 
 
-    <!-- INTRODUCTION -->
+    <!-- PAGE HEADER -->
 
-    <div class="welcome-section">
+    <div class="scan-page-header">
 
         <div>
 
+            <div class="section-label">
+
+                SECURITY SCANNING
+
+            </div>
+
+
             <h3>
+
                 Target Scanning
+
             </h3>
 
+
             <p>
-                Configure an authorized target and select the appropriate
-                scan profile before starting the security analysis.
+
+                Configure an authorized target and select the
+                appropriate scan profile before starting the
+                security analysis.
+
             </p>
+
+        </div>
+
+
+        <div class="scan-header-icon">
+
+            ◉
 
         </div>
 
@@ -42,29 +63,47 @@ Configure an authorized target for security analysis
 
 
 
-    <!-- SCAN CONFIGURATION -->
+    <!-- SCAN CONFIGURATION CARD -->
 
-    <div class="dashboard-card scan-configuration-card">
+    <div class="scan-config-card">
 
 
-        <div class="card-header">
+        <!-- CARD HEADER -->
+
+        <div class="scan-card-header">
 
             <div>
 
                 <h3>
+
                     New Security Scan
+
                 </h3>
 
+
                 <p>
-                    Enter a valid hostname or IP address that you are
-                    authorized to scan.
+
+                    Enter a valid hostname or IP address that
+                    you are authorized to scan.
+
                 </p>
+
+            </div>
+
+
+            <div class="scan-status-indicator">
+
+                <span class="status-pulse"></span>
+
+                Ready to Configure
 
             </div>
 
         </div>
 
 
+
+        <!-- FORM -->
 
         <form
             method="POST"
@@ -73,30 +112,41 @@ Configure an authorized target for security analysis
         >
 
 
-            <!-- TARGET -->
+            <!-- TARGET INPUT -->
 
-            <div class="form-group">
+            <div class="scan-form-group">
 
                 <label for="target">
 
-                    Target
+                    <span class="form-label-icon">
+
+                        ◉
+
+                    </span>
+
+                    Scan Target
 
                 </label>
 
 
-                <input
-                    type="text"
-                    id="target"
-                    name="target"
-                    placeholder="Example: 192.168.1.10 or scanme.nmap.org"
-                    required
-                    autocomplete="off"
-                >
+                <div class="target-input-wrapper">
+
+                    <input
+                        type="text"
+                        id="target"
+                        name="target"
+                        placeholder="Example: 192.168.1.10 or example.com"
+                        required
+                        autocomplete="off"
+                    >
+
+                </div>
 
 
-                <small class="form-help">
+                <small>
 
-                    Enter a valid IP address or hostname.
+                    Enter a valid IPv4 address, IPv6 address,
+                    or hostname.
 
                 </small>
 
@@ -106,9 +156,15 @@ Configure an authorized target for security analysis
 
             <!-- SCAN PROFILE -->
 
-            <div class="form-group">
+            <div class="scan-form-group">
 
                 <label for="scan_profile">
+
+                    <span class="form-label-icon">
+
+                        ⚡
+
+                    </span>
 
                     Scan Profile
 
@@ -147,7 +203,7 @@ Configure an authorized target for security analysis
                 </select>
 
 
-                <small class="form-help">
+                <small>
 
                     Select the level of security analysis to perform.
 
@@ -157,83 +213,132 @@ Configure an authorized target for security analysis
 
 
 
-            <!-- PROFILE INFORMATION -->
+            <!-- SCAN PROFILE INFORMATION -->
 
-            <div class="scan-profile-info">
-
-
-                <div class="profile-info-item">
-
-                    <div class="profile-info-icon">
-
-                        ⚡
-
-                    </div>
+            <div class="scan-profile-grid">
 
 
-                    <div>
+                <!-- QUICK -->
 
-                        <strong>
+                <label class="scan-profile-card">
+
+                    <input
+                        type="radio"
+                        name="profile_preview"
+                        value="quick"
+                    >
+
+
+                    <span class="profile-card-content">
+
+
+                        <span class="profile-icon">
+
+                            ⚡
+
+                        </span>
+
+
+                        <span class="profile-title">
+
                             Quick Scan
-                        </strong>
 
-                        <span>
-                            Basic host and common port discovery.
                         </span>
 
-                    </div>
 
-                </div>
+                        <span class="profile-description">
 
+                            Basic host discovery and
+                            common port scanning.
 
+                        </span>
 
-                <div class="profile-info-item">
+                    </span>
 
-                    <div class="profile-info-icon">
-
-                        ◉
-
-                    </div>
+                </label>
 
 
-                    <div>
 
-                        <strong>
+                <!-- STANDARD -->
+
+                <label class="scan-profile-card active-profile">
+
+                    <input
+                        type="radio"
+                        name="profile_preview"
+                        value="standard"
+                        checked
+                    >
+
+
+                    <span class="profile-card-content">
+
+
+                        <span class="profile-icon">
+
+                            ◉
+
+                        </span>
+
+
+                        <span class="profile-title">
+
                             Standard Scan
-                        </strong>
 
-                        <span>
-                            Balanced service and port analysis.
                         </span>
 
-                    </div>
 
-                </div>
+                        <span class="profile-description">
 
+                            Balanced service detection
+                            and port analysis.
 
+                        </span>
 
-                <div class="profile-info-item">
+                    </span>
 
-                    <div class="profile-info-icon">
-
-                        ◈
-
-                    </div>
+                </label>
 
 
-                    <div>
 
-                        <strong>
+                <!-- DETAILED -->
+
+                <label class="scan-profile-card">
+
+                    <input
+                        type="radio"
+                        name="profile_preview"
+                        value="detailed"
+                    >
+
+
+                    <span class="profile-card-content">
+
+
+                        <span class="profile-icon">
+
+                            ◇
+
+                        </span>
+
+
+                        <span class="profile-title">
+
                             Detailed Scan
-                        </strong>
 
-                        <span>
-                            Extended service and security analysis.
                         </span>
 
-                    </div>
 
-                </div>
+                        <span class="profile-description">
+
+                            Extended service and
+                            security analysis.
+
+                        </span>
+
+                    </span>
+
+                </label>
 
 
             </div>
@@ -245,21 +350,30 @@ Configure an authorized target for security analysis
             <div class="authorization-box">
 
 
-                <label class="authorization-label">
+                <label class="authorization-check">
+
 
                     <input
                         type="checkbox"
-                        name="authorized"
-                        value="yes"
+                        id="authorization"
                         required
                     >
 
 
-                    <span>
+                    <span class="custom-checkbox">
 
-                        I confirm that I am authorized to scan this target.
+                        ✓
 
                     </span>
+
+
+                    <span>
+
+                        I confirm that I am authorized to
+                        scan this target.
+
+                    </span>
+
 
                 </label>
 
@@ -272,14 +386,14 @@ Configure an authorized target for security analysis
 
                 </p>
 
-
             </div>
 
 
 
-            <!-- ACTIONS -->
+            <!-- FORM ACTIONS -->
 
-            <div class="form-actions">
+            <div class="scan-form-actions">
+
 
                 <button
                     type="reset"
@@ -296,9 +410,16 @@ Configure an authorized target for security analysis
                     class="primary-button scan-submit-button"
                 >
 
-                    ◉ Start Security Scan
+                    <span>
+
+                        ◉
+
+                    </span>
+
+                    Start Security Scan
 
                 </button>
+
 
             </div>
 
@@ -310,12 +431,12 @@ Configure an authorized target for security analysis
 
 
 
-    <!-- SECURITY NOTICE -->
+    <!-- AUTHORIZED TESTING WARNING -->
 
-    <div class="security-info-card">
+    <div class="scan-security-notice">
 
 
-        <div class="security-info-icon">
+        <div class="scan-security-icon">
 
             🛡
 
@@ -334,8 +455,8 @@ Configure an authorized target for security analysis
             <p>
 
                 Only scan systems that you own or have explicit
-                authorization to test. Unauthorized scanning may violate
-                organizational policies or applicable laws.
+                authorization to test. Unauthorized scanning may
+                violate organizational policies or applicable laws.
 
             </p>
 
@@ -346,5 +467,90 @@ Configure an authorized target for security analysis
 
 
 </section>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const select = document.getElementById(
+            "scan_profile"
+        );
+
+        const profileCards = document.querySelectorAll(
+            ".scan-profile-card"
+        );
+
+        function updateProfile(profile) {
+
+            select.value = profile;
+
+            profileCards.forEach(
+                function (card) {
+
+                    card.classList.remove(
+                        "active-profile"
+                    );
+
+                    const radio = card.querySelector(
+                        "input"
+                    );
+
+                    if (radio.value === profile) {
+
+                        card.classList.add(
+                            "active-profile"
+                        );
+
+                        radio.checked = true;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        profileCards.forEach(
+            function (card) {
+
+                card.addEventListener(
+                    "click",
+                    function () {
+
+                        const radio = card.querySelector(
+                            "input"
+                        );
+
+                        updateProfile(
+                            radio.value
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        select.addEventListener(
+            "change",
+            function () {
+
+                updateProfile(
+                    this.value
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
+
 
 {% endblock %}

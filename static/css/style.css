@@ -2368,6 +2368,1364 @@ a {
 
 }
 
+/* =========================================================
+   PHASE 4.2 - SCAN TARGET & SCAN RESULTS
+   ========================================================= */
+
+
+/* =========================================================
+   SCAN PAGE
+   ========================================================= */
+
+.scan-page,
+.scan-results-page {
+
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+}
+
+
+/* =========================================================
+   SCAN PAGE HEADER
+   ========================================================= */
+
+.scan-page-header,
+.scan-result-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 24px;
+
+    padding: 26px 30px;
+
+    margin-bottom: 24px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 20px;
+
+    background: var(--card-bg);
+
+}
+
+
+.section-label {
+
+    display: inline-block;
+
+    margin-bottom: 10px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    color: var(--primary-color);
+
+}
+
+
+.scan-page-header h3,
+.scan-result-header h3 {
+
+    margin: 0 0 8px;
+
+    font-size: 25px;
+
+}
+
+
+.scan-page-header p,
+.scan-result-header p {
+
+    margin: 0;
+
+    color: var(--text-secondary);
+
+}
+
+
+.scan-header-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 58px;
+
+    height: 58px;
+
+    border-radius: 16px;
+
+    font-size: 25px;
+
+    color: #ffffff;
+
+    background: linear-gradient(
+        135deg,
+        var(--primary-color),
+        #7c3aed
+    );
+
+    box-shadow: 0 10px 30px rgba(
+        124,
+        58,
+        237,
+        0.35
+    );
+
+}
+
+
+/* =========================================================
+   SCAN CONFIGURATION CARD
+   ========================================================= */
+
+.scan-config-card {
+
+    padding: 30px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 20px;
+
+    background: var(--card-bg);
+
+}
+
+
+.scan-card-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding-bottom: 24px;
+
+    margin-bottom: 26px;
+
+    border-bottom: 1px solid var(--border-color);
+
+}
+
+
+.scan-card-header h3 {
+
+    margin: 0 0 8px;
+
+    font-size: 21px;
+
+}
+
+
+.scan-card-header p {
+
+    margin: 0;
+
+    color: var(--text-secondary);
+
+}
+
+
+.scan-status-indicator {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 9px 14px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #22c55e;
+
+    background: rgba(
+        34,
+        197,
+        94,
+        0.1
+    );
+
+}
+
+
+.status-pulse {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+
+    box-shadow: 0 0 10px #22c55e;
+
+}
+
+
+/* =========================================================
+   SCAN FORM
+   ========================================================= */
+
+.scan-form {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 26px;
+
+}
+
+
+.scan-form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+}
+
+
+.scan-form-group label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: var(--text-primary);
+
+}
+
+
+.form-label-icon {
+
+    color: var(--primary-color);
+
+}
+
+
+.scan-form-group input,
+.scan-form-group select {
+
+    width: 100%;
+
+    min-height: 50px;
+
+    padding: 0 16px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    font-size: 15px;
+
+    font-family: inherit;
+
+    color: var(--text-primary);
+
+    background: var(--input-bg);
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+
+}
+
+
+.scan-form-group input:focus,
+.scan-form-group select:focus {
+
+    border-color: var(--primary-color);
+
+    box-shadow: 0 0 0 4px rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+.scan-form-group small {
+
+    font-size: 13px;
+
+    color: var(--text-secondary);
+
+}
+
+
+/* =========================================================
+   SCAN PROFILE GRID
+   ========================================================= */
+
+.scan-profile-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 16px;
+
+}
+
+
+.scan-profile-card {
+
+    position: relative;
+
+    display: block;
+
+    cursor: pointer;
+
+}
+
+
+.scan-profile-card input {
+
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
+
+.profile-card-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-height: 175px;
+
+    padding: 22px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 16px;
+
+    background: var(--input-bg);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.scan-profile-card:hover .profile-card-content {
+
+    transform: translateY(-3px);
+
+    border-color: var(--primary-color);
+
+}
+
+
+.scan-profile-card.active-profile .profile-card-content {
+
+    border-color: var(--primary-color);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.08
+    );
+
+    box-shadow: 0 8px 25px rgba(
+        124,
+        58,
+        237,
+        0.15
+    );
+
+}
+
+
+.profile-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 42px;
+
+    height: 42px;
+
+    margin-bottom: 16px;
+
+    border-radius: 12px;
+
+    font-size: 18px;
+
+    color: var(--primary-color);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+.profile-title {
+
+    margin-bottom: 8px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: var(--text-primary);
+
+}
+
+
+.profile-description {
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    color: var(--text-secondary);
+
+}
+
+
+/* =========================================================
+   AUTHORIZATION BOX
+   ========================================================= */
+
+.authorization-box {
+
+    padding: 20px;
+
+    border: 1px solid rgba(
+        124,
+        58,
+        237,
+        0.3
+    );
+
+    border-radius: 16px;
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.06
+    );
+
+}
+
+
+.authorization-check {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: var(--text-primary);
+
+}
+
+
+.authorization-check input {
+
+    position: absolute;
+
+    opacity: 0;
+
+}
+
+
+.custom-checkbox {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 20px;
+
+    height: 20px;
+
+    border: 1px solid var(--primary-color);
+
+    border-radius: 6px;
+
+    color: transparent;
+
+    background: transparent;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+
+}
+
+
+.authorization-check input:checked
++ .custom-checkbox {
+
+    color: #ffffff;
+
+    background: var(--primary-color);
+
+}
+
+
+.authorization-box p {
+
+    margin:
+        14px
+        0
+        0
+        32px;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    color: var(--text-secondary);
+
+}
+
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.scan-form-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 14px;
+
+    padding-top: 24px;
+
+    border-top: 1px solid var(--border-color);
+
+}
+
+
+.scan-submit-button {
+
+    min-width: 190px;
+
+}
+
+
+/* =========================================================
+   SECURITY NOTICE
+   ========================================================= */
+
+.scan-security-notice {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 18px;
+
+    padding: 24px;
+
+    margin-top: 24px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 18px;
+
+    background: var(--card-bg);
+
+}
+
+
+.scan-security-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 48px;
+
+    height: 48px;
+
+    border-radius: 14px;
+
+    font-size: 20px;
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+.scan-security-notice h4 {
+
+    margin: 0 0 8px;
+
+    font-size: 16px;
+
+}
+
+
+.scan-security-notice p {
+
+    margin: 0;
+
+    line-height: 1.7;
+
+    color: var(--text-secondary);
+
+}
+
+
+/* =========================================================
+   SCAN RESULT STATUS
+   ========================================================= */
+
+.scan-result-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 10px 16px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    text-transform: capitalize;
+
+}
+
+
+.scan-result-status.pending {
+
+    color: #f59e0b;
+
+    background: rgba(
+        245,
+        158,
+        11,
+        0.1
+    );
+
+}
+
+
+.scan-result-status.running {
+
+    color: var(--primary-color);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+.scan-result-status.completed {
+
+    color: #22c55e;
+
+    background: rgba(
+        34,
+        197,
+        94,
+        0.1
+    );
+
+}
+
+
+.scan-result-status.failed {
+
+    color: #ef4444;
+
+    background: rgba(
+        239,
+        68,
+        68,
+        0.1
+    );
+
+}
+
+
+/* =========================================================
+   SCAN OVERVIEW
+   ========================================================= */
+
+.scan-overview-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+
+    gap: 18px;
+
+    margin-bottom: 24px;
+
+}
+
+
+.scan-info-card {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    padding: 22px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 16px;
+
+    background: var(--card-bg);
+
+}
+
+
+.scan-info-label {
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: var(--text-secondary);
+
+}
+
+
+.scan-info-card strong {
+
+    font-size: 17px;
+
+    color: var(--text-primary);
+
+    word-break: break-word;
+
+}
+
+
+/* =========================================================
+   PENDING SCAN CARD
+   ========================================================= */
+
+.scan-pending-card {
+
+    text-align: center;
+
+    padding: 45px 30px;
+
+    margin-bottom: 24px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 20px;
+
+    background: var(--card-bg);
+
+}
+
+
+.scan-pending-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 72px;
+
+    height: 72px;
+
+    margin: 0 auto 20px;
+
+    border-radius: 20px;
+
+    font-size: 28px;
+
+    color: var(--primary-color);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+.scan-pending-card h3 {
+
+    margin: 0 0 12px;
+
+}
+
+
+.scan-pending-card > p {
+
+    max-width: 700px;
+
+    margin: 0 auto;
+
+    line-height: 1.7;
+
+    color: var(--text-secondary);
+
+}
+
+
+.scan-processing-info {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 50px;
+
+    margin-top: 30px;
+
+}
+
+
+.scan-processing-info div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+}
+
+
+.scan-processing-info span {
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: var(--text-secondary);
+
+}
+
+
+.scan-processing-info strong {
+
+    color: var(--text-primary);
+
+}
+
+
+/* =========================================================
+   RESULT CARDS
+   ========================================================= */
+
+.result-card {
+
+    margin-bottom: 24px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 18px;
+
+    background: var(--card-bg);
+
+}
+
+
+.result-card-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 24px;
+
+    border-bottom: 1px solid var(--border-color);
+
+}
+
+
+.result-card-header h3 {
+
+    margin: 0 0 7px;
+
+    font-size: 18px;
+
+}
+
+
+.result-card-header p {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    color: var(--text-secondary);
+
+}
+
+
+.result-count {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 38px;
+
+    height: 38px;
+
+    padding: 0 12px;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: var(--primary-color);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+/* =========================================================
+   RESULTS TABLE
+   ========================================================= */
+
+.results-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+}
+
+
+.results-table th {
+
+    padding: 15px 20px;
+
+    text-align: left;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+
+    color: var(--text-secondary);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.04
+    );
+
+}
+
+
+.results-table td {
+
+    padding: 17px 20px;
+
+    border-top: 1px solid var(--border-color);
+
+    color: var(--text-primary);
+
+}
+
+
+.results-table tbody tr {
+
+    transition: background 0.2s ease;
+
+}
+
+
+.results-table tbody tr:hover {
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.05
+    );
+
+}
+
+
+.open-status {
+
+    display: inline-flex;
+
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #22c55e;
+
+    background: rgba(
+        34,
+        197,
+        94,
+        0.1
+    );
+
+}
+
+
+/* =========================================================
+   EMPTY RESULT
+   ========================================================= */
+
+.result-empty-state {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 180px;
+
+    padding: 30px;
+
+    text-align: center;
+
+}
+
+
+.result-empty-state span {
+
+    margin-bottom: 12px;
+
+    font-size: 30px;
+
+    color: var(--primary-color);
+
+}
+
+
+.result-empty-state p {
+
+    margin: 0;
+
+    color: var(--text-secondary);
+
+}
+
+
+/* =========================================================
+   OS RESULT
+   ========================================================= */
+
+.os-result-content {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 28px;
+
+}
+
+
+.os-result-icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 52px;
+
+    height: 52px;
+
+    border-radius: 14px;
+
+    font-size: 22px;
+
+    color: var(--primary-color);
+
+    background: rgba(
+        124,
+        58,
+        237,
+        0.12
+    );
+
+}
+
+
+.os-result-content strong {
+
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: var(--text-primary);
+
+}
+
+
+.os-result-content p {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    color: var(--text-secondary);
+
+}
+
+
+/* =========================================================
+   RESULT ACTIONS
+   ========================================================= */
+
+.scan-result-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 24px;
+
+    padding-bottom: 10px;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (
+    max-width: 1100px
+) {
+
+    .scan-overview-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+
+    }
+
+}
+
+
+@media (
+    max-width: 850px
+) {
+
+    .scan-profile-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .profile-card-content {
+
+        min-height: auto;
+
+    }
+
+}
+
+
+@media (
+    max-width: 700px
+) {
+
+    .scan-page-header,
+    .scan-result-header,
+    .scan-card-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .scan-config-card {
+
+        padding: 20px;
+
+    }
+
+
+    .scan-overview-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .scan-processing-info {
+
+        flex-direction: column;
+
+        gap: 18px;
+
+    }
+
+
+    .scan-form-actions {
+
+        flex-direction: column-reverse;
+
+    }
+
+
+    .scan-form-actions .primary-button,
+    .scan-form-actions .secondary-button {
+
+        width: 100%;
+
+        justify-content: center;
+
+    }
+
+
+    .scan-security-notice {
+
+        flex-direction: column;
+
+    }
+
+
+    .results-table {
+
+        min-width: 600px;
+
+    }
+
+}
+
 /* =========================================
    RESPONSIVE DESIGN
 ========================================= */
