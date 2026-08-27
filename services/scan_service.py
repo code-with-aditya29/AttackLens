@@ -1,15 +1,22 @@
 from datetime import datetime
 
+from bson import ObjectId
+
 
 # ==========================================
 # CREATE NEW SCAN
 # ==========================================
 
 def create_scan(
+
     db,
+
     target,
+
     scan_profile,
+
     created_by
+
 ):
 
     scan_data = {
@@ -36,15 +43,22 @@ def create_scan(
 
         "vulnerabilities": [],
 
-        "risk_score": None
+        "risk_score": None,
+
+        "error_message": None
 
     }
 
+
     result = db.scans.insert_one(
+
         scan_data
+
     )
 
+
     scan_data["_id"] = result.inserted_id
+
 
     return scan_data
 
@@ -54,25 +68,64 @@ def create_scan(
 # ==========================================
 
 def update_scan_status(
+
     db,
+
     scan_id,
+
     status
+
 ):
 
-    from bson import ObjectId
+    update_data = {
+
+        "status": status
+
+    }
+
+
+    # ======================================
+    # SCAN STARTED
+    # ======================================
+
+    if status == "running":
+
+        update_data[
+
+            "started_at"
+
+        ] = datetime.utcnow()
+
+
+    # ======================================
+    # SCAN COMPLETED
+    # ======================================
+
+    if status == "completed":
+
+        update_data[
+
+            "completed_at"
+
+        ] = datetime.utcnow()
+
 
     db.scans.update_one(
 
         {
+
             "_id": ObjectId(
+
                 scan_id
+
             )
+
         },
 
         {
-            "$set": {
-                "status": status
-            }
+
+            "$set": update_data
+
         }
 
     )
@@ -83,44 +136,104 @@ def update_scan_status(
 # ==========================================
 
 def save_scan_results(
-    db,
-    scan_id,
-    results
-):
 
-    from bson import ObjectId
+    db,
+
+    scan_id,
+
+    results
+
+):
 
     db.scans.update_one(
 
         {
+
             "_id": ObjectId(
+
                 scan_id
+
             )
+
         },
 
         {
+
             "$set": {
 
                 "ports": results.get(
+
                     "ports",
+
                     []
+
                 ),
 
                 "services": results.get(
+
                     "services",
+
                     []
+
                 ),
 
                 "os_detection": results.get(
+
                     "os_detection"
+
                 ),
 
                 "status": "completed",
 
-                "completed_at": datetime.utcnow()
+                "completed_at": datetime.utcnow(),
+
+                "error_message": None
 
             }
+
         }
 
     )
-    
+
+
+# ==========================================
+# MARK SCAN AS FAILED
+# ==========================================
+
+def mark_scan_failed(
+
+    db,
+
+    scan_id,
+
+    error_message
+
+):
+
+    db.scans.update_one(
+
+        {
+
+            "_id": ObjectId(
+
+                scan_id
+
+            )
+
+        },
+
+        {
+
+            "$set": {
+
+                "status": "failed",
+
+                "error_message": error_message,
+
+                "completed_at": datetime.utcnow()
+
+            }
+
+        }
+
+    )
