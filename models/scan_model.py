@@ -2,6 +2,13 @@
 # SCAN MODEL
 # ==========================================
 
+from datetime import datetime
+
+
+# ==========================================
+# CREATE SCAN DOCUMENT
+# ==========================================
+
 def create_scan_document(
     target,
     scan_profile,
@@ -9,6 +16,10 @@ def create_scan_document(
 ):
 
     return {
+
+        # ==================================
+        # BASIC SCAN INFORMATION
+        # ==================================
 
         "target": target,
 
@@ -18,11 +29,45 @@ def create_scan_document(
 
         "created_by": created_by,
 
+        "created_at": datetime.utcnow(),
+
+        "started_at": None,
+
+        "completed_at": None,
+
+
+        # ==================================
+        # HOST INFORMATION
+        # ==================================
+
+        "hostname": None,
+
+        "host_status": "unknown",
+
+        "mac_address": None,
+
+
+        # ==================================
+        # NETWORK INFORMATION
+        # ==================================
+
         "ports": [],
 
         "services": [],
 
+
+        # ==================================
+        # OPERATING SYSTEM INFORMATION
+        # ==================================
+
         "os_detection": None,
+
+        "os_accuracy": None,
+
+
+        # ==================================
+        # FUTURE PHASE DATA
+        # ==================================
 
         "vulnerabilities": [],
 

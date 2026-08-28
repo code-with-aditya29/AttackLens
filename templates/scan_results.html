@@ -22,7 +22,9 @@ Review the security analysis and discovered information
 <section class="scan-results-page">
 
 
-    <!-- RESULT HEADER -->
+    <!-- ======================================
+         RESULT HEADER
+    ======================================= -->
 
     <div class="scan-result-header">
 
@@ -53,8 +55,7 @@ Review the security analysis and discovered information
 
 
         <div
-            class="scan-result-status
-            {{ scan.status }}"
+            class="scan-result-status {{ scan.status }}"
         >
 
             <span class="status-dot"></span>
@@ -67,8 +68,9 @@ Review the security analysis and discovered information
     </div>
 
 
-
-    <!-- SCAN OVERVIEW -->
+    <!-- ======================================
+         SCAN OVERVIEW
+    ======================================= -->
 
     <div class="scan-overview-grid">
 
@@ -93,6 +95,89 @@ Review the security analysis and discovered information
         </div>
 
 
+        <!-- HOSTNAME -->
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+
+                HOSTNAME
+
+            </span>
+
+
+            <strong>
+
+                {% if scan.hostname %}
+
+                    {{ scan.hostname }}
+
+                {% else %}
+
+                    Not Detected
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+        <!-- HOST STATUS -->
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+
+                HOST STATUS
+
+            </span>
+
+
+            <strong>
+
+                {% if scan.host_status %}
+
+                    {{ scan.host_status|capitalize }}
+
+                {% else %}
+
+                    Unknown
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+        <!-- MAC ADDRESS -->
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+
+                MAC ADDRESS
+
+            </span>
+
+
+            <strong>
+
+                {% if scan.mac_address %}
+
+                    {{ scan.mac_address }}
+
+                {% else %}
+
+                    Not Detected
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
 
         <!-- PROFILE -->
 
@@ -114,7 +199,6 @@ Review the security analysis and discovered information
         </div>
 
 
-
         <!-- STATUS -->
 
         <div class="scan-info-card">
@@ -133,7 +217,6 @@ Review the security analysis and discovered information
             </strong>
 
         </div>
-
 
 
         <!-- RISK SCORE -->
@@ -167,8 +250,9 @@ Review the security analysis and discovered information
     </div>
 
 
-
-    <!-- PENDING STATE -->
+    <!-- ======================================
+         PENDING STATE
+    ======================================= -->
 
     {% if scan.status == "pending" %}
 
@@ -195,48 +279,10 @@ Review the security analysis and discovered information
             The scan record has been created successfully.
 
             Nmap execution will process the target and populate
-            discovered ports, services, operating system information,
-            and additional security findings.
+            discovered ports, services, hostname, operating system
+            information, and additional security findings.
 
         </p>
-
-
-        <div class="scan-processing-info">
-
-            <div>
-
-                <span>
-
-                    Target
-
-                </span>
-
-                <strong>
-
-                    {{ scan.target }}
-
-                </strong>
-
-            </div>
-
-
-            <div>
-
-                <span>
-
-                    Profile
-
-                </span>
-
-                <strong>
-
-                    {{ scan.scan_profile|capitalize }}
-
-                </strong>
-
-            </div>
-
-        </div>
 
 
     </div>
@@ -245,13 +291,15 @@ Review the security analysis and discovered information
     {% endif %}
 
 
-
-    <!-- OPEN PORTS -->
+    <!-- ======================================
+         OPEN PORTS
+    ======================================= -->
 
     <div class="result-card">
 
 
         <div class="result-card-header">
+
 
             <div>
 
@@ -277,6 +325,7 @@ Review the security analysis and discovered information
 
             </span>
 
+
         </div>
 
 
@@ -284,6 +333,7 @@ Review the security analysis and discovered information
 
 
         <div class="table-wrapper">
+
 
             <table class="results-table">
 
@@ -308,10 +358,16 @@ Review the security analysis and discovered information
 
                         <th>
 
-                            State
+                            Service
 
                         </th>
 
+
+                        <th>
+
+                            State
+
+                        </th>
 
                     </tr>
 
@@ -325,20 +381,24 @@ Review the security analysis and discovered information
 
                     <tr>
 
+
                         <td>
 
-                            {{ port.port
-                            if port.port is defined
-                            else port }}
+                            {{ port.port }}
 
                         </td>
 
 
                         <td>
 
-                            {{ port.protocol
-                            if port.protocol is defined
-                            else "-" }}
+                            {{ port.protocol }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ port.service or "-" }}
 
                         </td>
 
@@ -347,11 +407,12 @@ Review the security analysis and discovered information
 
                             <span class="open-status">
 
-                                Open
+                                {{ port.state|capitalize }}
 
                             </span>
 
                         </td>
+
 
                     </tr>
 
@@ -362,6 +423,7 @@ Review the security analysis and discovered information
 
 
             </table>
+
 
         </div>
 
@@ -380,9 +442,10 @@ Review the security analysis and discovered information
 
             <p>
 
-                No port information available yet.
+                No open ports were discovered.
 
             </p>
+
 
         </div>
 
@@ -393,13 +456,15 @@ Review the security analysis and discovered information
     </div>
 
 
-
-    <!-- SERVICES -->
+    <!-- ======================================
+         SERVICES
+    ======================================= -->
 
     <div class="result-card">
 
 
         <div class="result-card-header">
+
 
             <div>
 
@@ -425,6 +490,7 @@ Review the security analysis and discovered information
 
             </span>
 
+
         </div>
 
 
@@ -432,6 +498,7 @@ Review the security analysis and discovered information
 
 
         <div class="table-wrapper">
+
 
             <table class="results-table">
 
@@ -456,6 +523,13 @@ Review the security analysis and discovered information
 
                         <th>
 
+                            Product
+
+                        </th>
+
+
+                        <th>
+
                             Version
 
                         </th>
@@ -472,31 +546,34 @@ Review the security analysis and discovered information
 
                     <tr>
 
+
                         <td>
 
-                            {{ service.port
-                            if service.port is defined
-                            else "-" }}
+                            {{ service.port }}
 
                         </td>
 
 
                         <td>
 
-                            {{ service.name
-                            if service.name is defined
-                            else "-" }}
+                            {{ service.name or "-" }}
 
                         </td>
 
 
                         <td>
 
-                            {{ service.version
-                            if service.version is defined
-                            else "-" }}
+                            {{ service.product or "-" }}
 
                         </td>
+
+
+                        <td>
+
+                            {{ service.version or "-" }}
+
+                        </td>
+
 
                     </tr>
 
@@ -507,6 +584,7 @@ Review the security analysis and discovered information
 
 
             </table>
+
 
         </div>
 
@@ -525,9 +603,10 @@ Review the security analysis and discovered information
 
             <p>
 
-                No service information available yet.
+                No service information available.
 
             </p>
+
 
         </div>
 
@@ -538,13 +617,15 @@ Review the security analysis and discovered information
     </div>
 
 
-
-    <!-- OS DETECTION -->
+    <!-- ======================================
+         OPERATING SYSTEM DETECTION
+    ======================================= -->
 
     <div class="result-card os-result-card">
 
 
         <div class="result-card-header">
+
 
             <div>
 
@@ -563,6 +644,7 @@ Review the security analysis and discovered information
 
             </div>
 
+
         </div>
 
 
@@ -578,7 +660,9 @@ Review the security analysis and discovered information
 
             <div>
 
+
                 {% if scan.os_detection %}
+
 
                     <strong>
 
@@ -586,13 +670,26 @@ Review the security analysis and discovered information
 
                     </strong>
 
+
                     <p>
 
-                        Operating system detection completed.
+                        Detection accuracy:
+
+                        {% if scan.os_accuracy %}
+
+                            {{ scan.os_accuracy }}%
+
+                        {% else %}
+
+                            Unknown
+
+                        {% endif %}
 
                     </p>
 
+
                 {% else %}
+
 
                     <strong>
 
@@ -600,14 +697,17 @@ Review the security analysis and discovered information
 
                     </strong>
 
+
                     <p>
 
-                        OS detection results will appear here
-                        after scan execution.
+                        OS detection results were not available
+                        for this target.
 
                     </p>
 
+
                 {% endif %}
+
 
             </div>
 
@@ -618,8 +718,9 @@ Review the security analysis and discovered information
     </div>
 
 
-
-    <!-- ACTIONS -->
+    <!-- ======================================
+         ACTIONS
+    ======================================= -->
 
     <div class="scan-result-actions">
 

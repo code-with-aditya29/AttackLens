@@ -1,5 +1,7 @@
 import subprocess
 import xml.etree.ElementTree as ET
+import tempfile
+import os
 
 
 # ==========================================
@@ -13,8 +15,11 @@ def check_nmap_installed():
         result = subprocess.run(
 
             [
+
                 "nmap",
+
                 "--version"
+
             ],
 
             capture_output=True,
@@ -28,8 +33,11 @@ def check_nmap_installed():
         return result.returncode == 0
 
     except (
+
         FileNotFoundError,
+
         subprocess.TimeoutExpired
+
     ):
 
         return False
@@ -41,20 +49,9 @@ def check_nmap_installed():
 
 def get_nmap_command(
     target,
-    scan_profile
+    scan_profile,
+    output_file
 ):
-
-    base_command = [
-
-        "nmap",
-
-        "-oX",
-        "-",
-
-        "--reason"
-
-    ]
-
 
     # ======================================
     # QUICK SCAN
@@ -62,30 +59,17 @@ def get_nmap_command(
 
     if scan_profile == "quick":
 
-        return base_command + [
+        return [
 
-            "-T3",
+            "nmap",
 
             "-F",
 
-            target
-
-        ]
-
-
-    # ======================================
-    # STANDARD SCAN
-    # ======================================
-
-    if scan_profile == "standard":
-
-        return base_command + [
-
-            "-T3",
-
-            "-sT",
-
             "-sV",
+
+            "-oX",
+
+            output_file,
 
             target
 
@@ -98,15 +82,19 @@ def get_nmap_command(
 
     if scan_profile == "detailed":
 
-        return base_command + [
+        return [
 
-            "-T3",
-
-            "-sT",
+            "nmap",
 
             "-sV",
 
             "-O",
+
+            "-Pn",
+
+            "-oX",
+
+            output_file,
 
             target
 
@@ -114,263 +102,24 @@ def get_nmap_command(
 
 
     # ======================================
-    # INVALID PROFILE
+    # STANDARD SCAN
     # ======================================
 
-    raise ValueError(
+    return [
 
-        "Invalid scan profile."
+        "nmap",
 
-    )
+        "-sV",
 
+        "-O",
 
-# ==========================================
-# PARSE NMAP XML RESULTS
-# ==========================================
+        "-oX",
 
-def parse_nmap_results(
-    xml_output
-):
+        output_file,
 
-    results = {
+        target
 
-        "ports": [],
-
-        "services": [],
-
-        "os_detection": None
-
-    }
-
-
-    try:
-
-        root = ET.fromstring(
-
-            xml_output
-
-        )
-
-    except ET.ParseError:
-
-        raise ValueError(
-
-            "Unable to parse Nmap scan results."
-
-        )
-
-
-    # ======================================
-    # FIND HOST
-    # ======================================
-
-    host = root.find(
-
-        "host"
-
-    )
-
-
-    if host is None:
-
-        return results
-
-
-    # ======================================
-    # PARSE OPEN PORTS
-    # ======================================
-
-    ports_element = host.find(
-
-        "ports"
-
-    )
-
-
-    if ports_element is not None:
-
-        for port in ports_element.findall(
-
-            "port"
-
-        ):
-
-            state_element = port.find(
-
-                "state"
-
-            )
-
-
-            if state_element is None:
-
-                continue
-
-
-            state = state_element.get(
-
-                "state"
-
-            )
-
-
-            # Only save open ports
-
-            if state != "open":
-
-                continue
-
-
-            port_id = port.get(
-
-                "portid"
-
-            )
-
-
-            protocol = port.get(
-
-                "protocol"
-
-            )
-
-
-            service_element = port.find(
-
-                "service"
-
-            )
-
-
-            service_name = None
-
-            product = None
-
-            version = None
-
-
-            if service_element is not None:
-
-                service_name = service_element.get(
-
-                    "name"
-
-                )
-
-
-                product = service_element.get(
-
-                    "product"
-
-                )
-
-
-                version = service_element.get(
-
-                    "version"
-
-                )
-
-
-            # ==============================
-            # PORT DATA
-            # ==============================
-
-            port_data = {
-
-                "port": int(
-
-                    port_id
-
-                ),
-
-                "protocol": protocol,
-
-                "state": state
-
-            }
-
-
-            results["ports"].append(
-
-                port_data
-
-            )
-
-
-            # ==============================
-            # SERVICE DATA
-            # ==============================
-
-            service_data = {
-
-                "port": int(
-
-                    port_id
-
-                ),
-
-                "protocol": protocol,
-
-                "service": service_name,
-
-                "product": product,
-
-                "version": version
-
-            }
-
-
-            results["services"].append(
-
-                service_data
-
-            )
-
-
-    # ======================================
-    # PARSE OS DETECTION
-    # ======================================
-
-    os_element = host.find(
-
-        "os"
-
-    )
-
-
-    if os_element is not None:
-
-        os_matches = os_element.findall(
-
-            "osmatch"
-
-        )
-
-
-        if os_matches:
-
-            best_match = os_matches[0]
-
-
-            results["os_detection"] = {
-
-                "name": best_match.get(
-
-                    "name"
-
-                ),
-
-                "accuracy": best_match.get(
-
-                    "accuracy"
-
-                )
-
-            }
-
-
-    return results
+    ]
 
 
 # ==========================================
@@ -382,28 +131,65 @@ def run_nmap_scan(
     scan_profile
 ):
 
+    # ======================================
+    # CHECK NMAP
+    # ======================================
+
     if not check_nmap_installed():
 
-        raise RuntimeError(
+        return {
 
-            "Nmap is not installed or is not available in the system PATH."
+            "success": False,
 
-        )
+            "message": (
+                "Nmap is not installed or "
+                "not available in PATH."
+            )
+
+        }
 
 
-    command = get_nmap_command(
-
-        target=target,
-
-        scan_profile=scan_profile
-
-    )
+    temp_file = None
 
 
     try:
 
         # ==================================
-        # EXECUTE NMAP
+        # CREATE TEMP XML FILE
+        # ==================================
+
+        temp_file = tempfile.NamedTemporaryFile(
+
+            suffix=".xml",
+
+            delete=False
+
+        )
+
+
+        output_file = temp_file.name
+
+
+        temp_file.close()
+
+
+        # ==================================
+        # BUILD NMAP COMMAND
+        # ==================================
+
+        command = get_nmap_command(
+
+            target=target,
+
+            scan_profile=scan_profile,
+
+            output_file=output_file
+
+        )
+
+
+        # ==================================
+        # RUN NMAP
         # ==================================
 
         result = subprocess.run(
@@ -420,37 +206,77 @@ def run_nmap_scan(
 
 
         # ==================================
-        # CHECK EXECUTION ERROR
+        # CHECK XML OUTPUT
         # ==================================
 
-        if not result.stdout:
+        if not os.path.exists(
 
-            error_message = result.stderr.strip()
+            output_file
 
+        ):
 
-            if not error_message:
+            return {
 
-                error_message = (
+                "success": False,
 
-                    "Nmap did not return any scan results."
-
+                "message": (
+                    "Nmap did not generate "
+                    "scan results."
                 )
 
+            }
 
-            raise RuntimeError(
 
-                error_message
+        # ==================================
+        # PARSE NMAP RESULTS
+        # ==================================
+
+        scan_results = parse_nmap_xml(
+
+            output_file
+
+        )
+
+
+        # ==================================
+        # HANDLE NMAP ERROR
+        # ==================================
+
+        if result.returncode not in [
+
+            0,
+
+            1
+
+        ]:
+
+            scan_results["success"] = False
+
+
+            scan_results["message"] = (
+
+                result.stderr.strip()
+
+                or
+
+                "Nmap scan failed."
 
             )
 
 
+            return scan_results
+
+
         # ==================================
-        # PARSE XML RESULTS
+        # SUCCESS
         # ==================================
 
-        scan_results = parse_nmap_results(
+        scan_results["success"] = True
 
-            result.stdout
+
+        scan_results["message"] = (
+
+            "Nmap scan completed successfully."
 
         )
 
@@ -460,17 +286,427 @@ def run_nmap_scan(
 
     except subprocess.TimeoutExpired:
 
-        raise RuntimeError(
+        return {
 
-            "The scan exceeded the maximum allowed execution time."
+            "success": False,
+
+            "message": (
+                "Scan timed out. The target may "
+                "be unreachable or taking too "
+                "long to respond."
+            )
+
+        }
+
+
+    except Exception as error:
+
+        return {
+
+            "success": False,
+
+            "message": (
+
+                f"Nmap scan failed: {str(error)}"
+
+            )
+
+        }
+
+
+    finally:
+
+        # ==================================
+        # REMOVE TEMP XML FILE
+        # ==================================
+
+        if temp_file:
+
+            try:
+
+                if os.path.exists(
+
+                    temp_file.name
+
+                ):
+
+                    os.remove(
+
+                        temp_file.name
+
+                    )
+
+            except Exception:
+
+                pass
+
+
+# ==========================================
+# PARSE NMAP XML
+# ==========================================
+
+def parse_nmap_xml(
+    xml_file
+):
+
+    results = {
+
+        # ==================================
+        # HOST INFORMATION
+        # ==================================
+
+        "hostname": None,
+
+        "host_status": "unknown",
+
+        "mac_address": None,
+
+
+        # ==================================
+        # NETWORK INFORMATION
+        # ==================================
+
+        "ports": [],
+
+        "services": [],
+
+
+        # ==================================
+        # OS INFORMATION
+        # ==================================
+
+        "os_detection": None,
+
+        "os_accuracy": None
+
+    }
+
+
+    # ======================================
+    # LOAD XML
+    # ======================================
+
+    tree = ET.parse(
+
+        xml_file
+
+    )
+
+
+    root = tree.getroot()
+
+
+    # ======================================
+    # GET FIRST HOST
+    # ======================================
+
+    host = root.find(
+
+        "host"
+
+    )
+
+
+    if host is None:
+
+        return results
+
+
+    # ======================================
+    # HOST STATUS
+    # ======================================
+
+    status = host.find(
+
+        "status"
+
+    )
+
+
+    if status is not None:
+
+        results["host_status"] = (
+
+            status.get(
+
+                "state",
+
+                "unknown"
+
+            )
 
         )
 
 
-    except FileNotFoundError:
+    # ======================================
+    # HOSTNAME
+    # ======================================
 
-        raise RuntimeError(
+    hostname = host.find(
 
-            "Nmap executable was not found."
+        "./hostnames/hostname"
+
+    )
+
+
+    if hostname is not None:
+
+        results["hostname"] = (
+
+            hostname.get(
+
+                "name"
+
+            )
 
         )
+
+
+    # ======================================
+    # MAC ADDRESS
+    # ======================================
+
+    addresses = host.findall(
+
+        "address"
+
+    )
+
+
+    for address in addresses:
+
+        if address.get(
+
+            "addrtype"
+
+        ) == "mac":
+
+            results["mac_address"] = (
+
+                address.get(
+
+                    "addr"
+
+                )
+
+            )
+
+
+            break
+
+
+    # ======================================
+    # OPEN PORTS
+    # ======================================
+
+    ports = host.findall(
+
+        "./ports/port"
+
+    )
+
+
+    for port in ports:
+
+        state_element = port.find(
+
+            "state"
+
+        )
+
+
+        service_element = port.find(
+
+            "service"
+
+        )
+
+
+        port_state = (
+
+            state_element.get(
+
+                "state"
+
+            )
+
+            if state_element is not None
+
+            else "unknown"
+
+        )
+
+
+        # Only save open ports
+
+        if port_state != "open":
+
+            continue
+
+
+        # ==================================
+        # SERVICE INFORMATION
+        # ==================================
+
+        service_name = None
+
+        product = None
+
+        version = None
+
+
+        if service_element is not None:
+
+            service_name = (
+
+                service_element.get(
+
+                    "name"
+
+                )
+
+            )
+
+
+            product = (
+
+                service_element.get(
+
+                    "product"
+
+                )
+
+            )
+
+
+            version = (
+
+                service_element.get(
+
+                    "version"
+
+                )
+
+            )
+
+
+        # ==================================
+        # PORT DATA
+        # ==================================
+
+        port_data = {
+
+            "port": int(
+
+                port.get(
+
+                    "portid"
+
+                )
+
+            ),
+
+            "protocol": port.get(
+
+                "protocol"
+
+            ),
+
+            "state": port_state,
+
+            "service": service_name,
+
+            "product": product,
+
+            "version": version
+
+        }
+
+
+        results["ports"].append(
+
+            port_data
+
+        )
+
+
+        # ==================================
+        # SERVICE DATA
+        # ==================================
+
+        results["services"].append({
+
+            "port": int(
+
+                port.get(
+
+                    "portid"
+
+                )
+
+            ),
+
+            "name": service_name,
+
+            "product": product,
+
+            "version": version
+
+        })
+
+
+    # ======================================
+    # OPERATING SYSTEM DETECTION
+    # ======================================
+
+    os_match = host.find(
+
+        "./os/osmatch"
+
+    )
+
+
+    if os_match is not None:
+
+        results["os_detection"] = (
+
+            os_match.get(
+
+                "name"
+
+            )
+
+        )
+
+
+        accuracy = os_match.get(
+
+            "accuracy"
+
+        )
+
+
+        if accuracy:
+
+            try:
+
+                results["os_accuracy"] = (
+
+                    int(
+
+                        accuracy
+
+                    )
+
+                )
+
+            except ValueError:
+
+                results["os_accuracy"] = (
+
+                    accuracy
+
+                )
+
+
+    return results

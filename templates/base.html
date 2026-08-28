@@ -24,7 +24,10 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
+        href="{{ url_for(
+            'static',
+            filename='css/style.css'
+        ) }}"
     >
 
 </head>
@@ -76,7 +79,9 @@
             </div>
 
 
-            <!-- Navigation -->
+            <!-- ====================================
+                 NAVIGATION
+            ===================================== -->
 
             <nav class="sidebar-nav">
 
@@ -102,7 +107,7 @@
                 <!-- Scan Target -->
 
                 <a
-                    href="{{ url_for('scan.scan_target') }}" 
+                    href="{{ url_for('scan.scan_target') }}"
                     class="nav-item {% if current_page == 'scan' %}active{% endif %}"
                 >
 
@@ -214,9 +219,12 @@
             </nav>
 
 
-            <!-- Sidebar Footer -->
+            <!-- ====================================
+                 SIDEBAR FOOTER
+            ===================================== -->
 
             <div class="sidebar-footer">
+
 
                 <div class="system-status">
 
@@ -235,6 +243,7 @@
 
                 </div>
 
+
             </div>
 
 
@@ -242,16 +251,20 @@
 
 
         <!-- ====================================
-             MAIN CONTENT
+             MAIN APPLICATION CONTENT
         ===================================== -->
 
         <main class="main-content">
 
 
-            <!-- Topbar -->
+            <!-- ====================================
+                 TOPBAR
+            ===================================== -->
 
             <header class="topbar">
 
+
+                <!-- Page Information -->
 
                 <div class="page-info">
 
@@ -275,7 +288,9 @@
                 </div>
 
 
-                <!-- Topbar Actions -->
+                <!-- ====================================
+                     TOPBAR ACTIONS
+                ===================================== -->
 
                 <div class="topbar-actions">
 
@@ -287,6 +302,7 @@
                         class="icon-button"
                         type="button"
                         title="Toggle Theme"
+                        aria-label="Toggle Theme"
                     >
 
                         ◐
@@ -294,7 +310,7 @@
                     </button>
 
 
-                    <!-- Profile -->
+                    <!-- Profile Section -->
 
                     <div class="profile-section">
 
@@ -330,6 +346,8 @@
                         </button>
 
 
+                        <!-- Logout -->
+
                         <a
                             href="{{ url_for('auth.logout') }}"
                             class="logout-button"
@@ -349,7 +367,9 @@
             </header>
 
 
-            <!-- Flash Messages -->
+            <!-- ====================================
+                 FLASH MESSAGES
+            ===================================== -->
 
             {% with messages = get_flashed_messages(
                 with_categories=true
@@ -357,24 +377,46 @@
 
                 {% if messages %}
 
-                    {% for category, message in messages %}
+                    <div class="flash-message-container">
 
-                    <div
-                        class="flash-message {{ category }}"
-                    >
+                        {% for category, message in messages %}
 
-                        {{ message }}
+                        <div
+                            class="flash-message {{ category }}"
+                            role="alert"
+                        >
+
+                            <span class="flash-message-text">
+
+                                {{ message }}
+
+                            </span>
+
+
+                            <button
+                                type="button"
+                                class="flash-close"
+                                aria-label="Close notification"
+                            >
+
+                                ×
+
+                            </button>
+
+                        </div>
+
+                        {% endfor %}
 
                     </div>
-
-                    {% endfor %}
 
                 {% endif %}
 
             {% endwith %}
 
 
-            <!-- Page Content -->
+            <!-- ====================================
+                 PAGE CONTENT
+            ===================================== -->
 
             <section class="content-area">
 
@@ -392,7 +434,9 @@
     {% endblock %}
 
 
-    <!-- JavaScript -->
+    <!-- ====================================
+         JAVASCRIPT
+    ===================================== -->
 
     <script
         src="{{ url_for(

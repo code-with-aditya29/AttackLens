@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+AttackLens | Scan History
+{% endblock %}
+
+
+{% block page_title %}
+Scan History
+{% endblock %}
+
+
+{% block page_subtitle %}
+View and manage your previous security scans
+{% endblock %}
+
+
+{% block content %}
+
+<div class="scan-history-page">
+
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-section-header">
+
+        <div>
+
+            <h3>
+                Security Scan History
+            </h3>
+
+            <p>
+                Review previous scans and access their security analysis results.
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('scan.scan_target') }}"
+            class="primary-button"
+        >
+
+            <span>
+                +
+            </span>
+
+            New Scan
+
+        </a>
+
+    </div>
+
+
+    <!-- SCAN HISTORY CARD -->
+
+    <div class="scan-history-card">
+
+
+        <!-- CARD HEADER -->
+
+        <div class="scan-history-card-header">
+
+            <div>
+
+                <h3>
+                    Previous Scans
+                </h3>
+
+                <p>
+                    All security scans created from your AttackLens account.
+                </p>
+
+            </div>
+
+
+            <div class="scan-history-count">
+
+                <strong>
+                    {{ scans|length }}
+                </strong>
+
+                <span>
+                    Total Scans
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- TABLE -->
+
+        <div class="scan-history-table-wrapper">
+
+            <table class="scan-history-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Target
+                        </th>
+
+                        <th>
+                            Scan Profile
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Created
+                        </th>
+
+                        <th>
+                            Completed
+                        </th>
+
+                        <th class="scan-actions-column">
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% if scans %}
+
+                        {% for scan in scans %}
+
+                        <tr>
+
+
+                            <!-- TARGET -->
+
+                            <td>
+
+                                <div class="scan-target-info">
+
+                                    <div class="scan-target-icon">
+
+                                        ◉
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <strong>
+
+                                            {{ scan.target }}
+
+                                        </strong>
+
+
+                                        <span>
+
+                                            Security Target
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- SCAN PROFILE -->
+
+                            <td>
+
+                                <span
+                                    class="scan-profile-badge {{ scan.scan_profile }}"
+                                >
+
+                                    {{ scan.scan_profile|capitalize }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                <span
+                                    class="scan-status-badge {{ scan.status }}"
+                                >
+
+                                    <span
+                                        class="scan-status-dot"
+                                    ></span>
+
+                                    {{ scan.status|capitalize }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- CREATED DATE -->
+
+                            <td>
+
+                                <span class="scan-date">
+
+                                    {% if scan.created_at %}
+
+                                        {{ scan.created_at.strftime('%d %b %Y') }}
+
+                                        <small>
+
+                                            {{ scan.created_at.strftime('%I:%M %p') }}
+
+                                        </small>
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- COMPLETED DATE -->
+
+                            <td>
+
+                                <span class="scan-date">
+
+                                    {% if scan.completed_at %}
+
+                                        {{ scan.completed_at.strftime('%d %b %Y') }}
+
+                                        <small>
+
+                                            {{ scan.completed_at.strftime('%I:%M %p') }}
+
+                                        </small>
+
+                                    {% else %}
+
+                                        Not completed
+
+                                    {% endif %}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- ACTIONS -->
+
+                            <td class="scan-actions-column">
+
+                                <div class="scan-history-actions">
+
+
+                                    <!-- VIEW RESULTS -->
+
+                                    <a
+                                        href="{{ url_for(
+                                            'scan.scan_results',
+                                            scan_id=scan._id|string
+                                        ) }}"
+                                        class="scan-action-button view-scan-button"
+                                    >
+
+                                        View
+
+                                    </a>
+
+
+                                    <!-- DELETE SCAN -->
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'scan.delete_scan',
+                                            scan_id=scan._id|string
+                                        ) }}"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="scan-action-button delete-scan-button"
+                                            onclick="
+                                                return confirm(
+                                                    'Are you sure you want to delete this scan? This action cannot be undone.'
+                                                )
+                                            "
+                                        >
+
+                                            Delete
+
+                                        </button>
+
+                                    </form>
+
+
+                                </div>
+
+                            </td>
+
+
+                        </tr>
+
+                        {% endfor %}
+
+
+                    {% else %}
+
+
+                        <!-- EMPTY STATE -->
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                class="scan-history-empty-table"
+                            >
+
+                                <div class="scan-history-empty-state">
+
+
+                                    <div class="scan-history-empty-icon">
+
+                                        ◉
+
+                                    </div>
+
+
+                                    <h3>
+
+                                        No Scan History Found
+
+                                    </h3>
+
+
+                                    <p>
+
+                                        You have not performed any security
+                                        scans yet. Start your first authorized
+                                        scan to begin analyzing your target.
+
+                                    </p>
+
+
+                                    <a
+                                        href="{{ url_for('scan.scan_target') }}"
+                                        class="primary-button"
+                                    >
+
+                                        + Start New Scan
+
+                                    </a>
+
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- SECURITY INFORMATION -->
+
+    <div class="scan-history-security-card">
+
+
+        <div class="scan-history-security-icon">
+
+            🔐
+
+        </div>
+
+
+        <div>
+
+            <h4>
+
+                Authorized Security Scanning
+
+            </h4>
+
+
+            <p>
+
+                Scan history is maintained to help administrators review
+                security assessments and track previously analyzed targets.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

@@ -22,7 +22,11 @@ from flask import (
 from bson import ObjectId
 
 
-from routes.auth import login_required
+from routes.auth import (
+
+    login_required
+
+)
 
 
 from services.scan_validator import (
@@ -36,23 +40,27 @@ from services.scan_service import (
 
     create_scan,
 
-    update_scan_status,
+    start_scan,
 
     save_scan_results,
 
-    mark_scan_failed
+    fail_scan
 
 )
 
 
 from services.nmap_service import (
 
-    run_nmap_scan,
+    check_nmap_installed,
 
-    check_nmap_installed
+    run_nmap_scan
 
 )
 
+
+# ==========================================
+# SCAN BLUEPRINT
+# ==========================================
 
 scan_bp = Blueprint(
 
@@ -86,10 +94,14 @@ scan_bp = Blueprint(
 def scan_target():
 
     # ======================================
-    # HANDLE SCAN FORM
+    # CREATE NEW SCAN
     # ======================================
 
     if request.method == "POST":
+
+        # ==================================
+        # GET FORM DATA
+        # ==================================
 
         target = request.form.get(
 
@@ -187,7 +199,8 @@ def scan_target():
 
             flash(
 
-                "Nmap is not installed or not available in the system PATH.",
+                "Nmap is not installed or cannot "
+                "be found in the system PATH.",
 
                 "error"
 
@@ -228,11 +241,7 @@ def scan_target():
 
             scan_profile=scan_profile,
 
-            created_by=session.get(
-
-                "admin_id"
-
-            )
+            created_by=session_user_id()
 
         )
 
@@ -244,75 +253,53 @@ def scan_target():
         )
 
 
-        try:
+        # ==================================
+        # MARK SCAN AS RUNNING
+        # ==================================
 
-            # ==============================
-            # UPDATE STATUS
-            # ==============================
+        start_scan(
 
-            update_scan_status(
+            db,
 
-                db=db,
+            scan_id
 
-                scan_id=scan_id,
-
-                status="running"
-
-            )
+        )
 
 
-            # ==============================
-            # RUN NMAP
-            # ==============================
+        # ==================================
+        # RUN NMAP SCAN
+        # ==================================
 
-            results = run_nmap_scan(
+        results = run_nmap_scan(
 
-                target=target,
+            target=target,
 
-                scan_profile=scan_profile
+            scan_profile=scan_profile
 
-            )
-
-
-            # ==============================
-            # SAVE RESULTS
-            # ==============================
-
-            save_scan_results(
-
-                db=db,
-
-                scan_id=scan_id,
-
-                results=results
-
-            )
+        )
 
 
-            flash(
+        # ==================================
+        # HANDLE SCAN FAILURE
+        # ==================================
 
-                "Security scan completed successfully.",
+        if not results.get(
 
-                "success"
+            "success"
 
-            )
+        ):
 
+            fail_scan(
 
-        except Exception as error:
+                db,
 
-            # ==============================
-            # HANDLE SCAN FAILURE
-            # ==============================
+                scan_id,
 
-            mark_scan_failed(
+                results.get(
 
-                db=db,
+                    "message",
 
-                scan_id=scan_id,
-
-                error_message=str(
-
-                    error
+                    "Scan failed."
 
                 )
 
@@ -321,16 +308,55 @@ def scan_target():
 
             flash(
 
-                f"Scan failed: {str(error)}",
+                results.get(
+
+                    "message",
+
+                    "Scan failed."
+
+                ),
 
                 "error"
 
             )
 
 
+            return redirect(
+
+                url_for(
+
+                    "scan.scan_results",
+
+                    scan_id=scan_id
+
+                )
+
+            )
+
+
         # ==================================
-        # REDIRECT TO RESULTS
+        # SAVE SCAN RESULTS
         # ==================================
+
+        save_scan_results(
+
+            db,
+
+            scan_id,
+
+            results
+
+        )
+
+
+        flash(
+
+            "Security scan completed successfully.",
+
+            "success"
+
+        )
+
 
         return redirect(
 
@@ -383,15 +409,19 @@ def scan_results(
     ]
 
 
-    # ======================================
-    # VALIDATE OBJECT ID
-    # ======================================
-
     try:
 
-        scan_object_id = ObjectId(
+        scan = db.scans.find_one(
 
-            scan_id
+            {
+
+                "_id": ObjectId(
+
+                    scan_id
+
+                )
+
+            }
 
         )
 
@@ -418,25 +448,6 @@ def scan_results(
         )
 
 
-    # ======================================
-    # GET SCAN
-    # ======================================
-
-    scan = db.scans.find_one(
-
-        {
-
-            "_id": scan_object_id
-
-        }
-
-    )
-
-
-    # ======================================
-    # SCAN NOT FOUND
-    # ======================================
-
     if not scan:
 
         flash(
@@ -459,10 +470,6 @@ def scan_results(
         )
 
 
-    # ======================================
-    # LOAD RESULTS PAGE
-    # ======================================
-
     return render_template(
 
         "scan_results.html",
@@ -470,5 +477,18 @@ def scan_results(
         scan=scan,
 
         current_page="scan"
+
+    )
+
+
+# ==========================================
+# GET CURRENT USER ID
+# ==========================================
+
+def session_user_id():
+
+    return session.get(
+
+        "admin_id"
 
     )
