@@ -18,45 +18,56 @@ Monitor attack exposure and prioritize defensive actions
 
 {% block content %}
 
-<!-- =========================
-     DASHBOARD OVERVIEW
-========================== -->
-
 <section class="dashboard-overview">
 
-    <!-- Welcome Section -->
+
+    <!-- ==========================================
+         WELCOME SECTION
+    =========================================== -->
+
     <div class="welcome-section">
 
         <div>
-            <h3>Security Overview</h3>
+
+            <h3>
+                Security Overview
+            </h3>
 
             <p>
                 Analyze your environment, identify potential attack paths,
                 and prioritize defensive actions.
             </p>
+
         </div>
+
 
         <div class="overview-actions">
 
-            <button type="button" class="primary-button">
+            <a
+                href="{{ url_for('new_scan') }}"
+                class="primary-button"
+            >
                 + New Scan
-            </button>
+            </a>
 
         </div>
 
     </div>
 
 
-    <!-- =========================
+    <!-- ==========================================
          SECURITY SUMMARY CARDS
-    ========================== -->
+    =========================================== -->
 
     <div class="stats-grid">
 
-        <!-- Total Assets -->
+
+        <!-- TOTAL ASSETS -->
+
         <article class="stat-card">
 
             <div class="stat-card-header">
+
                 <span class="stat-label">
                     Total Assets
                 </span>
@@ -64,11 +75,24 @@ Monitor attack exposure and prioritize defensive actions
                 <span class="stat-icon">
                     ◈
                 </span>
+
             </div>
 
+
             <div class="stat-value">
-                --
+
+                {% if dashboard_stats is defined %}
+
+                    {{ dashboard_stats.total_assets|default(0) }}
+
+                {% else %}
+
+                    --
+
+                {% endif %}
+
             </div>
+
 
             <p class="stat-description">
                 Discovered assets will appear here
@@ -77,10 +101,12 @@ Monitor attack exposure and prioritize defensive actions
         </article>
 
 
-        <!-- Open Services -->
+        <!-- OPEN SERVICES -->
+
         <article class="stat-card">
 
             <div class="stat-card-header">
+
                 <span class="stat-label">
                     Open Services
                 </span>
@@ -88,11 +114,24 @@ Monitor attack exposure and prioritize defensive actions
                 <span class="stat-icon">
                     ◉
                 </span>
+
             </div>
 
+
             <div class="stat-value">
-                --
+
+                {% if dashboard_stats is defined %}
+
+                    {{ dashboard_stats.open_services|default(0) }}
+
+                {% else %}
+
+                    --
+
+                {% endif %}
+
             </div>
+
 
             <p class="stat-description">
                 Services identified during scanning
@@ -101,10 +140,12 @@ Monitor attack exposure and prioritize defensive actions
         </article>
 
 
-        <!-- Attack Paths -->
+        <!-- ATTACK PATHS -->
+
         <article class="stat-card">
 
             <div class="stat-card-header">
+
                 <span class="stat-label">
                     Potential Attack Paths
                 </span>
@@ -112,11 +153,24 @@ Monitor attack exposure and prioritize defensive actions
                 <span class="stat-icon">
                     ⚠
                 </span>
+
             </div>
 
+
             <div class="stat-value">
-                --
+
+                {% if dashboard_stats is defined %}
+
+                    {{ dashboard_stats.attack_paths|default(0) }}
+
+                {% else %}
+
+                    --
+
+                {% endif %}
+
             </div>
+
 
             <p class="stat-description">
                 Potential paths will be analyzed here
@@ -125,10 +179,12 @@ Monitor attack exposure and prioritize defensive actions
         </article>
 
 
-        <!-- Risk Score -->
+        <!-- RISK SCORE -->
+
         <article class="stat-card">
 
             <div class="stat-card-header">
+
                 <span class="stat-label">
                     Overall Risk
                 </span>
@@ -136,11 +192,25 @@ Monitor attack exposure and prioritize defensive actions
                 <span class="stat-icon">
                     ◉
                 </span>
+
             </div>
 
+
             <div class="stat-value">
-                --
+
+                {% if dashboard_stats is defined
+                    and dashboard_stats.risk_score is not none %}
+
+                    {{ dashboard_stats.risk_score }}
+
+                {% else %}
+
+                    --
+
+                {% endif %}
+
             </div>
+
 
             <p class="stat-description">
                 Risk score will be calculated
@@ -148,68 +218,106 @@ Monitor attack exposure and prioritize defensive actions
 
         </article>
 
+
     </div>
 
 
-    <!-- =========================
+    <!-- ==========================================
          MAIN DASHBOARD GRID
-    ========================== -->
+    =========================================== -->
 
     <div class="dashboard-grid">
 
-        <!-- Attack Surface -->
+
+        <!-- ATTACK SURFACE -->
+
         <section class="dashboard-card attack-surface-card">
 
             <div class="card-header">
 
                 <div>
-                    <h3>Attack Surface</h3>
+
+                    <h3>
+                        Attack Surface
+                    </h3>
 
                     <p>
                         Overview of discovered assets and exposed services
                     </p>
+
                 </div>
 
-                <button
-                    type="button"
+
+                <a
+                    href="{{ url_for('assets') }}"
                     class="secondary-button"
                 >
                     View Assets
-                </button>
+                </a>
 
             </div>
 
 
-            <!-- Placeholder -->
-            <div class="empty-state">
+            {% if dashboard_stats is defined
+                and dashboard_stats.total_assets|default(0) > 0 %}
 
-                <div class="empty-icon">
-                    ◈
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ◈
+                    </div>
+
+                    <h4>
+                        Assets Discovered
+                    </h4>
+
+                    <p>
+                        Open the Assets section to review discovered hosts,
+                        services, and exposure information.
+                    </p>
+
                 </div>
 
-                <h4>No Scan Data Available</h4>
+            {% else %}
 
-                <p>
-                    Start an authorized scan to discover assets,
-                    services, and potential exposure.
-                </p>
+                <div class="empty-state">
 
-            </div>
+                    <div class="empty-icon">
+                        ◈
+                    </div>
+
+                    <h4>
+                        No Scan Data Available
+                    </h4>
+
+                    <p>
+                        Start an authorized scan to discover assets,
+                        services, and potential exposure.
+                    </p>
+
+                </div>
+
+            {% endif %}
 
         </section>
 
 
-        <!-- Risk Summary -->
+        <!-- RISK SUMMARY -->
+
         <section class="dashboard-card risk-summary-card">
 
             <div class="card-header">
 
                 <div>
-                    <h3>Risk Summary</h3>
+
+                    <h3>
+                        Risk Summary
+                    </h3>
 
                     <p>
                         Current security posture
                     </p>
+
                 </div>
 
             </div>
@@ -218,8 +326,20 @@ Monitor attack exposure and prioritize defensive actions
             <div class="risk-placeholder">
 
                 <div class="risk-score">
-                    --
+
+                    {% if dashboard_stats is defined
+                        and dashboard_stats.risk_score is not none %}
+
+                        {{ dashboard_stats.risk_score }}
+
+                    {% else %}
+
+                        --
+
+                    {% endif %}
+
                 </div>
+
 
                 <span>
                     Risk Score
@@ -229,41 +349,57 @@ Monitor attack exposure and prioritize defensive actions
 
 
             <p class="risk-message">
-                Run an authorized scan to calculate the security risk.
+
+                {% if dashboard_stats is defined
+                    and dashboard_stats.risk_score is not none %}
+
+                    Risk score calculated from current security findings.
+
+                {% else %}
+
+                    Run an authorized scan to calculate the security risk.
+
+                {% endif %}
+
             </p>
 
         </section>
 
+
     </div>
 
 
-    <!-- =========================
+    <!-- ==========================================
          ATTACK PATH ANALYSIS
-    ========================== -->
+    =========================================== -->
 
     <section class="dashboard-card attack-path-card">
 
         <div class="card-header">
 
             <div>
-                <h3>Attack Path Analysis</h3>
+
+                <h3>
+                    Attack Path Analysis
+                </h3>
 
                 <p>
                     Visual representation of potential attacker movement
                 </p>
+
             </div>
 
-            <button
-                type="button"
+
+            <a
+                href="{{ url_for('attack_paths') }}"
                 class="secondary-button"
             >
                 View Analysis
-            </button>
+            </a>
 
         </div>
 
 
-        <!-- Graph Placeholder -->
         <div class="attack-graph-placeholder">
 
             <div class="graph-empty-state">
@@ -272,7 +408,9 @@ Monitor attack exposure and prioritize defensive actions
                     ⬡
                 </div>
 
-                <h4>Attack Graph Not Generated</h4>
+                <h4>
+                    Attack Graph Not Generated
+                </h4>
 
                 <p>
                     AttackLens will generate potential attack paths
@@ -286,28 +424,33 @@ Monitor attack exposure and prioritize defensive actions
     </section>
 
 
-    <!-- =========================
+    <!-- ==========================================
          DEFENSE PRIORITIZATION
-    ========================== -->
+    =========================================== -->
 
     <section class="dashboard-card defense-card">
 
         <div class="card-header">
 
             <div>
-                <h3>Defense Prioritization</h3>
+
+                <h3>
+                    Defense Prioritization
+                </h3>
 
                 <p>
                     Recommended defensive actions based on attack-path impact
                 </p>
+
             </div>
 
-            <button
-                type="button"
+
+            <a
+                href="{{ url_for('defense_analysis') }}"
                 class="secondary-button"
             >
                 View Recommendations
-            </button>
+            </a>
 
         </div>
 
@@ -318,7 +461,9 @@ Monitor attack exposure and prioritize defensive actions
                 ◫
             </div>
 
-            <h4>No Recommendations Yet</h4>
+            <h4>
+                No Recommendations Yet
+            </h4>
 
             <p>
                 Recommendations will be generated after attack path
@@ -328,6 +473,7 @@ Monitor attack exposure and prioritize defensive actions
         </div>
 
     </section>
+
 
 </section>
 
