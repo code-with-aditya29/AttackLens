@@ -4656,3 +4656,431 @@ a {
     }
 
 }
+
+/* =========================================================
+   ATTACKLENS - SAFE UI COMPLETION PATCH
+   Scan checkbox visibility + Scan History controls +
+   Light/Dark theme depth improvements.
+   Existing layout and color system intentionally preserved.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   COMPATIBILITY ALIASES
+   Some Phase 4 styles reference these legacy variables.
+   Keep them mapped to the existing AttackLens theme tokens.
+   --------------------------------------------------------- */
+
+:root {
+    --primary-color: var(--primary);
+    --card-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] {
+    --primary-color: var(--primary);
+    --card-shadow: var(--shadow-sm);
+}
+
+/* ---------------------------------------------------------
+   AUTHORIZATION CHECKBOX - VISIBILITY FIX
+   Works with the custom checkbox used on the Scan Target page.
+   --------------------------------------------------------- */
+
+.authorization-check {
+    position: relative;
+}
+
+.authorization-check input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.authorization-check .custom-checkbox {
+    width: 21px;
+    height: 21px;
+    min-width: 21px;
+    flex-shrink: 0;
+
+    border: 2px solid var(--primary);
+    border-radius: 6px;
+
+    background: var(--input-bg);
+    color: transparent;
+
+    box-shadow:
+        0 0 0 1px var(--border-color),
+        0 2px 6px rgba(31, 22, 53, 0.08);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.authorization-check:hover .custom-checkbox {
+    border-color: var(--primary-hover);
+    box-shadow:
+        0 0 0 3px var(--primary-soft),
+        0 2px 7px rgba(31, 22, 53, 0.10);
+}
+
+.authorization-check input[type="checkbox"]:focus-visible + .custom-checkbox {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow:
+        0 0 0 4px var(--primary-soft),
+        0 2px 7px rgba(31, 22, 53, 0.10);
+}
+
+.authorization-check input[type="checkbox"]:checked + .custom-checkbox {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+    box-shadow:
+        0 0 0 3px var(--primary-soft),
+        0 5px 12px rgba(124, 58, 237, 0.22);
+}
+
+.authorization-check input[type="checkbox"]:checked + .custom-checkbox::after {
+    content: "✓";
+    display: block;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+[data-theme="dark"] .authorization-check .custom-checkbox {
+    background: #17131f;
+    border-color: var(--primary);
+    box-shadow:
+        0 0 0 1px rgba(167, 139, 250, 0.20),
+        0 3px 10px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] .authorization-check:hover .custom-checkbox,
+[data-theme="dark"] .authorization-check input[type="checkbox"]:focus-visible + .custom-checkbox {
+    box-shadow:
+        0 0 0 4px var(--primary-soft),
+        0 3px 10px rgba(0, 0, 0, 0.32);
+}
+
+[data-theme="dark"] .authorization-check input[type="checkbox"]:checked + .custom-checkbox {
+    background: var(--primary);
+    border-color: var(--primary-hover);
+}
+
+/* Fallback for the older native authorization-group checkbox. */
+
+.authorization-group input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    min-width: 19px;
+    margin-top: 1px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+    outline: 1px solid var(--border-color);
+    outline-offset: 2px;
+}
+
+[data-theme="dark"] .authorization-group input[type="checkbox"] {
+    outline-color: rgba(167, 139, 250, 0.50);
+}
+
+/* ---------------------------------------------------------
+   SCAN HISTORY SUMMARY CARDS
+   Required by the updated scan_history.html template.
+   --------------------------------------------------------- */
+
+.scan-history-summary-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.scan-history-summary-card {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 108px;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.scan-history-summary-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary);
+}
+
+.scan-history-summary-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(124, 58, 237, 0.32);
+    box-shadow: var(--shadow-md);
+}
+
+.scan-history-summary-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.scan-history-summary-card strong {
+    color: var(--text-primary);
+    font-size: 26px;
+    font-weight: 750;
+    line-height: 1;
+}
+
+/* ---------------------------------------------------------
+   SCAN HISTORY BULK ACTION TOOLBAR
+   --------------------------------------------------------- */
+
+.scan-history-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 14px 18px;
+
+    background: var(--primary-light);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.scan-history-select-all {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.scan-history-select-all label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.selected-scan-count {
+    margin-left: 4px;
+    padding: 4px 8px;
+
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+
+    background: var(--card-bg);
+    color: var(--text-secondary);
+
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------
+   SCAN HISTORY CHECKBOXES
+   Visible in both light and dark mode.
+   --------------------------------------------------------- */
+
+.scan-history-table input[type="checkbox"],
+.scan-history-toolbar input[type="checkbox"],
+.scan-checkbox,
+#select-all-scans {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+
+    margin: 0;
+
+    accent-color: var(--primary);
+    cursor: pointer;
+
+    border-radius: 4px;
+
+    outline: 1px solid var(--border-color);
+    outline-offset: 2px;
+}
+
+.scan-history-table input[type="checkbox"]:focus-visible,
+.scan-history-toolbar input[type="checkbox"]:focus-visible,
+.scan-checkbox:focus-visible,
+#select-all-scans:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+[data-theme="dark"] .scan-history-table input[type="checkbox"],
+[data-theme="dark"] .scan-history-toolbar input[type="checkbox"],
+[data-theme="dark"] .scan-checkbox,
+[data-theme="dark"] #select-all-scans {
+    outline-color: rgba(167, 139, 250, 0.50);
+}
+
+.scan-select-column {
+    width: 78px;
+    text-align: center !important;
+}
+
+.scan-history-table td.scan-select-column {
+    text-align: center;
+}
+
+/* ---------------------------------------------------------
+   DELETE SELECTED BUTTON STATE
+   --------------------------------------------------------- */
+
+#delete-selected-button:disabled {
+    opacity: 0.48;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#delete-selected-button:disabled:hover {
+    background: rgba(239, 68, 68, 0.08);
+    transform: none;
+}
+
+/* ---------------------------------------------------------
+   LIGHT THEME DEPTH
+   Uses the existing AttackLens purple palette only.
+   No layout or brand-color changes.
+   --------------------------------------------------------- */
+
+:root:not([data-theme="dark"]) .topbar,
+[data-theme="light"] .topbar {
+    box-shadow: 0 3px 14px rgba(31, 22, 53, 0.035);
+}
+
+:root:not([data-theme="dark"]) .welcome-section,
+:root:not([data-theme="dark"]) .stat-card,
+:root:not([data-theme="dark"]) .dashboard-card,
+:root:not([data-theme="dark"]) .form-card,
+:root:not([data-theme="dark"]) .scan-config-card,
+:root:not([data-theme="dark"]) .scan-history-card,
+:root:not([data-theme="dark"]) .scan-history-summary-card,
+[data-theme="light"] .welcome-section,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .dashboard-card,
+[data-theme="light"] .form-card,
+[data-theme="light"] .scan-config-card,
+[data-theme="light"] .scan-history-card,
+[data-theme="light"] .scan-history-summary-card {
+    border-color: #ddd6e8;
+    box-shadow:
+        0 6px 18px rgba(31, 22, 53, 0.055),
+        0 1px 2px rgba(31, 22, 53, 0.035);
+}
+
+:root:not([data-theme="dark"]) .scan-page-header,
+:root:not([data-theme="dark"]) .scan-result-header,
+[data-theme="light"] .scan-page-header,
+[data-theme="light"] .scan-result-header {
+    border-color: #ddd6e8;
+    box-shadow: 0 6px 18px rgba(31, 22, 53, 0.045);
+}
+
+:root:not([data-theme="dark"]) .scan-history-table th,
+[data-theme="light"] .scan-history-table th {
+    background: rgba(124, 58, 237, 0.075);
+    color: #51475f;
+}
+
+:root:not([data-theme="dark"]) .scan-history-table tbody tr:hover,
+[data-theme="light"] .scan-history-table tbody tr:hover {
+    background: rgba(124, 58, 237, 0.045);
+}
+
+:root:not([data-theme="dark"]) .scan-history-toolbar,
+[data-theme="light"] .scan-history-toolbar {
+    background: linear-gradient(
+        90deg,
+        rgba(124, 58, 237, 0.075),
+        rgba(124, 58, 237, 0.035)
+    );
+}
+
+/* ---------------------------------------------------------
+   DARK THEME SCAN HISTORY REFINEMENT
+   --------------------------------------------------------- */
+
+[data-theme="dark"] .scan-history-summary-card,
+[data-theme="dark"] .scan-history-card {
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .scan-history-toolbar {
+    background: rgba(139, 92, 246, 0.09);
+}
+
+[data-theme="dark"] .scan-history-table th {
+    background: rgba(139, 92, 246, 0.09);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .scan-history-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.07);
+}
+
+[data-theme="dark"] .selected-scan-count {
+    background: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE SCAN HISTORY ADDITIONS
+   --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+    .scan-history-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .scan-history-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .scan-history-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .scan-history-select-all {
+        width: 100%;
+    }
+
+    #delete-selected-button {
+        width: 100%;
+    }
+}
+

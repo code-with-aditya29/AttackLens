@@ -75,7 +75,14 @@ def create_scan(
 
         "vulnerabilities": [],
 
-        "risk_score": None
+        "risk_score": None,
+
+
+        # ==================================
+        # ERROR INFORMATION
+        # ==================================
+
+        "error_message": None
 
     }
 
@@ -85,9 +92,7 @@ def create_scan(
     # ======================================
 
     result = db.scans.insert_one(
-
         scan_data
-
     )
 
 
@@ -106,7 +111,12 @@ def start_scan(
     scan_id
 ):
 
-    db.scans.update_one(
+    if not ObjectId.is_valid(scan_id):
+
+        return False
+
+
+    result = db.scans.update_one(
 
         {
             "_id": ObjectId(
@@ -119,12 +129,17 @@ def start_scan(
 
                 "status": "running",
 
-                "started_at": datetime.utcnow()
+                "started_at": datetime.utcnow(),
+
+                "error_message": None
 
             }
         }
 
     )
+
+
+    return result.modified_count > 0
 
 
 # ==========================================
@@ -137,7 +152,12 @@ def update_scan_status(
     status
 ):
 
-    db.scans.update_one(
+    if not ObjectId.is_valid(scan_id):
+
+        return False
+
+
+    result = db.scans.update_one(
 
         {
             "_id": ObjectId(
@@ -156,6 +176,9 @@ def update_scan_status(
     )
 
 
+    return result.modified_count > 0
+
+
 # ==========================================
 # SAVE SCAN RESULTS
 # ==========================================
@@ -166,7 +189,12 @@ def save_scan_results(
     results
 ):
 
-    db.scans.update_one(
+    if not ObjectId.is_valid(scan_id):
+
+        return False
+
+
+    result = db.scans.update_one(
 
         {
             "_id": ObjectId(
@@ -224,17 +252,36 @@ def save_scan_results(
 
 
                 # ==========================
+                # SECURITY INFORMATION
+                # ==========================
+
+                "vulnerabilities": results.get(
+                    "vulnerabilities",
+                    []
+                ),
+
+                "risk_score": results.get(
+                    "risk_score"
+                ),
+
+
+                # ==========================
                 # SCAN STATUS
                 # ==========================
 
                 "status": "completed",
 
-                "completed_at": datetime.utcnow()
+                "completed_at": datetime.utcnow(),
+
+                "error_message": None
 
             }
         }
 
     )
+
+
+    return result.modified_count > 0
 
 
 # ==========================================
@@ -243,10 +290,16 @@ def save_scan_results(
 
 def fail_scan(
     db,
-    scan_id
+    scan_id,
+    error_message="Scan failed."
 ):
 
-    db.scans.update_one(
+    if not ObjectId.is_valid(scan_id):
+
+        return False
+
+
+    result = db.scans.update_one(
 
         {
             "_id": ObjectId(
@@ -259,9 +312,208 @@ def fail_scan(
 
                 "status": "failed",
 
-                "completed_at": datetime.utcnow()
+                "completed_at": datetime.utcnow(),
+
+                "error_message": error_message
 
             }
         }
 
     )
+
+
+    return result.modified_count > 0
+
+
+# ==========================================
+# GET SINGLE SCAN
+# ==========================================
+
+def get_scan_by_id(
+    db,
+    scan_id,
+    created_by=None
+):
+
+    if not ObjectId.is_valid(scan_id):
+
+        return None
+
+
+    query = {
+
+        "_id": ObjectId(
+            scan_id
+        )
+
+    }
+
+
+    # ======================================
+    # USER OWNERSHIP FILTER
+    # ======================================
+    #
+    # If created_by is provided, the scan
+    # must belong to that user.
+    #
+    # Super Admin can call this function
+    # without created_by to access all scans.
+    # ======================================
+
+    if created_by is not None:
+
+        query["created_by"] = created_by
+
+
+    return db.scans.find_one(
+        query
+    )
+
+
+# ==========================================
+# GET SCAN HISTORY
+# ==========================================
+
+def get_scan_history(
+    db,
+    created_by=None,
+    limit=100
+):
+
+    query = {}
+
+
+    # ======================================
+    # USER OWNERSHIP FILTER
+    # ======================================
+
+    if created_by is not None:
+
+        query["created_by"] = created_by
+
+
+    scans = db.scans.find(
+
+        query
+
+    ).sort(
+
+        "created_at",
+        -1
+
+    ).limit(
+
+        limit
+
+    )
+
+
+    return list(
+        scans
+    )
+
+
+# ==========================================
+# DELETE SINGLE SCAN
+# ==========================================
+
+def delete_scan(
+    db,
+    scan_id,
+    created_by=None
+):
+
+    if not ObjectId.is_valid(scan_id):
+
+        return False
+
+
+    query = {
+
+        "_id": ObjectId(
+            scan_id
+        )
+
+    }
+
+
+    # ======================================
+    # USER OWNERSHIP FILTER
+    # ======================================
+
+    if created_by is not None:
+
+        query["created_by"] = created_by
+
+
+    result = db.scans.delete_one(
+        query
+    )
+
+
+    return result.deleted_count == 1
+
+
+# ==========================================
+# BULK DELETE SCANS
+# ==========================================
+
+def bulk_delete_scans(
+    db,
+    scan_ids,
+    created_by=None
+):
+
+    valid_ids = []
+
+
+    # ======================================
+    # VALIDATE IDS
+    # ======================================
+
+    for scan_id in scan_ids:
+
+        if ObjectId.is_valid(
+            scan_id
+        ):
+
+            valid_ids.append(
+
+                ObjectId(
+                    scan_id
+                )
+
+            )
+
+
+    if not valid_ids:
+
+        return 0
+
+
+    query = {
+
+        "_id": {
+
+            "$in": valid_ids
+
+        }
+
+    }
+
+
+    # ======================================
+    # USER OWNERSHIP FILTER
+    # ======================================
+
+    if created_by is not None:
+
+        query["created_by"] = created_by
+
+
+    result = db.scans.delete_many(
+        query
+    )
+
+
+    return result.deleted_count

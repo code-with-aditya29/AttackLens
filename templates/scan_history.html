@@ -21,7 +21,9 @@ View and manage your previous security scans
 <div class="scan-history-page">
 
 
-    <!-- PAGE HEADER -->
+    <!-- ==========================================
+         PAGE HEADER
+    =========================================== -->
 
     <div class="page-section-header">
 
@@ -54,12 +56,115 @@ View and manage your previous security scans
     </div>
 
 
-    <!-- SCAN HISTORY CARD -->
+    <!-- ==========================================
+         SCAN HISTORY SUMMARY
+    =========================================== -->
+
+    <div class="scan-history-summary-grid">
+
+
+        <!-- TOTAL SCANS -->
+
+        <div class="scan-history-summary-card">
+
+            <span class="scan-history-summary-label">
+                Total Scans
+            </span>
+
+            <strong>
+                {{ scans|length }}
+            </strong>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="scan-history-summary-card">
+
+            <span class="scan-history-summary-label">
+                Completed
+            </span>
+
+            <strong>
+
+                {{
+                    scans
+                    | selectattr("status", "equalto", "completed")
+                    | list
+                    | length
+                }}
+
+            </strong>
+
+        </div>
+
+
+        <!-- FAILED -->
+
+        <div class="scan-history-summary-card">
+
+            <span class="scan-history-summary-label">
+                Failed
+            </span>
+
+            <strong>
+
+                {{
+                    scans
+                    | selectattr("status", "equalto", "failed")
+                    | list
+                    | length
+                }}
+
+            </strong>
+
+        </div>
+
+
+        <!-- ACTIVE -->
+
+        <div class="scan-history-summary-card">
+
+            <span class="scan-history-summary-label">
+                Active
+            </span>
+
+            <strong>
+
+                {{
+                    (
+                        scans
+                        | selectattr("status", "equalto", "running")
+                        | list
+                        | length
+                    )
+                    +
+                    (
+                        scans
+                        | selectattr("status", "equalto", "pending")
+                        | list
+                        | length
+                    )
+                }}
+
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         SCAN HISTORY CARD
+    =========================================== -->
 
     <div class="scan-history-card">
 
 
-        <!-- CARD HEADER -->
+        <!-- ======================================
+             CARD HEADER
+        ======================================= -->
 
         <div class="scan-history-card-header">
 
@@ -70,7 +175,7 @@ View and manage your previous security scans
                 </h3>
 
                 <p>
-                    All security scans created from your AttackLens account.
+                    Security scans stored under your AttackLens account.
                 </p>
 
             </div>
@@ -91,80 +196,154 @@ View and manage your previous security scans
         </div>
 
 
-        <!-- TABLE -->
-
-        <div class="scan-history-table-wrapper">
-
-            <table class="scan-history-table">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Target
-                        </th>
-
-                        <th>
-                            Scan Profile
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Created
-                        </th>
-
-                        <th>
-                            Completed
-                        </th>
-
-                        <th class="scan-actions-column">
-                            Actions
-                        </th>
-
-                    </tr>
-
-                </thead>
+        {% if scans %}
 
 
-                <tbody>
+        <!-- ======================================
+             BULK DELETE FORM
+        ======================================= -->
 
-                    {% if scans %}
+        <form
+            method="POST"
+            action="{{ url_for('scan.delete_selected_scans') }}"
+            id="bulk-delete-form"
+        >
+
+
+            <!-- ==================================
+                 BULK ACTION TOOLBAR
+            =================================== -->
+
+            <div class="scan-history-toolbar">
+
+                <div class="scan-history-select-all">
+
+                    <input
+                        type="checkbox"
+                        id="select-all-scans"
+                    >
+
+                    <label for="select-all-scans">
+                        Select All
+                    </label>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="scan-action-button delete-scan-button"
+                    id="delete-selected-button"
+                >
+                    Delete Selected
+                </button>
+
+            </div>
+
+
+            <!-- ==================================
+                 TABLE
+            =================================== -->
+
+            <div class="scan-history-table-wrapper">
+
+                <table class="scan-history-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th class="scan-select-column">
+                                Select
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Scan Profile
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Hostname
+                            </th>
+
+                            <th>
+                                Open Ports
+                            </th>
+
+                            <th>
+                                Risk
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                            <th>
+                                Completed
+                            </th>
+
+                            <th class="scan-actions-column">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
 
                         {% for scan in scans %}
 
                         <tr>
 
 
-                            <!-- TARGET -->
+                            <!-- ==================================
+                                 SELECT
+                            =================================== -->
+
+                            <td class="scan-select-column">
+
+                                <input
+                                    type="checkbox"
+                                    name="scan_ids"
+                                    value="{{ scan._id|string }}"
+                                    class="scan-checkbox"
+                                >
+
+                            </td>
+
+
+                            <!-- ==================================
+                                 TARGET
+                            =================================== -->
 
                             <td>
 
                                 <div class="scan-target-info">
 
                                     <div class="scan-target-icon">
-
                                         ◉
-
                                     </div>
 
 
                                     <div>
 
                                         <strong>
-
                                             {{ scan.target }}
-
                                         </strong>
 
 
                                         <span>
-
                                             Security Target
-
                                         </span>
 
                                     </div>
@@ -174,7 +353,9 @@ View and manage your previous security scans
                             </td>
 
 
-                            <!-- SCAN PROFILE -->
+                            <!-- ==================================
+                                 SCAN PROFILE
+                            =================================== -->
 
                             <td>
 
@@ -189,7 +370,9 @@ View and manage your previous security scans
                             </td>
 
 
-                            <!-- STATUS -->
+                            <!-- ==================================
+                                 STATUS
+                            =================================== -->
 
                             <td>
 
@@ -208,7 +391,58 @@ View and manage your previous security scans
                             </td>
 
 
-                            <!-- CREATED DATE -->
+                            <!-- ==================================
+                                 HOSTNAME
+                            =================================== -->
+
+                            <td>
+
+                                {% if scan.hostname %}
+
+                                    {{ scan.hostname }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ==================================
+                                 OPEN PORTS
+                            =================================== -->
+
+                            <td>
+
+                                {{ scan.ports|default([])|length }}
+
+                            </td>
+
+
+                            <!-- ==================================
+                                 RISK SCORE
+                            =================================== -->
+
+                            <td>
+
+                                {% if scan.risk_score is not none %}
+
+                                    {{ scan.risk_score }}
+
+                                {% else %}
+
+                                    Pending
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ==================================
+                                 CREATED DATE
+                            =================================== -->
 
                             <td>
 
@@ -219,9 +453,7 @@ View and manage your previous security scans
                                         {{ scan.created_at.strftime('%d %b %Y') }}
 
                                         <small>
-
                                             {{ scan.created_at.strftime('%I:%M %p') }}
-
                                         </small>
 
                                     {% else %}
@@ -235,7 +467,9 @@ View and manage your previous security scans
                             </td>
 
 
-                            <!-- COMPLETED DATE -->
+                            <!-- ==================================
+                                 COMPLETED DATE
+                            =================================== -->
 
                             <td>
 
@@ -246,9 +480,7 @@ View and manage your previous security scans
                                         {{ scan.completed_at.strftime('%d %b %Y') }}
 
                                         <small>
-
                                             {{ scan.completed_at.strftime('%I:%M %p') }}
-
                                         </small>
 
                                     {% else %}
@@ -262,7 +494,9 @@ View and manage your previous security scans
                             </td>
 
 
-                            <!-- ACTIONS -->
+                            <!-- ==================================
+                                 ACTIONS
+                            =================================== -->
 
                             <td class="scan-actions-column">
 
@@ -272,10 +506,12 @@ View and manage your previous security scans
                                     <!-- VIEW RESULTS -->
 
                                     <a
-                                        href="{{ url_for(
-                                            'scan.scan_results',
-                                            scan_id=scan._id|string
-                                        ) }}"
+                                        href="{{
+                                            url_for(
+                                                'scan.scan_results',
+                                                scan_id=scan._id|string
+                                            )
+                                        }}"
                                         class="scan-action-button view-scan-button"
                                     >
 
@@ -284,31 +520,25 @@ View and manage your previous security scans
                                     </a>
 
 
-                                    <!-- DELETE SCAN -->
+                                    <!-- DELETE SINGLE SCAN -->
 
-                                    <form
-                                        method="POST"
-                                        action="{{ url_for(
-                                            'scan.delete_scan',
-                                            scan_id=scan._id|string
-                                        ) }}"
+                                    <button
+                                        type="submit"
+                                        class="scan-action-button delete-scan-button"
+
+                                        formaction="{{
+                                            url_for(
+                                                'scan.delete_scan_record',
+                                                scan_id=scan._id|string
+                                            )
+                                        }}"
+
+                                        formmethod="POST"
                                     >
 
-                                        <button
-                                            type="submit"
-                                            class="scan-action-button delete-scan-button"
-                                            onclick="
-                                                return confirm(
-                                                    'Are you sure you want to delete this scan? This action cannot be undone.'
-                                                )
-                                            "
-                                        >
+                                        Delete
 
-                                            Delete
-
-                                        </button>
-
-                                    </form>
+                                    </button>
 
 
                                 </div>
@@ -321,98 +551,84 @@ View and manage your previous security scans
                         {% endfor %}
 
 
-                    {% else %}
+                    </tbody>
+
+                </table>
+
+            </div>
 
 
-                        <!-- EMPTY STATE -->
-
-                        <tr>
-
-                            <td
-                                colspan="6"
-                                class="scan-history-empty-table"
-                            >
-
-                                <div class="scan-history-empty-state">
+        </form>
 
 
-                                    <div class="scan-history-empty-icon">
-
-                                        ◉
-
-                                    </div>
+        {% else %}
 
 
-                                    <h3>
+        <!-- ======================================
+             EMPTY STATE
+        ======================================= -->
 
-                                        No Scan History Found
-
-                                    </h3>
-
-
-                                    <p>
-
-                                        You have not performed any security
-                                        scans yet. Start your first authorized
-                                        scan to begin analyzing your target.
-
-                                    </p>
+        <div class="scan-history-empty-state">
 
 
-                                    <a
-                                        href="{{ url_for('scan.scan_target') }}"
-                                        class="primary-button"
-                                    >
-
-                                        + Start New Scan
-
-                                    </a>
+            <div class="scan-history-empty-icon">
+                ◉
+            </div>
 
 
-                                </div>
-
-                            </td>
-
-                        </tr>
+            <h3>
+                No Scan History Found
+            </h3>
 
 
-                    {% endif %}
+            <p>
+                You have not performed any security scans yet.
+                Start your first authorized scan to begin analyzing
+                your target.
+            </p>
 
-                </tbody>
 
-            </table>
+            <a
+                href="{{ url_for('scan.scan_target') }}"
+                class="primary-button"
+            >
+
+                + Start New Scan
+
+            </a>
+
 
         </div>
+
+
+        {% endif %}
+
 
     </div>
 
 
-    <!-- SECURITY INFORMATION -->
+    <!-- ==========================================
+         SECURITY INFORMATION
+    =========================================== -->
 
     <div class="scan-history-security-card">
 
 
         <div class="scan-history-security-icon">
-
             🔐
-
         </div>
 
 
         <div>
 
             <h4>
-
                 Authorized Security Scanning
-
             </h4>
 
 
             <p>
-
                 Scan history is maintained to help administrators review
                 security assessments and track previously analyzed targets.
-
             </p>
 
         </div>
@@ -421,5 +637,15 @@ View and manage your previous security scans
 
 
 </div>
+
+
+<!-- ==========================================
+     SCAN HISTORY JAVASCRIPT
+=========================================== -->
+
+<script
+    src="{{ url_for('static', filename='js/scan_history.js') }}"
+></script>
+
 
 {% endblock %}

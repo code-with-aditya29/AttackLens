@@ -19,20 +19,13 @@ from flask import (
 )
 
 
-from bson import ObjectId
-
-
 from routes.auth import (
-
     login_required
-
 )
 
 
 from services.scan_validator import (
-
     validate_target
-
 )
 
 
@@ -44,7 +37,15 @@ from services.scan_service import (
 
     save_scan_results,
 
-    fail_scan
+    fail_scan,
+
+    get_scan_by_id,
+
+    get_scan_history,
+
+    delete_scan,
+
+    bulk_delete_scans
 
 )
 
@@ -126,9 +127,7 @@ def scan_target():
         # ==================================
 
         is_valid, message = validate_target(
-
             target
-
         )
 
 
@@ -146,9 +145,7 @@ def scan_target():
             return redirect(
 
                 url_for(
-
                     "scan.scan_target"
-
                 )
 
             )
@@ -183,9 +180,7 @@ def scan_target():
             return redirect(
 
                 url_for(
-
                     "scan.scan_target"
-
                 )
 
             )
@@ -210,9 +205,7 @@ def scan_target():
             return redirect(
 
                 url_for(
-
                     "scan.scan_target"
-
                 )
 
             )
@@ -223,9 +216,7 @@ def scan_target():
         # ==================================
 
         db = current_app.config[
-
             "MONGO_DB"
-
         ]
 
 
@@ -247,9 +238,7 @@ def scan_target():
 
 
         scan_id = str(
-
             scan["_id"]
-
         )
 
 
@@ -270,24 +259,23 @@ def scan_target():
         # RUN NMAP SCAN
         # ==================================
 
-        results = run_nmap_scan(
+        try:
 
-            target=target,
+            results = run_nmap_scan(
 
-            scan_profile=scan_profile
+                target=target,
 
-        )
+                scan_profile=scan_profile
+
+            )
 
 
-        # ==================================
-        # HANDLE SCAN FAILURE
-        # ==================================
+        except Exception as error:
 
-        if not results.get(
+            error_message = (
+                f"Unexpected scan error: {error}"
+            )
 
-            "success"
-
-        ):
 
             fail_scan(
 
@@ -295,26 +283,64 @@ def scan_target():
 
                 scan_id,
 
-                results.get(
-
-                    "message",
-
-                    "Scan failed."
-
-                )
+                error_message
 
             )
 
 
             flash(
 
-                results.get(
+                error_message,
 
-                    "message",
+                "error"
 
-                    "Scan failed."
+            )
 
-                ),
+
+            return redirect(
+
+                url_for(
+
+                    "scan.scan_results",
+
+                    scan_id=scan_id
+
+                )
+
+            )
+
+
+        # ==================================
+        # HANDLE SCAN FAILURE
+        # ==================================
+
+        if not results.get(
+            "success"
+        ):
+
+            error_message = results.get(
+
+                "message",
+
+                "Scan failed."
+
+            )
+
+
+            fail_scan(
+
+                db,
+
+                scan_id,
+
+                error_message
+
+            )
+
+
+            flash(
+
+                error_message,
 
                 "error"
 
@@ -389,70 +415,41 @@ def scan_target():
 # ==========================================
 
 @scan_bp.route(
-
     "/scan/results/<scan_id>"
-
 )
 
 @login_required
 
 def scan_results(
-
     scan_id
-
 ):
 
     db = current_app.config[
-
         "MONGO_DB"
-
     ]
 
 
-    try:
+    # ======================================
+    # GET SCAN WITH OWNERSHIP PROTECTION
+    # ======================================
 
-        scan = db.scans.find_one(
+    scan = get_scan_by_id(
 
-            {
+        db=db,
 
-                "_id": ObjectId(
+        scan_id=scan_id,
 
-                    scan_id
+        created_by=get_scan_owner_filter()
 
-                )
-
-            }
-
-        )
-
-
-    except Exception:
-
-        flash(
-
-            "Invalid scan ID.",
-
-            "error"
-
-        )
-
-
-        return redirect(
-
-            url_for(
-
-                "scan.scan_target"
-
-            )
-
-        )
+    )
 
 
     if not scan:
 
         flash(
 
-            "Scan not found.",
+            "Scan not found or you do not "
+            "have permission to view it.",
 
             "error"
 
@@ -462,9 +459,7 @@ def scan_results(
         return redirect(
 
             url_for(
-
-                "scan.scan_target"
-
+                "scan.scan_history"
             )
 
         )
@@ -482,13 +477,252 @@ def scan_results(
 
 
 # ==========================================
+# SCAN HISTORY PAGE
+# ==========================================
+
+@scan_bp.route(
+    "/scan/history"
+)
+
+@login_required
+
+def scan_history():
+
+    db = current_app.config[
+        "MONGO_DB"
+    ]
+
+
+    # ======================================
+    # LOAD SCAN HISTORY
+    # ======================================
+
+    scans = get_scan_history(
+
+        db=db,
+
+        created_by=get_scan_owner_filter(),
+
+        limit=100
+
+    )
+
+
+    return render_template(
+
+        "scan_history.html",
+
+        scans=scans,
+
+        current_page="scan_history"
+
+    )
+
+
+# ==========================================
+# DELETE SINGLE SCAN
+# ==========================================
+
+@scan_bp.route(
+
+    "/scan/delete/<scan_id>",
+
+    methods=[
+        "POST"
+    ]
+
+)
+
+@login_required
+
+def delete_scan_record(
+    scan_id
+):
+
+    db = current_app.config[
+        "MONGO_DB"
+    ]
+
+
+    deleted = delete_scan(
+
+        db=db,
+
+        scan_id=scan_id,
+
+        created_by=get_scan_owner_filter()
+
+    )
+
+
+    if deleted:
+
+        flash(
+
+            "Scan deleted successfully.",
+
+            "success"
+
+        )
+
+    else:
+
+        flash(
+
+            "Scan could not be deleted or "
+            "you do not have permission.",
+
+            "error"
+
+        )
+
+
+    return redirect(
+
+        url_for(
+            "scan.scan_history"
+        )
+
+    )
+
+
+# ==========================================
+# BULK DELETE SCANS
+# ==========================================
+
+@scan_bp.route(
+
+    "/scan/delete-selected",
+
+    methods=[
+        "POST"
+    ]
+
+)
+
+@login_required
+
+def delete_selected_scans():
+
+    # ======================================
+    # GET SELECTED SCAN IDS
+    # ======================================
+
+    scan_ids = request.form.getlist(
+        "scan_ids"
+    )
+
+
+    if not scan_ids:
+
+        flash(
+
+            "Please select at least one scan "
+            "to delete.",
+
+            "error"
+
+        )
+
+
+        return redirect(
+
+            url_for(
+                "scan.scan_history"
+            )
+
+        )
+
+
+    db = current_app.config[
+        "MONGO_DB"
+    ]
+
+
+    # ======================================
+    # DELETE SELECTED SCANS
+    # ======================================
+
+    deleted_count = bulk_delete_scans(
+
+        db=db,
+
+        scan_ids=scan_ids,
+
+        created_by=get_scan_owner_filter()
+
+    )
+
+
+    if deleted_count > 0:
+
+        flash(
+
+            f"{deleted_count} scan(s) deleted "
+            "successfully.",
+
+            "success"
+
+        )
+
+    else:
+
+        flash(
+
+            "No scans were deleted.",
+
+            "error"
+
+        )
+
+
+    return redirect(
+
+        url_for(
+            "scan.scan_history"
+        )
+
+    )
+
+
+# ==========================================
 # GET CURRENT USER ID
 # ==========================================
 
 def session_user_id():
 
     return session.get(
-
         "admin_id"
-
     )
+
+
+# ==========================================
+# GET SCAN OWNER FILTER
+# ==========================================
+
+def get_scan_owner_filter():
+
+    # ======================================
+    # SUPER ADMIN
+    # ======================================
+    #
+    # Super Admin is allowed to view and
+    # manage all scan records.
+    # ======================================
+
+    if session.get(
+        "role"
+    ) == "super_admin":
+
+        return None
+
+
+    # ======================================
+    # NORMAL ADMIN
+    # ======================================
+    #
+    # Normal administrators can only view
+    # or delete scans created by themselves.
+    # ======================================
+
+    return session_user_id()
