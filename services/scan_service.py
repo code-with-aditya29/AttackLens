@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from bson import ObjectId
 
 
@@ -15,6 +16,10 @@ def create_scan(
 
     scan_data = {
 
+        # ==================================
+        # BASIC INFORMATION
+        # ==================================
+
         "target": target,
 
         "scan_profile": scan_profile,
@@ -23,11 +28,17 @@ def create_scan(
 
         "created_by": created_by,
 
+
+        # ==================================
+        # TIMESTAMPS
+        # ==================================
+
         "created_at": datetime.utcnow(),
 
         "started_at": None,
 
         "completed_at": None,
+
 
         # ==================================
         # HOST INFORMATION
@@ -35,9 +46,10 @@ def create_scan(
 
         "hostname": None,
 
-        "host_status": None,
+        "host_status": "unknown",
 
         "mac_address": None,
+
 
         # ==================================
         # NETWORK INFORMATION
@@ -47,6 +59,7 @@ def create_scan(
 
         "services": [],
 
+
         # ==================================
         # OS INFORMATION
         # ==================================
@@ -55,18 +68,21 @@ def create_scan(
 
         "os_accuracy": None,
 
+
         # ==================================
-        # FUTURE VULNERABILITY DATA
+        # SECURITY INFORMATION
         # ==================================
 
         "vulnerabilities": [],
 
-        "risk_score": None,
-
-        "error_message": None
+        "risk_score": None
 
     }
 
+
+    # ======================================
+    # INSERT INTO DATABASE
+    # ======================================
 
     result = db.scans.insert_one(
 
@@ -106,7 +122,35 @@ def start_scan(
                 "started_at": datetime.utcnow()
 
             }
+        }
 
+    )
+
+
+# ==========================================
+# UPDATE SCAN STATUS
+# ==========================================
+
+def update_scan_status(
+    db,
+    scan_id,
+    status
+):
+
+    db.scans.update_one(
+
+        {
+            "_id": ObjectId(
+                scan_id
+            )
+        },
+
+        {
+            "$set": {
+
+                "status": status
+
+            }
         }
 
     )
@@ -150,6 +194,7 @@ def save_scan_results(
                     "mac_address"
                 ),
 
+
                 # ==========================
                 # NETWORK INFORMATION
                 # ==========================
@@ -164,6 +209,7 @@ def save_scan_results(
                     []
                 ),
 
+
                 # ==========================
                 # OS INFORMATION
                 # ==========================
@@ -176,18 +222,16 @@ def save_scan_results(
                     "os_accuracy"
                 ),
 
+
                 # ==========================
                 # SCAN STATUS
                 # ==========================
 
                 "status": "completed",
 
-                "completed_at": datetime.utcnow(),
-
-                "error_message": None
+                "completed_at": datetime.utcnow()
 
             }
-
         }
 
     )
@@ -199,8 +243,7 @@ def save_scan_results(
 
 def fail_scan(
     db,
-    scan_id,
-    error_message=None
+    scan_id
 ):
 
     db.scans.update_one(
@@ -216,12 +259,9 @@ def fail_scan(
 
                 "status": "failed",
 
-                "completed_at": datetime.utcnow(),
-
-                "error_message": error_message
+                "completed_at": datetime.utcnow()
 
             }
-
         }
 
     )

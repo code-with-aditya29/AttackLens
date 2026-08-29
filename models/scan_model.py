@@ -2,13 +2,6 @@
 # SCAN MODEL
 # ==========================================
 
-from datetime import datetime
-
-
-# ==========================================
-# CREATE SCAN DOCUMENT
-# ==========================================
-
 def create_scan_document(
     target,
     scan_profile,
@@ -29,7 +22,12 @@ def create_scan_document(
 
         "created_by": created_by,
 
-        "created_at": datetime.utcnow(),
+
+        # ==================================
+        # TIMESTAMP INFORMATION
+        # ==================================
+
+        "created_at": None,
 
         "started_at": None,
 
@@ -66,7 +64,7 @@ def create_scan_document(
 
 
         # ==================================
-        # FUTURE PHASE DATA
+        # SECURITY INFORMATION
         # ==================================
 
         "vulnerabilities": [],
