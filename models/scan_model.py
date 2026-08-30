@@ -69,6 +69,21 @@ def create_scan_document(
 
         "vulnerabilities": [],
 
-        "risk_score": None
+        "vulnerability_count": 0,
+
+        "highest_severity": None,
+
+        "risk_score": None,
+
+        "risk_level": None,
+
+        "risk_breakdown": None,
+
+
+        # ==================================
+        # ERROR INFORMATION
+        # ==================================
+
+        "error_message": None
 
     }

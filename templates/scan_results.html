@@ -136,6 +136,252 @@ Review the security analysis and discovered information
 
 
     <!-- ==========================================
+         RISK ASSESSMENT
+    =========================================== -->
+
+    <div class="result-card">
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Risk Assessment
+                </h3>
+
+                <p>
+                    Explainable security risk calculated from vulnerability findings and discovered attack surface.
+                </p>
+
+            </div>
+
+            {% if scan.risk_level is defined and scan.risk_level %}
+
+            <span class="result-count">
+                {{ scan.risk_level }}
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        {% if scan.status == "completed" and scan.risk_score is not none %}
+
+            {% set risk = scan.risk_breakdown
+                if scan.risk_breakdown is defined and scan.risk_breakdown
+                else none %}
+
+
+            <div class="scan-overview-grid">
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        OVERALL RISK
+                    </span>
+                    <strong>
+                        {{ scan.risk_score }} / 100
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        RISK LEVEL
+                    </span>
+                    <strong>
+                        {% if scan.risk_level is defined and scan.risk_level %}
+                            {{ scan.risk_level }}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        VULNERABILITY RISK
+                    </span>
+                    <strong>
+                        {% if risk and risk.vulnerability_score is defined %}
+                            {{ risk.vulnerability_score }} / 80
+                        {% else %}
+                            -
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        ATTACK SURFACE RISK
+                    </span>
+                    <strong>
+                        {% if risk and risk.attack_surface_score is defined %}
+                            {{ risk.attack_surface_score }} / 20
+                        {% else %}
+                            -
+                        {% endif %}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            {% if risk %}
+
+            <div class="result-card-header">
+                <div>
+                    <h3>
+                        Finding Breakdown
+                    </h3>
+                    <p>
+                        Vulnerability findings grouped by severity.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="scan-overview-grid">
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">CRITICAL</span>
+                    <strong>
+                        {{ risk.critical_findings if risk.critical_findings is defined else 0 }}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">HIGH</span>
+                    <strong>
+                        {{ risk.high_findings if risk.high_findings is defined else 0 }}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">MEDIUM</span>
+                    <strong>
+                        {{ risk.medium_findings if risk.medium_findings is defined else 0 }}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">LOW</span>
+                    <strong>
+                        {{ risk.low_findings if risk.low_findings is defined else 0 }}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">UNKNOWN</span>
+                    <strong>
+                        {{ risk.unknown_findings if risk.unknown_findings is defined else 0 }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="result-card-header">
+                <div>
+                    <h3>
+                        Attack Surface
+                    </h3>
+                    <p>
+                        Open and security-sensitive ports contributing to the attack-surface score.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="scan-overview-grid">
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        OPEN PORT COUNT
+                    </span>
+                    <strong>
+                        {% if risk.open_ports is defined %}
+                            {{ risk.open_ports|length }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        SENSITIVE PORT COUNT
+                    </span>
+                    <strong>
+                        {% if risk.sensitive_ports is defined %}
+                            {{ risk.sensitive_ports|length }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        OPEN PORTS
+                    </span>
+                    <strong>
+                        {% if risk.open_ports is defined and risk.open_ports %}
+                            {{ risk.open_ports|join(", ") }}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="scan-info-card">
+                    <span class="scan-info-label">
+                        SENSITIVE PORTS
+                    </span>
+                    <strong>
+                        {% if risk.sensitive_ports is defined and risk.sensitive_ports %}
+                            {{ risk.sensitive_ports|join(", ") }}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="result-empty-state">
+                <p>
+                    Attack-surface risk reflects locally discovered open ports and does not by itself mean that the host is exposed to the public Internet.
+                </p>
+            </div>
+
+            {% endif %}
+
+
+        {% elif scan.status == "failed" %}
+
+            <div class="result-empty-state">
+                <span>!</span>
+                <p>
+                    Risk assessment was unavailable because the scan did not complete successfully.
+                </p>
+            </div>
+
+        {% else %}
+
+            <div class="result-empty-state">
+                <span>◌</span>
+                <p>
+                    Risk assessment is pending until the scan completes.
+                </p>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ==========================================
          HOST INFORMATION
     =========================================== -->
 
@@ -568,15 +814,108 @@ Review the security analysis and discovered information
                 </h3>
 
                 <p>
-                    Vulnerability findings discovered during security analysis.
+                    Potential vulnerability findings identified through service and version correlation.
                 </p>
 
             </div>
 
+
+            {% if scan.vulnerability_count is defined %}
+
+            <span class="result-count">
+                {{ scan.vulnerability_count }}
+            </span>
+
+            {% else %}
+
+            <span class="result-count">
+                {{ scan.vulnerabilities|length }}
+            </span>
+
+            {% endif %}
+
         </div>
 
 
+        <!-- ======================================
+             VULNERABILITIES FOUND
+        ======================================= -->
+
         {% if scan.vulnerabilities %}
+
+
+            <!-- ==================================
+                 SECURITY SUMMARY
+            =================================== -->
+
+            <div class="scan-overview-grid">
+
+
+                <div class="scan-info-card">
+
+                    <span class="scan-info-label">
+                        POTENTIAL FINDINGS
+                    </span>
+
+                    <strong>
+
+                        {% if scan.vulnerability_count is defined %}
+
+                            {{ scan.vulnerability_count }}
+
+                        {% else %}
+
+                            {{ scan.vulnerabilities|length }}
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="scan-info-card">
+
+                    <span class="scan-info-label">
+                        HIGHEST SEVERITY
+                    </span>
+
+                    <strong>
+
+                        {% if scan.highest_severity %}
+
+                            {{ scan.highest_severity|capitalize }}
+
+                        {% else %}
+
+                            Unknown
+
+                        {% endif %}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="scan-info-card">
+
+                    <span class="scan-info-label">
+                        ANALYSIS STATUS
+                    </span>
+
+                    <strong>
+                        Completed
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ==================================
+                 VULNERABILITY TABLE
+            =================================== -->
 
             <div class="table-wrapper">
 
@@ -586,11 +925,21 @@ Review the security analysis and discovered information
 
                         <tr>
 
-                            <th>Finding</th>
+                            <th>CVE</th>
 
                             <th>Severity</th>
 
-                            <th>Source</th>
+                            <th>CVSS</th>
+
+                            <th>Port</th>
+
+                            <th>Service</th>
+
+                            <th>Product</th>
+
+                            <th>Version</th>
+
+                            <th>Confidence</th>
 
                         </tr>
 
@@ -603,19 +952,255 @@ Review the security analysis and discovered information
 
                         <tr>
 
-                            <td>
-                                {{ vulnerability.name|default("Security Finding") }}
-                            </td>
+                            <!-- CVE ID -->
 
                             <td>
-                                {{ vulnerability.severity|default("Unknown") }}
+
+                                {% if vulnerability.cve_id %}
+
+                                    <strong>
+                                        {{ vulnerability.cve_id }}
+                                    </strong>
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
                             </td>
 
+
+                            <!-- SEVERITY -->
+
                             <td>
-                                {{ vulnerability.source|default("Nmap") }}
+
+                                {% if vulnerability.severity %}
+
+                                    {{ vulnerability.severity|capitalize }}
+
+                                {% else %}
+
+                                    Unknown
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- CVSS SCORE -->
+
+                            <td>
+
+                                {% if vulnerability.cvss_score is not none %}
+
+                                    {{ vulnerability.cvss_score }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- AFFECTED PORT -->
+
+                            <td>
+
+                                {% if vulnerability.port is not none %}
+
+                                    {{ vulnerability.port }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- SERVICE -->
+
+                            <td>
+
+                                {% if vulnerability.service %}
+
+                                    {{ vulnerability.service }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- PRODUCT -->
+
+                            <td>
+
+                                {% if vulnerability.product %}
+
+                                    {{ vulnerability.product }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- VERSION -->
+
+                            <td>
+
+                                {% if vulnerability.version %}
+
+                                    {{ vulnerability.version }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- CONFIDENCE -->
+
+                            <td>
+
+                                {% if vulnerability.confidence %}
+
+                                    {{ vulnerability.confidence|capitalize }}
+
+                                {% else %}
+
+                                    Unknown
+
+                                {% endif %}
+
                             </td>
 
                         </tr>
+
+
+                        <!-- ==================================
+                             DESCRIPTION
+                        =================================== -->
+
+                        {% if vulnerability.description %}
+
+                        <tr>
+
+                            <td colspan="8">
+
+                                <strong>
+                                    Description:
+                                </strong>
+
+                                {{ vulnerability.description }}
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+
+                        <!-- ==================================
+                             MATCH INFORMATION
+                        =================================== -->
+
+                        <tr>
+
+                            <td colspan="8">
+
+                                <strong>
+                                    Match:
+                                </strong>
+
+                                {% if vulnerability.match_type == "product_version" %}
+
+                                    Product + Version
+
+                                {% elif vulnerability.match_type == "product" %}
+
+                                    Product
+
+                                {% else %}
+
+                                    Unknown
+
+                                {% endif %}
+
+
+                                &nbsp; | &nbsp;
+
+
+                                <strong>
+                                    Status:
+                                </strong>
+
+                                {% if vulnerability.status %}
+
+                                    {{ vulnerability.status|capitalize }}
+
+                                {% else %}
+
+                                    Potential
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- ==================================
+                             REFERENCES
+                        =================================== -->
+
+                        {% if vulnerability.references %}
+
+                        <tr>
+
+                            <td colspan="8">
+
+                                <strong>
+                                    References:
+                                </strong>
+
+
+                                {% for reference in vulnerability.references %}
+
+                                <a
+                                    href="{{ reference }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Reference {{ loop.index }}
+                                </a>
+
+                                {% if not loop.last %}
+                                    &nbsp; | &nbsp;
+                                {% endif %}
+
+                                {% endfor %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
 
                         {% endfor %}
 
@@ -625,7 +1210,115 @@ Review the security analysis and discovered information
 
             </div>
 
+
+            <!-- ==================================
+                 VULNERABILITY DISCLAIMER
+            =================================== -->
+
+            <div class="result-empty-state">
+
+                <p>
+                    These findings are potential vulnerability matches based on discovered
+                    software information and NVD correlation. They do not confirm that the
+                    target is exploitable.
+                </p>
+
+            </div>
+
+
+        <!-- ======================================
+             ANALYSIS COMPLETED - NO FINDINGS
+        ======================================= -->
+
+        {% elif scan.status == "completed" %}
+
+
+            <div class="scan-overview-grid">
+
+
+                <div class="scan-info-card">
+
+                    <span class="scan-info-label">
+                        POTENTIAL FINDINGS
+                    </span>
+
+                    <strong>
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="scan-info-card">
+
+                    <span class="scan-info-label">
+                        HIGHEST SEVERITY
+                    </span>
+
+                    <strong>
+                        None
+                    </strong>
+
+                </div>
+
+
+                <div class="scan-info-card">
+
+                    <span class="scan-info-label">
+                        ANALYSIS STATUS
+                    </span>
+
+                    <strong>
+                        Completed
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="result-empty-state">
+
+                <span>
+                    ✓
+                </span>
+
+                <p>
+                    Vulnerability analysis completed successfully.
+                    No potential vulnerabilities were identified from the available
+                    service and version fingerprints.
+                </p>
+
+            </div>
+
+
+        <!-- ======================================
+             SCAN FAILED
+        ======================================= -->
+
+        {% elif scan.status == "failed" %}
+
+
+            <div class="result-empty-state">
+
+                <span>
+                    !
+                </span>
+
+                <p>
+                    Vulnerability analysis was unavailable because the scan did not complete successfully.
+                </p>
+
+            </div>
+
+
+        <!-- ======================================
+             SCAN PENDING / RUNNING
+        ======================================= -->
+
         {% else %}
+
 
             <div class="result-empty-state">
 
@@ -634,13 +1327,39 @@ Review the security analysis and discovered information
                 </span>
 
                 <p>
-                    No vulnerability analysis has been performed yet.
+                    Vulnerability analysis is pending until the scan completes.
                 </p>
 
             </div>
 
+
         {% endif %}
 
+
+    </div>
+
+
+    <!-- ==========================================
+         NVD DISCLAIMER
+    =========================================== -->
+
+    <div class="result-card">
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Vulnerability Intelligence
+                </h3>
+
+                <p>
+                    This product uses the NVD API but is not endorsed or certified by the NVD.
+                </p>
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -651,12 +1370,48 @@ Review the security analysis and discovered information
 
     <div class="scan-result-actions">
 
+
+        <!-- ======================================
+             NEW SCAN
+        ======================================= -->
+
         <a
             href="{{ url_for('scan.scan_target') }}"
             class="secondary-button"
         >
             ← New Scan
         </a>
+
+
+        <!-- ======================================
+             RESCAN
+        ======================================= -->
+
+        {% if scan.status == "completed" or scan.status == "failed" %}
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'scan.rescan_target',
+                scan_id=scan._id
+            ) }}"
+            class="rescan-form"
+            onsubmit="return confirm(
+                'Run this scan again using the same target and scan profile?'
+            );"
+        >
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                ↻ Rescan
+            </button>
+
+        </form>
+
+        {% endif %}
+
 
     </div>
 

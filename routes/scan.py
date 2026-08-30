@@ -1,21 +1,12 @@
 from flask import (
-
     Blueprint,
-
     render_template,
-
     request,
-
     redirect,
-
     url_for,
-
     flash,
-
     current_app,
-
     session
-
 )
 
 
@@ -30,32 +21,30 @@ from services.scan_validator import (
 
 
 from services.scan_service import (
-
     create_scan,
-
     start_scan,
-
     save_scan_results,
-
     fail_scan,
-
     get_scan_by_id,
-
     get_scan_history,
-
     delete_scan,
-
     bulk_delete_scans
-
 )
 
 
 from services.nmap_service import (
-
     check_nmap_installed,
-
     run_nmap_scan
+)
 
+
+from services.vulnerability_service import (
+    analyze_services_for_vulnerabilities
+)
+
+
+from services.risk_service import (
+    calculate_risk_score
 )
 
 
@@ -64,11 +53,8 @@ from services.nmap_service import (
 # ==========================================
 
 scan_bp = Blueprint(
-
     "scan",
-
     __name__
-
 )
 
 
@@ -77,17 +63,11 @@ scan_bp = Blueprint(
 # ==========================================
 
 @scan_bp.route(
-
     "/scan",
-
     methods=[
-
         "GET",
-
         "POST"
-
     ]
-
 )
 
 @login_required
@@ -105,20 +85,14 @@ def scan_target():
         # ==================================
 
         target = request.form.get(
-
             "target",
-
             ""
-
         ).strip()
 
 
         scan_profile = request.form.get(
-
             "scan_profile",
-
             "standard"
-
         ).strip().lower()
 
 
@@ -134,20 +108,15 @@ def scan_target():
         if not is_valid:
 
             flash(
-
                 message,
-
                 "error"
-
             )
 
 
             return redirect(
-
                 url_for(
                     "scan.scan_target"
                 )
-
             )
 
 
@@ -156,33 +125,24 @@ def scan_target():
         # ==================================
 
         allowed_profiles = [
-
             "quick",
-
             "standard",
-
             "detailed"
-
         ]
 
 
         if scan_profile not in allowed_profiles:
 
             flash(
-
                 "Invalid scan profile selected.",
-
                 "error"
-
             )
 
 
             return redirect(
-
                 url_for(
                     "scan.scan_target"
                 )
-
             )
 
 
@@ -193,21 +153,16 @@ def scan_target():
         if not check_nmap_installed():
 
             flash(
-
                 "Nmap is not installed or cannot "
                 "be found in the system PATH.",
-
                 "error"
-
             )
 
 
             return redirect(
-
                 url_for(
                     "scan.scan_target"
                 )
-
             )
 
 
@@ -225,15 +180,10 @@ def scan_target():
         # ==================================
 
         scan = create_scan(
-
             db=db,
-
             target=target,
-
             scan_profile=scan_profile,
-
             created_by=session_user_id()
-
         )
 
 
@@ -247,11 +197,8 @@ def scan_target():
         # ==================================
 
         start_scan(
-
             db,
-
             scan_id
-
         )
 
 
@@ -262,11 +209,8 @@ def scan_target():
         try:
 
             results = run_nmap_scan(
-
                 target=target,
-
                 scan_profile=scan_profile
-
             )
 
 
@@ -278,35 +222,23 @@ def scan_target():
 
 
             fail_scan(
-
                 db,
-
                 scan_id,
-
                 error_message
-
             )
 
 
             flash(
-
                 error_message,
-
                 "error"
-
             )
 
 
             return redirect(
-
                 url_for(
-
                     "scan.scan_results",
-
                     scan_id=scan_id
-
                 )
-
             )
 
 
@@ -319,45 +251,166 @@ def scan_target():
         ):
 
             error_message = results.get(
-
                 "message",
-
                 "Scan failed."
-
             )
 
 
             fail_scan(
-
                 db,
-
                 scan_id,
-
                 error_message
-
             )
 
 
             flash(
-
                 error_message,
-
                 "error"
-
             )
 
 
             return redirect(
-
                 url_for(
-
                     "scan.scan_results",
-
                     scan_id=scan_id
-
                 )
-
             )
+
+
+        # ==================================
+        # VULNERABILITY ANALYSIS
+        # ==================================
+
+        try:
+
+            services = results.get(
+                "services",
+                []
+            )
+
+
+            os_detection = results.get(
+                "os_detection"
+            )
+
+
+            vulnerabilities = (
+                analyze_services_for_vulnerabilities(
+                    services=services,
+                    results_per_service=10,
+                    os_detection=os_detection
+                )
+            )
+
+
+            results[
+                "vulnerabilities"
+            ] = vulnerabilities
+
+
+            current_app.logger.info(
+                "Vulnerability analysis completed. "
+                "%s applicable potential "
+                "finding(s) identified.",
+                len(vulnerabilities)
+            )
+
+
+        except Exception as error:
+
+            # ==================================
+            # CVE analysis failure must NOT
+            # cause successful Nmap scan to fail.
+            # ==================================
+
+            current_app.logger.warning(
+                "Vulnerability analysis failed: %s",
+                error
+            )
+
+
+            results[
+                "vulnerabilities"
+            ] = []
+
+
+        # ==================================
+        # RISK ANALYSIS
+        # ==================================
+
+        try:
+
+            risk_result = calculate_risk_score(
+                vulnerabilities=results.get(
+                    "vulnerabilities",
+                    []
+                ),
+                ports=results.get(
+                    "ports",
+                    []
+                )
+            )
+
+
+            results[
+                "risk_score"
+            ] = risk_result.get(
+                "risk_score"
+            )
+
+
+            results[
+                "risk_level"
+            ] = risk_result.get(
+                "risk_level"
+            )
+
+
+            results[
+                "risk_breakdown"
+            ] = risk_result.get(
+                "risk_breakdown"
+            )
+
+
+            current_app.logger.info(
+                "Risk analysis completed. "
+                "Score: %s | Level: %s",
+                results.get(
+                    "risk_score"
+                ),
+                results.get(
+                    "risk_level"
+                )
+            )
+
+
+        except Exception as error:
+
+            # ==================================
+            # Risk analysis failure must NOT
+            # cause successful Nmap scan to fail.
+            # ==================================
+
+            current_app.logger.warning(
+                "Risk analysis failed: %s",
+                error
+            )
+
+
+            results[
+                "risk_score"
+            ] = None
+
+
+            results[
+                "risk_level"
+            ] = None
+
+
+            results[
+                "risk_breakdown"
+            ] = None
 
 
         # ==================================
@@ -365,35 +418,23 @@ def scan_target():
         # ==================================
 
         save_scan_results(
-
             db,
-
             scan_id,
-
             results
-
         )
 
 
         flash(
-
             "Security scan completed successfully.",
-
             "success"
-
         )
 
 
         return redirect(
-
             url_for(
-
                 "scan.scan_results",
-
                 scan_id=scan_id
-
             )
-
         )
 
 
@@ -402,11 +443,8 @@ def scan_target():
     # ======================================
 
     return render_template(
-
         "scan.html",
-
         current_page="scan"
-
     )
 
 
@@ -434,45 +472,32 @@ def scan_results(
     # ======================================
 
     scan = get_scan_by_id(
-
         db=db,
-
         scan_id=scan_id,
-
         created_by=get_scan_owner_filter()
-
     )
 
 
     if not scan:
 
         flash(
-
             "Scan not found or you do not "
             "have permission to view it.",
-
             "error"
-
         )
 
 
         return redirect(
-
             url_for(
                 "scan.scan_history"
             )
-
         )
 
 
     return render_template(
-
         "scan_results.html",
-
         scan=scan,
-
         current_page="scan"
-
     )
 
 
@@ -498,24 +523,420 @@ def scan_history():
     # ======================================
 
     scans = get_scan_history(
-
         db=db,
-
         created_by=get_scan_owner_filter(),
-
         limit=100
-
     )
 
 
     return render_template(
-
         "scan_history.html",
-
         scans=scans,
-
         current_page="scan_history"
+    )
 
+
+# ==========================================
+# RESCAN TARGET
+# ==========================================
+
+@scan_bp.route(
+    "/scan/rescan/<scan_id>",
+    methods=[
+        "POST"
+    ]
+)
+
+@login_required
+
+def rescan_target(
+    scan_id
+):
+
+    db = current_app.config[
+        "MONGO_DB"
+    ]
+
+
+    # ======================================
+    # GET ORIGINAL SCAN
+    # ======================================
+
+    original_scan = get_scan_by_id(
+        db=db,
+        scan_id=scan_id,
+        created_by=get_scan_owner_filter()
+    )
+
+
+    if not original_scan:
+
+        flash(
+            "Scan not found or you do not "
+            "have permission to rescan it.",
+            "error"
+        )
+
+
+        return redirect(
+            url_for(
+                "scan.scan_history"
+            )
+        )
+
+
+    # ======================================
+    # GET ORIGINAL TARGET INFORMATION
+    # ======================================
+
+    target = (
+        original_scan.get(
+            "target",
+            ""
+        )
+        or ""
+    ).strip()
+
+
+    scan_profile = (
+        original_scan.get(
+            "scan_profile",
+            "standard"
+        )
+        or "standard"
+    ).strip().lower()
+
+
+    # ======================================
+    # VALIDATE TARGET
+    # ======================================
+
+    is_valid, message = validate_target(
+        target
+    )
+
+
+    if not is_valid:
+
+        flash(
+            message,
+            "error"
+        )
+
+
+        return redirect(
+            url_for(
+                "scan.scan_results",
+                scan_id=scan_id
+            )
+        )
+
+
+    # ======================================
+    # VALIDATE SCAN PROFILE
+    # ======================================
+
+    allowed_profiles = [
+        "quick",
+        "standard",
+        "detailed"
+    ]
+
+
+    if scan_profile not in allowed_profiles:
+
+        flash(
+            "The original scan contains an "
+            "invalid scan profile.",
+            "error"
+        )
+
+
+        return redirect(
+            url_for(
+                "scan.scan_results",
+                scan_id=scan_id
+            )
+        )
+
+
+    # ======================================
+    # CHECK NMAP INSTALLATION
+    # ======================================
+
+    if not check_nmap_installed():
+
+        flash(
+            "Nmap is not installed or cannot "
+            "be found in the system PATH.",
+            "error"
+        )
+
+
+        return redirect(
+            url_for(
+                "scan.scan_results",
+                scan_id=scan_id
+            )
+        )
+
+
+    # ======================================
+    # CREATE NEW SCAN RECORD
+    # ======================================
+    #
+    # IMPORTANT:
+    # The original scan is NOT overwritten.
+    # A new database record is created.
+    # ======================================
+
+    new_scan = create_scan(
+        db=db,
+        target=target,
+        scan_profile=scan_profile,
+        created_by=session_user_id()
+    )
+
+
+    new_scan_id = str(
+        new_scan["_id"]
+    )
+
+
+    # ======================================
+    # MARK NEW SCAN AS RUNNING
+    # ======================================
+
+    start_scan(
+        db,
+        new_scan_id
+    )
+
+
+    # ======================================
+    # RUN NMAP SCAN
+    # ======================================
+
+    try:
+
+        results = run_nmap_scan(
+            target=target,
+            scan_profile=scan_profile
+        )
+
+
+    except Exception as error:
+
+        error_message = (
+            f"Unexpected rescan error: {error}"
+        )
+
+
+        fail_scan(
+            db,
+            new_scan_id,
+            error_message
+        )
+
+
+        flash(
+            error_message,
+            "error"
+        )
+
+
+        return redirect(
+            url_for(
+                "scan.scan_results",
+                scan_id=new_scan_id
+            )
+        )
+
+
+    # ======================================
+    # HANDLE RESCAN FAILURE
+    # ======================================
+
+    if not results.get(
+        "success"
+    ):
+
+        error_message = results.get(
+            "message",
+            "Rescan failed."
+        )
+
+
+        fail_scan(
+            db,
+            new_scan_id,
+            error_message
+        )
+
+
+        flash(
+            error_message,
+            "error"
+        )
+
+
+        return redirect(
+            url_for(
+                "scan.scan_results",
+                scan_id=new_scan_id
+            )
+        )
+
+
+    # ======================================
+    # VULNERABILITY ANALYSIS
+    # ======================================
+
+    try:
+
+        services = results.get(
+            "services",
+            []
+        )
+
+
+        os_detection = results.get(
+            "os_detection"
+        )
+
+
+        vulnerabilities = (
+            analyze_services_for_vulnerabilities(
+                services=services,
+                results_per_service=10,
+                os_detection=os_detection
+            )
+        )
+
+
+        results[
+            "vulnerabilities"
+        ] = vulnerabilities
+
+
+        current_app.logger.info(
+            "Rescan vulnerability analysis "
+            "completed. %s applicable potential "
+            "finding(s) identified.",
+            len(vulnerabilities)
+        )
+
+
+    except Exception as error:
+
+        current_app.logger.warning(
+            "Rescan vulnerability analysis "
+            "failed: %s",
+            error
+        )
+
+
+        results[
+            "vulnerabilities"
+        ] = []
+
+
+    # ======================================
+    # RISK ANALYSIS
+    # ======================================
+
+    try:
+
+        risk_result = calculate_risk_score(
+            vulnerabilities=results.get(
+                "vulnerabilities",
+                []
+            ),
+            ports=results.get(
+                "ports",
+                []
+            )
+        )
+
+
+        results[
+            "risk_score"
+        ] = risk_result.get(
+            "risk_score"
+        )
+
+
+        results[
+            "risk_level"
+        ] = risk_result.get(
+            "risk_level"
+        )
+
+
+        results[
+            "risk_breakdown"
+        ] = risk_result.get(
+            "risk_breakdown"
+        )
+
+
+        current_app.logger.info(
+            "Rescan risk analysis completed. "
+            "Score: %s | Level: %s",
+            results.get(
+                "risk_score"
+            ),
+            results.get(
+                "risk_level"
+            )
+        )
+
+
+    except Exception as error:
+
+        current_app.logger.warning(
+            "Rescan risk analysis failed: %s",
+            error
+        )
+
+
+        results[
+            "risk_score"
+        ] = None
+
+
+        results[
+            "risk_level"
+        ] = None
+
+
+        results[
+            "risk_breakdown"
+        ] = None
+
+
+    # ======================================
+    # SAVE NEW SCAN RESULTS
+    # ======================================
+
+    save_scan_results(
+        db,
+        new_scan_id,
+        results
+    )
+
+
+    flash(
+        "Rescan completed successfully.",
+        "success"
+    )
+
+
+    return redirect(
+        url_for(
+            "scan.scan_results",
+            scan_id=new_scan_id
+        )
     )
 
 
@@ -524,13 +945,10 @@ def scan_history():
 # ==========================================
 
 @scan_bp.route(
-
     "/scan/delete/<scan_id>",
-
     methods=[
         "POST"
     ]
-
 )
 
 @login_required
@@ -545,44 +963,32 @@ def delete_scan_record(
 
 
     deleted = delete_scan(
-
         db=db,
-
         scan_id=scan_id,
-
         created_by=get_scan_owner_filter()
-
     )
 
 
     if deleted:
 
         flash(
-
             "Scan deleted successfully.",
-
             "success"
-
         )
 
     else:
 
         flash(
-
             "Scan could not be deleted or "
             "you do not have permission.",
-
             "error"
-
         )
 
 
     return redirect(
-
         url_for(
             "scan.scan_history"
         )
-
     )
 
 
@@ -591,13 +997,10 @@ def delete_scan_record(
 # ==========================================
 
 @scan_bp.route(
-
     "/scan/delete-selected",
-
     methods=[
         "POST"
     ]
-
 )
 
 @login_required
@@ -616,21 +1019,16 @@ def delete_selected_scans():
     if not scan_ids:
 
         flash(
-
             "Please select at least one scan "
             "to delete.",
-
             "error"
-
         )
 
 
         return redirect(
-
             url_for(
                 "scan.scan_history"
             )
-
         )
 
 
@@ -644,44 +1042,32 @@ def delete_selected_scans():
     # ======================================
 
     deleted_count = bulk_delete_scans(
-
         db=db,
-
         scan_ids=scan_ids,
-
         created_by=get_scan_owner_filter()
-
     )
 
 
     if deleted_count > 0:
 
         flash(
-
             f"{deleted_count} scan(s) deleted "
             "successfully.",
-
             "success"
-
         )
 
     else:
 
         flash(
-
             "No scans were deleted.",
-
             "error"
-
         )
 
 
     return redirect(
-
         url_for(
             "scan.scan_history"
         )
-
     )
 
 

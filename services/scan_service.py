@@ -75,7 +75,15 @@ def create_scan(
 
         "vulnerabilities": [],
 
+        "vulnerability_count": 0,
+
+        "highest_severity": None,
+
         "risk_score": None,
+
+        "risk_level": None,
+
+        "risk_breakdown": None,
 
 
         # ==================================
@@ -111,7 +119,9 @@ def start_scan(
     scan_id
 ):
 
-    if not ObjectId.is_valid(scan_id):
+    if not ObjectId.is_valid(
+        scan_id
+    ):
 
         return False
 
@@ -152,7 +162,9 @@ def update_scan_status(
     status
 ):
 
-    if not ObjectId.is_valid(scan_id):
+    if not ObjectId.is_valid(
+        scan_id
+    ):
 
         return False
 
@@ -189,10 +201,57 @@ def save_scan_results(
     results
 ):
 
-    if not ObjectId.is_valid(scan_id):
+    if not ObjectId.is_valid(
+        scan_id
+    ):
 
         return False
 
+
+    # ======================================
+    # GET VULNERABILITY RESULTS
+    # ======================================
+
+    vulnerabilities = results.get(
+        "vulnerabilities",
+        []
+    )
+
+
+    # Ensure vulnerabilities always remain
+    # a list before they are stored.
+
+    if not isinstance(
+        vulnerabilities,
+        list
+    ):
+
+        vulnerabilities = []
+
+
+    # ======================================
+    # VULNERABILITY COUNT
+    # ======================================
+
+    vulnerability_count = len(
+        vulnerabilities
+    )
+
+
+    # ======================================
+    # HIGHEST SEVERITY
+    # ======================================
+
+    highest_severity = (
+        get_highest_severity(
+            vulnerabilities
+        )
+    )
+
+
+    # ======================================
+    # UPDATE SCAN DOCUMENT
+    # ======================================
 
     result = db.scans.update_one(
 
@@ -255,13 +314,28 @@ def save_scan_results(
                 # SECURITY INFORMATION
                 # ==========================
 
-                "vulnerabilities": results.get(
-                    "vulnerabilities",
-                    []
+                "vulnerabilities": (
+                    vulnerabilities
+                ),
+
+                "vulnerability_count": (
+                    vulnerability_count
+                ),
+
+                "highest_severity": (
+                    highest_severity
                 ),
 
                 "risk_score": results.get(
                     "risk_score"
+                ),
+
+                "risk_level": results.get(
+                    "risk_level"
+                ),
+
+                "risk_breakdown": results.get(
+                    "risk_breakdown"
                 ),
 
 
@@ -285,6 +359,103 @@ def save_scan_results(
 
 
 # ==========================================
+# GET HIGHEST VULNERABILITY SEVERITY
+# ==========================================
+
+def get_highest_severity(
+    vulnerabilities
+):
+
+    """
+    Determine the highest vulnerability
+    severity found during CVE correlation.
+
+    Severity priority:
+
+        CRITICAL
+        HIGH
+        MEDIUM
+        LOW
+        NONE
+        UNKNOWN
+
+    Returns None when no vulnerabilities
+    were identified.
+    """
+
+    if not vulnerabilities:
+
+        return None
+
+
+    severity_priority = {
+
+        "UNKNOWN": 0,
+
+        "NONE": 1,
+
+        "LOW": 2,
+
+        "MEDIUM": 3,
+
+        "HIGH": 4,
+
+        "CRITICAL": 5
+
+    }
+
+
+    highest_severity = None
+
+    highest_priority = -1
+
+
+    for vulnerability in vulnerabilities:
+
+        if not isinstance(
+            vulnerability,
+            dict
+        ):
+
+            continue
+
+
+        severity = vulnerability.get(
+            "severity",
+            "UNKNOWN"
+        )
+
+
+        if severity:
+
+            severity = (
+                str(severity)
+                .strip()
+                .upper()
+            )
+
+        else:
+
+            severity = "UNKNOWN"
+
+
+        priority = severity_priority.get(
+            severity,
+            0
+        )
+
+
+        if priority > highest_priority:
+
+            highest_priority = priority
+
+            highest_severity = severity
+
+
+    return highest_severity
+
+
+# ==========================================
 # FAIL SCAN
 # ==========================================
 
@@ -294,7 +465,9 @@ def fail_scan(
     error_message="Scan failed."
 ):
 
-    if not ObjectId.is_valid(scan_id):
+    if not ObjectId.is_valid(
+        scan_id
+    ):
 
         return False
 
@@ -335,7 +508,9 @@ def get_scan_by_id(
     created_by=None
 ):
 
-    if not ObjectId.is_valid(scan_id):
+    if not ObjectId.is_valid(
+        scan_id
+    ):
 
         return None
 
@@ -423,7 +598,9 @@ def delete_scan(
     created_by=None
 ):
 
-    if not ObjectId.is_valid(scan_id):
+    if not ObjectId.is_valid(
+        scan_id
+    ):
 
         return False
 
