@@ -1,57 +1,612 @@
 {% extends "base.html" %}
 
+
 {% block title %}
 AttackLens | Assets
 {% endblock %}
+
 
 {% block page_title %}
 Assets
 {% endblock %}
 
+
 {% block page_subtitle %}
 View and manage discovered assets from authorized security scans
 {% endblock %}
 
+
 {% block content %}
+
 
 <section class="dashboard-overview">
 
+
+    <!-- ==========================================
+         PAGE HEADER
+    =========================================== -->
+
     <div class="welcome-section">
+
         <div>
-            <h3>Discovered Assets</h3>
+
+            <h3>
+                Discovered Assets
+            </h3>
+
             <p>
-                Assets discovered during authorized security scans will appear here.
+                Assets discovered during authorized security scans are normalized and displayed here.
             </p>
+
         </div>
+
+
+        <a
+            href="{{ url_for('scan.scan_target') }}"
+            class="primary-button"
+        >
+            + New Scan
+        </a>
+
     </div>
+
+
+    <!-- ==========================================
+         ASSET SUMMARY
+    =========================================== -->
+
+    <div class="stats-grid">
+
+
+        <div class="stat-card">
+
+            <div class="stat-card-content">
+
+                <span class="stat-label">
+                    Total Assets
+                </span>
+
+                <strong class="stat-value">
+
+                    {% if asset_stats %}
+
+                        {{ asset_stats.total_assets }}
+
+                    {% else %}
+
+                        0
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-card-content">
+
+                <span class="stat-label">
+                    High Risk Assets
+                </span>
+
+                <strong class="stat-value">
+
+                    {% if asset_stats %}
+
+                        {{ asset_stats.high_risk_assets }}
+
+                    {% else %}
+
+                        0
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-card-content">
+
+                <span class="stat-label">
+                    Vulnerable Assets
+                </span>
+
+                <strong class="stat-value">
+
+                    {% if asset_stats %}
+
+                        {{ asset_stats.vulnerable_assets }}
+
+                    {% else %}
+
+                        0
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-card-content">
+
+                <span class="stat-label">
+                    Open Ports
+                </span>
+
+                <strong class="stat-value">
+
+                    {% if asset_stats %}
+
+                        {{ asset_stats.total_open_ports }}
+
+                    {% else %}
+
+                        0
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         ASSET INVENTORY
+    =========================================== -->
 
     <section class="dashboard-card">
 
+
         <div class="card-header">
+
             <div>
-                <h3>Asset Inventory</h3>
+
+                <h3>
+                    Asset Inventory
+                </h3>
+
                 <p>
-                    Review discovered hosts, services, and security exposure.
+                    Review discovered hosts, operating systems, services, vulnerabilities, and current risk.
                 </p>
+
             </div>
+
         </div>
 
+
+        <!-- ======================================
+             ASSETS AVAILABLE
+        ======================================= -->
+
+        {% if assets %}
+
+
+        <div class="results-table-wrapper">
+
+
+            <table class="results-table">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Target
+                        </th>
+
+                        <th>
+                            Hostname
+                        </th>
+
+                        <th>
+                            Operating System
+                        </th>
+
+                        <th>
+                            Open Ports
+                        </th>
+
+                        <th>
+                            Services
+                        </th>
+
+                        <th>
+                            CVEs
+                        </th>
+
+                        <th>
+                            Risk
+                        </th>
+
+                        <th>
+                            Criticality
+                        </th>
+
+                        <th>
+                            Exposure
+                        </th>
+
+                        <th>
+                            Last Seen
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for asset in assets %}
+
+
+                    <tr>
+
+
+                        <!-- TARGET -->
+
+                        <td>
+
+                            <strong>
+                                {{ asset.target }}
+                            </strong>
+
+                        </td>
+
+
+                        <!-- HOSTNAME -->
+
+                        <td>
+
+                            {% if asset.hostname %}
+
+                                {{ asset.hostname }}
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- OPERATING SYSTEM -->
+
+                        <td>
+
+                            {% if asset.operating_system %}
+
+                                {{ asset.operating_system }}
+
+                            {% else %}
+
+                                Not Detected
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- OPEN PORTS -->
+
+                        <td>
+
+                            {{ asset.open_port_count|default(0) }}
+
+                        </td>
+
+
+                        <!-- SERVICES -->
+
+                        <td>
+
+                            {{ asset.service_count|default(0) }}
+
+                        </td>
+
+
+                        <!-- VULNERABILITIES -->
+
+                        <td>
+
+                            {{ asset.vulnerability_count|default(0) }}
+
+                        </td>
+
+
+                        <!-- RISK -->
+
+                        <td>
+
+
+                            {% if asset.risk_level %}
+
+
+                                <span
+                                    class="scan-result-status
+                                    {{ asset.risk_level|lower }}"
+                                >
+
+                                    {{ asset.risk_level }}
+
+                                    {% if asset.risk_score is not none %}
+
+                                        &nbsp;{{ asset.risk_score }}/100
+
+                                    {% endif %}
+
+                                </span>
+
+
+                            {% else %}
+
+
+                                <span>
+                                    Not Available
+                                </span>
+
+
+                            {% endif %}
+
+
+                        </td>
+
+
+                        <!-- CRITICALITY -->
+
+                        <td>
+
+                            {% if asset.criticality %}
+
+                                {{ asset.criticality }}
+
+                            {% else %}
+
+                                NORMAL
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- EXPOSURE -->
+
+                        <td>
+
+                            {% if asset.exposure %}
+
+                                {{ asset.exposure }}
+
+                            {% else %}
+
+                                UNKNOWN
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- LAST SEEN -->
+
+                        <td>
+
+                            {% if asset.last_seen %}
+
+                                {{ asset.last_seen.strftime(
+                                    "%d %b %Y %H:%M"
+                                ) }}
+
+                            {% else %}
+
+                                Unknown
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ACTION -->
+
+                        <td>
+
+                            <a
+                                href="{{ url_for(
+                                    'asset.asset_details',
+                                    asset_id=asset._id
+                                ) }}"
+                                class="secondary-button"
+                            >
+                                View
+                            </a>
+
+                        </td>
+
+
+                    </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+        <!-- ======================================
+             EMPTY INVENTORY
+        ======================================= -->
+
+        {% else %}
+
+
         <div class="empty-state">
+
 
             <div class="empty-icon">
                 ◇
             </div>
 
-            <h4>No Assets Available</h4>
+
+            <h4>
+                No Assets Available
+            </h4>
+
 
             <p>
                 Run an authorized security scan to discover and analyze assets.
             </p>
 
+
+            <a
+                href="{{ url_for('scan.scan_target') }}"
+                class="primary-button"
+            >
+                Start Scan
+            </a>
+
+
         </div>
+
+
+        {% endif %}
+
 
     </section>
 
+
+    <!-- ==========================================
+         INVENTORY INFORMATION
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    How Asset Inventory Works
+                </h3>
+
+                <p>
+                    AttackLens maintains one current asset representation for each discovered target.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="scan-overview-grid">
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    SCANS
+                </span>
+
+                <strong>
+                    Historical
+                </strong>
+
+                <p>
+                    Every scan remains stored independently in Scan History.
+                </p>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    ASSETS
+                </span>
+
+                <strong>
+                    Current State
+                </strong>
+
+                <p>
+                    The latest completed scan refreshes the current asset representation.
+                </p>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    SECURITY CONTEXT
+                </span>
+
+                <strong>
+                    Criticality & Exposure
+                </strong>
+
+                <p>
+                    Asset context will later influence Attack Path and Defense analysis.
+                </p>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    NEXT STAGE
+                </span>
+
+                <strong>
+                    Attack Paths
+                </strong>
+
+                <p>
+                    Normalized assets will become nodes in the AttackLens graph.
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
 </section>
+
 
 {% endblock %}

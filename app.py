@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 
+
 # ==========================================
 # LOAD ENVIRONMENT VARIABLES
 # ==========================================
@@ -30,6 +31,8 @@ from routes.auth import (
 )
 
 from routes.admin import admin_bp
+
+from routes.asset import asset_bp
 
 
 # ==========================================
@@ -157,6 +160,15 @@ def create_app():
 
 
     # ======================================
+    # ASSET BLUEPRINT
+    # ======================================
+
+    app.register_blueprint(
+        asset_bp
+    )
+
+
+    # ======================================
     # DASHBOARD / HOME
     # ======================================
 
@@ -202,20 +214,18 @@ def create_app():
     # ======================================
     # ASSETS
     # ======================================
-
-    @app.route(
-        "/assets"
-    )
-    @login_required
-    def assets():
-
-        return render_template(
-
-            "assets.html",
-
-            current_page="assets"
-
-        )
+    #
+    # The Assets route is now handled by:
+    #
+    # routes/asset.py
+    #
+    # Endpoint:
+    #
+    # asset.asset_inventory
+    #
+    # Therefore the old placeholder /assets
+    # route has been removed from app.py.
+    # ======================================
 
 
     # ======================================
@@ -337,6 +347,44 @@ def create_database_indexes(
                     -1
                 )
             ]
+
+        )
+
+
+        # ==================================
+        # ASSET INDEXES
+        # ==================================
+
+        db.assets.create_index(
+            "created_by"
+        )
+
+
+        db.assets.create_index(
+            "last_seen"
+        )
+
+
+        db.assets.create_index(
+            "risk_level"
+        )
+
+
+        db.assets.create_index(
+
+            [
+                (
+                    "created_by",
+                    1
+                ),
+
+                (
+                    "target",
+                    1
+                )
+            ],
+
+            unique=True
 
         )
 

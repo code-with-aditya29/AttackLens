@@ -48,6 +48,11 @@ from services.risk_service import (
 )
 
 
+from services.asset_service import (
+    upsert_asset_from_scan
+)
+
+
 # ==========================================
 # SCAN BLUEPRINT
 # ==========================================
@@ -69,9 +74,7 @@ scan_bp = Blueprint(
         "POST"
     ]
 )
-
 @login_required
-
 def scan_target():
 
     # ======================================
@@ -424,6 +427,62 @@ def scan_target():
         )
 
 
+        # ==================================
+        # UPDATE ASSET INVENTORY
+        # ==================================
+        #
+        # The completed scan is now used to
+        # create or update the current Asset.
+        #
+        # Asset synchronization failure must
+        # NOT cause a successful scan to fail.
+        # ==================================
+
+        try:
+
+            completed_scan = get_scan_by_id(
+
+                db=db,
+
+                scan_id=scan_id,
+
+                created_by=session_user_id()
+
+            )
+
+
+            if completed_scan:
+
+                upsert_asset_from_scan(
+
+                    db=db,
+
+                    scan=completed_scan
+
+                )
+
+
+                current_app.logger.info(
+
+                    "Asset inventory updated "
+                    "for target: %s",
+
+                    target
+
+                )
+
+
+        except Exception as error:
+
+            current_app.logger.warning(
+
+                "Asset inventory update failed: %s",
+
+                error
+
+            )
+
+
         flash(
             "Security scan completed successfully.",
             "success"
@@ -455,9 +514,7 @@ def scan_target():
 @scan_bp.route(
     "/scan/results/<scan_id>"
 )
-
 @login_required
-
 def scan_results(
     scan_id
 ):
@@ -508,9 +565,7 @@ def scan_results(
 @scan_bp.route(
     "/scan/history"
 )
-
 @login_required
-
 def scan_history():
 
     db = current_app.config[
@@ -546,9 +601,7 @@ def scan_history():
         "POST"
     ]
 )
-
 @login_required
-
 def rescan_target(
     scan_id
 ):
@@ -926,6 +979,64 @@ def rescan_target(
     )
 
 
+    # ======================================
+    # UPDATE ASSET INVENTORY
+    # ======================================
+    #
+    # The newly completed rescan becomes the
+    # current Asset state when it is newer
+    # than the existing Asset snapshot.
+    #
+    # Asset synchronization failure must
+    # NOT cause a successful rescan to fail.
+    # ======================================
+
+    try:
+
+        completed_scan = get_scan_by_id(
+
+            db=db,
+
+            scan_id=new_scan_id,
+
+            created_by=session_user_id()
+
+        )
+
+
+        if completed_scan:
+
+            upsert_asset_from_scan(
+
+                db=db,
+
+                scan=completed_scan
+
+            )
+
+
+            current_app.logger.info(
+
+                "Asset inventory updated "
+                "after rescan for target: %s",
+
+                target
+
+            )
+
+
+    except Exception as error:
+
+        current_app.logger.warning(
+
+            "Asset inventory update after "
+            "rescan failed: %s",
+
+            error
+
+        )
+
+
     flash(
         "Rescan completed successfully.",
         "success"
@@ -950,9 +1061,7 @@ def rescan_target(
         "POST"
     ]
 )
-
 @login_required
-
 def delete_scan_record(
     scan_id
 ):
@@ -975,6 +1084,7 @@ def delete_scan_record(
             "Scan deleted successfully.",
             "success"
         )
+
 
     else:
 
@@ -1002,9 +1112,7 @@ def delete_scan_record(
         "POST"
     ]
 )
-
 @login_required
-
 def delete_selected_scans():
 
     # ======================================
@@ -1055,6 +1163,7 @@ def delete_selected_scans():
             "successfully.",
             "success"
         )
+
 
     else:
 

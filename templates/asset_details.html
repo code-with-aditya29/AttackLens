@@ -1,0 +1,1018 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Asset Details | AttackLens
+{% endblock %}
+
+
+{% block page_title %}
+Asset Details
+{% endblock %}
+
+
+{% block page_subtitle %}
+Review discovered asset information and security context
+{% endblock %}
+
+
+{% block content %}
+
+
+<section class="scan-results-page">
+
+
+    <!-- ==========================================
+         ASSET HEADER
+    =========================================== -->
+
+    <div class="scan-result-header">
+
+        <div>
+
+            <div class="section-label">
+                ASSET INVENTORY
+            </div>
+
+            <h3>
+                {{ asset.target }}
+            </h3>
+
+            <p>
+                Current security representation of this discovered asset.
+            </p>
+
+        </div>
+
+
+        {% if asset.risk_level %}
+
+        <div
+            class="scan-result-status
+            {{ asset.risk_level|lower }}"
+        >
+
+            <span class="status-dot"></span>
+
+            {{ asset.risk_level }}
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ==========================================
+         ASSET SUMMARY
+    =========================================== -->
+
+    <div class="scan-overview-grid">
+
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+                TARGET
+            </span>
+
+            <strong>
+                {{ asset.target }}
+            </strong>
+
+        </div>
+
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+                HOSTNAME
+            </span>
+
+            <strong>
+
+                {% if asset.hostname %}
+
+                    {{ asset.hostname }}
+
+                {% else %}
+
+                    Not Detected
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+                RISK SCORE
+            </span>
+
+            <strong>
+
+                {% if asset.risk_score is not none %}
+
+                    {{ asset.risk_score }} / 100
+
+                {% else %}
+
+                    Not Available
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+        <div class="scan-info-card">
+
+            <span class="scan-info-label">
+                RISK LEVEL
+            </span>
+
+            <strong>
+
+                {% if asset.risk_level %}
+
+                    {{ asset.risk_level }}
+
+                {% else %}
+
+                    Not Available
+
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         HOST INFORMATION
+    =========================================== -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Host Information
+                </h3>
+
+                <p>
+                    Identity and operating system information associated with this asset.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="scan-overview-grid">
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    HOST STATUS
+                </span>
+
+                <strong>
+                    {{ asset.host_status|default("unknown")|capitalize }}
+                </strong>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    MAC ADDRESS
+                </span>
+
+                <strong>
+
+                    {% if asset.mac_address %}
+
+                        {{ asset.mac_address }}
+
+                    {% else %}
+
+                        Not Detected
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    OPERATING SYSTEM
+                </span>
+
+                <strong>
+
+                    {% if asset.operating_system %}
+
+                        {{ asset.operating_system }}
+
+                    {% else %}
+
+                        Not Detected
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    OS ACCURACY
+                </span>
+
+                <strong>
+
+                    {% if asset.os_accuracy is not none %}
+
+                        {{ asset.os_accuracy }}%
+
+                    {% else %}
+
+                        Not Available
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         ASSET SECURITY CONTEXT
+    =========================================== -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Asset Context
+                </h3>
+
+                <p>
+                    Security importance and exposure information used during attack-path analysis.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'asset.update_context',
+                asset_id=asset._id
+            ) }}"
+        >
+
+
+            <div class="scan-overview-grid">
+
+
+                <div class="scan-info-card">
+
+                    <label
+                        class="scan-info-label"
+                        for="criticality"
+                    >
+                        CRITICALITY
+                    </label>
+
+
+                    <select
+                        id="criticality"
+                        name="criticality"
+                        class="form-control"
+                    >
+
+                        <option
+                            value="LOW"
+                            {% if asset.criticality == "LOW" %}
+                            selected
+                            {% endif %}
+                        >
+                            Low
+                        </option>
+
+
+                        <option
+                            value="NORMAL"
+                            {% if asset.criticality == "NORMAL" %}
+                            selected
+                            {% endif %}
+                        >
+                            Normal
+                        </option>
+
+
+                        <option
+                            value="HIGH"
+                            {% if asset.criticality == "HIGH" %}
+                            selected
+                            {% endif %}
+                        >
+                            High
+                        </option>
+
+
+                        <option
+                            value="CRITICAL"
+                            {% if asset.criticality == "CRITICAL" %}
+                            selected
+                            {% endif %}
+                        >
+                            Critical
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="scan-info-card">
+
+                    <label
+                        class="scan-info-label"
+                        for="exposure"
+                    >
+                        EXPOSURE
+                    </label>
+
+
+                    <select
+                        id="exposure"
+                        name="exposure"
+                        class="form-control"
+                    >
+
+                        <option
+                            value="UNKNOWN"
+                            {% if asset.exposure == "UNKNOWN" %}
+                            selected
+                            {% endif %}
+                        >
+                            Unknown
+                        </option>
+
+
+                        <option
+                            value="INTERNAL"
+                            {% if asset.exposure == "INTERNAL" %}
+                            selected
+                            {% endif %}
+                        >
+                            Internal
+                        </option>
+
+
+                        <option
+                            value="EXTERNAL"
+                            {% if asset.exposure == "EXTERNAL" %}
+                            selected
+                            {% endif %}
+                        >
+                            External
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="scan-result-actions">
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    Save Asset Context
+                </button>
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         OPEN PORTS
+    =========================================== -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Open Ports
+                </h3>
+
+                <p>
+                    Network ports currently associated with this asset.
+                </p>
+
+            </div>
+
+
+            <span class="result-count">
+                {{ asset.open_port_count|default(0) }}
+            </span>
+
+        </div>
+
+
+        {% if asset.ports %}
+
+
+        <div class="results-table-wrapper">
+
+            <table class="results-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Port
+                        </th>
+
+                        <th>
+                            Protocol
+                        </th>
+
+                        <th>
+                            State
+                        </th>
+
+                        <th>
+                            Service
+                        </th>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Version
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for port in asset.ports %}
+
+                    <tr>
+
+                        <td>
+                            {{ port.port }}
+                        </td>
+
+                        <td>
+                            {{ port.protocol|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ port.state|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ port.service|default("-") }}
+                        </td>
+
+                        <td>
+
+                            {% if port.product %}
+
+                                {{ port.product }}
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if port.version %}
+
+                                {{ port.version }}
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="result-empty-state">
+
+            <p>
+                No open ports are currently stored for this asset.
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+    <!-- ==========================================
+         SERVICES
+    =========================================== -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Services
+                </h3>
+
+                <p>
+                    Network services discovered on this asset.
+                </p>
+
+            </div>
+
+
+            <span class="result-count">
+                {{ asset.service_count|default(0) }}
+            </span>
+
+        </div>
+
+
+        {% if asset.services %}
+
+
+        <div class="results-table-wrapper">
+
+            <table class="results-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Port
+                        </th>
+
+                        <th>
+                            Service
+                        </th>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Version
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for service in asset.services %}
+
+                    <tr>
+
+                        <td>
+                            {{ service.port|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ service.name|default("-") }}
+                        </td>
+
+                        <td>
+
+                            {% if service.product %}
+
+                                {{ service.product }}
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if service.version %}
+
+                                {{ service.version }}
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="result-empty-state">
+
+            <p>
+                No services are currently stored for this asset.
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+    <!-- ==========================================
+         SECURITY FINDINGS
+    =========================================== -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Security Findings
+                </h3>
+
+                <p>
+                    CVE findings associated with the latest representation of this asset.
+                </p>
+
+            </div>
+
+
+            <span class="result-count">
+                {{ asset.vulnerability_count|default(0) }}
+            </span>
+
+        </div>
+
+
+        {% if asset.vulnerabilities %}
+
+
+        <div class="results-table-wrapper">
+
+            <table class="results-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            CVE
+                        </th>
+
+                        <th>
+                            Severity
+                        </th>
+
+                        <th>
+                            CVSS
+                        </th>
+
+                        <th>
+                            Port
+                        </th>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Version
+                        </th>
+
+                        <th>
+                            Confidence
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for vulnerability in asset.vulnerabilities %}
+
+                    <tr>
+
+                        <td>
+                            {{ vulnerability.cve_id }}
+                        </td>
+
+                        <td>
+                            {{ vulnerability.severity|default("UNKNOWN") }}
+                        </td>
+
+                        <td>
+                            {{ vulnerability.cvss_score|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ vulnerability.port|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ vulnerability.product|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ vulnerability.version|default("-") }}
+                        </td>
+
+                        <td>
+                            {{ vulnerability.confidence|default("UNKNOWN") }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="result-empty-state">
+
+            <p>
+                No applicable CVE findings are currently associated with this asset.
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+    <!-- ==========================================
+         SOURCE INFORMATION
+    =========================================== -->
+
+    <div class="result-card">
+
+
+        <div class="result-card-header">
+
+            <div>
+
+                <h3>
+                    Asset Tracking
+                </h3>
+
+                <p>
+                    Discovery and latest scan information for this asset.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="scan-overview-grid">
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    FIRST SEEN
+                </span>
+
+                <strong>
+
+                    {% if asset.first_seen %}
+
+                        {{ asset.first_seen.strftime(
+                            "%d %b %Y %H:%M"
+                        ) }}
+
+                    {% else %}
+
+                        Unknown
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    LAST SEEN
+                </span>
+
+                <strong>
+
+                    {% if asset.last_seen %}
+
+                        {{ asset.last_seen.strftime(
+                            "%d %b %Y %H:%M"
+                        ) }}
+
+                    {% else %}
+
+                        Unknown
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    LATEST SCAN PROFILE
+                </span>
+
+                <strong>
+
+                    {% if asset.latest_scan_profile %}
+
+                        {{ asset.latest_scan_profile|capitalize }}
+
+                    {% else %}
+
+                        Unknown
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="scan-info-card">
+
+                <span class="scan-info-label">
+                    ASSET ID
+                </span>
+
+                <strong>
+                    {{ asset._id }}
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         ACTIONS
+    =========================================== -->
+
+    <div class="scan-result-actions">
+
+        <a
+            href="{{ url_for(
+                'asset.asset_inventory'
+            ) }}"
+            class="secondary-button"
+        >
+            ← Back to Assets
+        </a>
+
+
+        {% if asset.latest_scan_id %}
+
+        <a
+            href="{{ url_for(
+                'scan.scan_results',
+                scan_id=asset.latest_scan_id
+            ) }}"
+            class="primary-button"
+        >
+            View Latest Scan
+        </a>
+
+        {% endif %}
+
+
+    </div>
+
+
+</section>
+
+
+{% endblock %}
