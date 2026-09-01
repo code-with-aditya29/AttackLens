@@ -1,56 +1,781 @@
 {% extends "base.html" %}
 
+
 {% block title %}
 AttackLens | Attack Paths
 {% endblock %}
+
 
 {% block page_title %}
 Attack Paths
 {% endblock %}
 
+
 {% block page_subtitle %}
 Visualize potential attack paths across discovered assets and services
 {% endblock %}
+
 
 {% block content %}
 
 <section class="dashboard-overview">
 
+
+    <!-- ==========================================
+         PAGE INTRODUCTION
+    =========================================== -->
+
     <div class="welcome-section">
+
         <div>
-            <h3>Attack Path Analysis</h3>
+
+            <h3>
+                Attack Path Analysis
+            </h3>
+
             <p>
-                Analyze how discovered assets and exposed services could form potential attack paths.
+                Analyze how discovered assets and exposed services
+                could form potential attack paths.
             </p>
+
         </div>
+
     </div>
+
+
+    <!-- ==========================================
+         ATTACK PATH SUMMARY
+    =========================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- ASSETS -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Assets
+                </span>
+
+                <span class="stat-icon">
+                    ◈
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{ graph_statistics.total_assets|default(0) }}
+
+            </div>
+
+            <p class="stat-description">
+                Assets included in the current analysis
+            </p>
+
+        </article>
+
+
+        <!-- GRAPH NODES -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Graph Nodes
+                </span>
+
+                <span class="stat-icon">
+                    ⬡
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{ graph_statistics.total_nodes|default(0) }}
+
+            </div>
+
+            <p class="stat-description">
+                Asset and attacker nodes in the graph
+            </p>
+
+        </article>
+
+
+        <!-- RELATIONSHIPS -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Relationships
+                </span>
+
+                <span class="stat-icon">
+                    ⇄
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{ graph_statistics.total_edges|default(0) }}
+
+            </div>
+
+            <p class="stat-description">
+                Potential attack relationships identified
+            </p>
+
+        </article>
+
+
+        <!-- ATTACK PATHS -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Attack Paths
+                </span>
+
+                <span class="stat-icon">
+                    ⚠
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{ graph_statistics.total_paths|default(0) }}
+
+            </div>
+
+            <p class="stat-description">
+                Potential attacker progression paths
+            </p>
+
+        </article>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         ATTACK GRAPH
+    =========================================== -->
+
+    <section class="dashboard-card attack-path-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Attack Graph
+                </h3>
+
+                <p>
+                    Potential relationships generated from
+                    current Asset Inventory data
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if graph_nodes|default([])|length > 0 %}
+
+            <div class="attack-graph-placeholder">
+
+                <div class="graph-empty-state">
+
+                    <div class="empty-icon">
+                        ⬡
+                    </div>
+
+                    <h4>
+                        Graph Data Generated
+                    </h4>
+
+                    <p>
+
+                        AttackLens generated
+
+                        {{ graph_statistics.total_nodes|default(0) }}
+
+                        graph node{% if graph_statistics.total_nodes|default(0) != 1 %}s{% endif %}
+
+                        and
+
+                        {{ graph_statistics.total_edges|default(0) }}
+
+                        relationship{% if graph_statistics.total_edges|default(0) != 1 %}s{% endif %}.
+
+                    </p>
+
+                    <p>
+                        Interactive graph visualization will be added
+                        after backend attack-path validation is complete.
+                    </p>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    △
+                </div>
+
+                <h4>
+                    No Assets Available
+                </h4>
+
+                <p>
+                    Complete an authorized security scan
+                    to generate Asset Inventory data for
+                    attack path analysis.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         GRAPH NODES
+    =========================================== -->
 
     <section class="dashboard-card">
 
         <div class="card-header">
+
             <div>
-                <h3>Potential Attack Paths</h3>
+
+                <h3>
+                    Graph Nodes
+                </h3>
+
                 <p>
-                    AttackLens will analyze relationships between assets, services, and security exposure.
+                    Assets and logical attacker entry points
+                    included in the analysis
                 </p>
+
             </div>
+
         </div>
+
+
+        {% if graph_nodes|default([])|length > 0 %}
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Hostname
+                            </th>
+
+                            <th>
+                                Risk
+                            </th>
+
+                            <th>
+                                Criticality
+                            </th>
+
+                            <th>
+                                Exposure
+                            </th>
+
+                            <th>
+                                Open Ports
+                            </th>
+
+                            <th>
+                                Findings
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for node in graph_nodes %}
+
+                            <tr>
+
+                                <td>
+
+                                    {% if node.node_type == "attacker" %}
+
+                                        Attacker
+
+                                    {% else %}
+
+                                        Asset
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if node.target %}
+
+                                        {{ node.target }}
+
+                                    {% else %}
+
+                                        External Entry
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ node.hostname|default("Unknown", true) }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if node.risk_score is not none %}
+
+                                        {{ node.risk_score }} / 100
+
+                                    {% else %}
+
+                                        --
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ node.criticality|default("--", true) }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ node.exposure|default("--", true) }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ node.open_ports|default([])|length }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ node.vulnerability_count|default(0) }}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◈
+                </div>
+
+                <h4>
+                    No Graph Nodes
+                </h4>
+
+                <p>
+                    No current assets are available for attack-path analysis.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         POTENTIAL RELATIONSHIPS
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Potential Relationships
+                </h3>
+
+                <p>
+                    Evidence-supported relationships identified
+                    by the Attack Path Engine
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if graph_edges|default([])|length > 0 %}
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Source
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Relationship
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Score
+                            </th>
+
+                            <th>
+                                Evidence
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for edge in graph_edges %}
+
+                            <tr>
+
+                                <td>
+                                    {{ edge.source }}
+                                </td>
+
+                                <td>
+                                    {{ edge.target }}
+                                </td>
+
+                                <td>
+                                    {{ edge.relationship }}
+                                </td>
+
+                                <td>
+                                    {{ edge.confidence }}
+                                </td>
+
+                                <td>
+                                    {{ edge.score }} / 100
+                                </td>
+
+                                <td>
+
+                                    {% if edge.evidence|default([])|length > 0 %}
+
+                                        {{ edge.evidence|join(" ") }}
+
+                                    {% else %}
+
+                                        No additional evidence.
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ⇄
+                </div>
+
+                <h4>
+                    No Potential Relationships
+                </h4>
+
+                <p>
+                    AttackLens did not identify sufficient evidence
+                    to create a potential relationship between the
+                    current assets.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         ATTACK PATHS
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Potential Attack Paths
+                </h3>
+
+                <p>
+                    Ordered attacker progression paths generated
+                    from supported graph relationships
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if attack_paths|default([])|length > 0 %}
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Path
+                            </th>
+
+                            <th>
+                                Risk
+                            </th>
+
+                            <th>
+                                Score
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Steps
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for path in attack_paths %}
+
+                            <tr>
+
+                                <td>
+
+                                    {{ path.nodes|join(" → ") }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ path.risk_level }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ path.score }} / 100
+
+                                </td>
+
+                                <td>
+
+                                    {{ path.confidence }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ path.edges|default([])|length }}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    △
+                </div>
+
+                <h4>
+                    No Attack Paths Available
+                </h4>
+
+                <p>
+
+                    {% if graph_statistics.total_assets|default(0) == 0 %}
+
+                        Complete an authorized security scan
+                        to generate data for attack path analysis.
+
+                    {% elif graph_statistics.total_assets|default(0) == 1 %}
+
+                        The current environment contains only one
+                        analyzed asset and no supported multi-stage
+                        attack path has been identified.
+
+                    {% else %}
+
+                        The Attack Path Engine did not identify
+                        sufficient evidence for an attacker progression
+                        path across the current assets.
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         ANALYSIS NOTICE
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Analysis Context
+                </h3>
+
+                <p>
+                    How AttackLens interprets attack-path results
+                </p>
+
+            </div>
+
+        </div>
+
 
         <div class="empty-state">
 
             <div class="empty-icon">
-                △
+                ◫
             </div>
 
-            <h4>No Attack Paths Available</h4>
+            <h4>
+                Potential Security Relationships
+            </h4>
 
             <p>
-                Complete an authorized security scan to generate data for attack path analysis.
+                Attack paths are generated from available Asset Inventory
+                evidence such as exposure, open services, security-sensitive
+                ports, vulnerabilities, risk, and asset criticality.
+                They represent potential attacker progression and do not
+                prove successful exploitation or verified network reachability.
             </p>
 
         </div>
 
     </section>
+
 
 </section>
 

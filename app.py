@@ -24,6 +24,10 @@ from pymongo import MongoClient
 from config import Config
 
 
+# ==========================================
+# ROUTE BLUEPRINTS
+# ==========================================
+
 from routes.scan import scan_bp
 
 from routes.auth import (
@@ -34,6 +38,10 @@ from routes.auth import (
 from routes.admin import admin_bp
 
 from routes.asset import asset_bp
+
+from routes.attack_path import (
+    attack_path_bp
+)
 
 
 # ==========================================
@@ -179,6 +187,28 @@ def create_app():
 
 
     # ======================================
+    # ATTACK PATH BLUEPRINT
+    # ======================================
+    #
+    # Attack Path functionality is handled
+    # by:
+    #
+    # routes/attack_path.py
+    #
+    # Endpoint:
+    #
+    # attack_path.attack_paths
+    #
+    # The previous placeholder route in
+    # app.py has been removed.
+    # ======================================
+
+    app.register_blueprint(
+        attack_path_bp
+    )
+
+
+    # ======================================
     # DASHBOARD / HOME
     # ======================================
 
@@ -278,7 +308,7 @@ def create_app():
     # ASSETS
     # ======================================
     #
-    # The Assets route is now handled by:
+    # The Assets route is handled by:
     #
     # routes/asset.py
     #
@@ -287,27 +317,26 @@ def create_app():
     # asset.asset_inventory
     #
     # Therefore the old placeholder /assets
-    # route has been removed from app.py.
+    # route remains removed from app.py.
     # ======================================
 
 
     # ======================================
     # ATTACK PATHS
     # ======================================
-
-    @app.route(
-        "/attack-paths"
-    )
-    @login_required
-    def attack_paths():
-
-        return render_template(
-
-            "attack_paths.html",
-
-            current_page="attack_paths"
-
-        )
+    #
+    # Attack Path Analysis is now handled
+    # by:
+    #
+    # routes/attack_path.py
+    #
+    # Endpoint:
+    #
+    # attack_path.attack_paths
+    #
+    # The old placeholder /attack-paths
+    # route has been removed.
+    # ======================================
 
 
     # ======================================
