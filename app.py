@@ -14,7 +14,8 @@ from flask import (
     Flask,
     render_template,
     redirect,
-    url_for
+    url_for,
+    session
 )
 
 from pymongo import MongoClient
@@ -33,6 +34,15 @@ from routes.auth import (
 from routes.admin import admin_bp
 
 from routes.asset import asset_bp
+
+
+# ==========================================
+# DASHBOARD SERVICE
+# ==========================================
+
+from services.dashboard_service import (
+    get_dashboard_stats
+)
 
 
 # ==========================================
@@ -176,11 +186,64 @@ def create_app():
     @login_required
     def home():
 
+        # ==================================
+        # GET CURRENT USER INFORMATION
+        # ==================================
+
+        current_user_id = session.get(
+            "admin_id"
+        )
+
+        current_user_role = session.get(
+            "role"
+        )
+
+
+        # ==================================
+        # DASHBOARD OWNERSHIP FILTER
+        # ==================================
+        #
+        # Normal Admin:
+        # Only assets created by that user
+        # are included.
+        #
+        # Super Admin:
+        # Global asset statistics are shown.
+        #
+        # This keeps dashboard ownership
+        # behavior aligned with the existing
+        # AttackLens access model.
+        # ==================================
+
+        if current_user_role == "super_admin":
+
+            dashboard_stats = (
+                get_dashboard_stats(
+                    db
+                )
+            )
+
+        else:
+
+            dashboard_stats = (
+                get_dashboard_stats(
+                    db,
+                    created_by=current_user_id
+                )
+            )
+
+
+        # ==================================
+        # RENDER DASHBOARD
+        # ==================================
+
         return render_template(
 
             "index.html",
 
-            current_page="dashboard"
+            current_page="dashboard",
+
+            dashboard_stats=dashboard_stats
 
         )
 

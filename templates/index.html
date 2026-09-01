@@ -81,21 +81,23 @@ Monitor attack exposure and prioritize defensive actions
 
             <div class="stat-value">
 
-                {% if dashboard_stats is defined %}
-
-                    {{ dashboard_stats.total_assets|default(0) }}
-
-                {% else %}
-
-                    --
-
-                {% endif %}
+                {{ dashboard_stats.total_assets|default(0) }}
 
             </div>
 
 
             <p class="stat-description">
-                Discovered assets will appear here
+
+                {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                    Current discovered assets
+
+                {% else %}
+
+                    No assets discovered yet
+
+                {% endif %}
+
             </p>
 
         </article>
@@ -120,21 +122,16 @@ Monitor attack exposure and prioritize defensive actions
 
             <div class="stat-value">
 
-                {% if dashboard_stats is defined %}
-
-                    {{ dashboard_stats.open_services|default(0) }}
-
-                {% else %}
-
-                    --
-
-                {% endif %}
+                {{ dashboard_stats.open_services|default(0) }}
 
             </div>
 
 
             <p class="stat-description">
-                Services identified during scanning
+
+                Services currently identified
+                across discovered assets
+
             </p>
 
         </article>
@@ -159,21 +156,23 @@ Monitor attack exposure and prioritize defensive actions
 
             <div class="stat-value">
 
-                {% if dashboard_stats is defined %}
-
-                    {{ dashboard_stats.attack_paths|default(0) }}
-
-                {% else %}
-
-                    --
-
-                {% endif %}
+                {{ dashboard_stats.attack_paths|default(0) }}
 
             </div>
 
 
             <p class="stat-description">
-                Potential paths will be analyzed here
+
+                {% if dashboard_stats.attack_paths|default(0) > 0 %}
+
+                    Potential attack paths identified
+
+                {% else %}
+
+                    Attack path analysis pending
+
+                {% endif %}
+
             </p>
 
         </article>
@@ -198,8 +197,7 @@ Monitor attack exposure and prioritize defensive actions
 
             <div class="stat-value">
 
-                {% if dashboard_stats is defined
-                    and dashboard_stats.risk_score is not none %}
+                {% if dashboard_stats.risk_score is not none %}
 
                     {{ dashboard_stats.risk_score }}
 
@@ -213,7 +211,18 @@ Monitor attack exposure and prioritize defensive actions
 
 
             <p class="stat-description">
-                Risk score will be calculated
+
+                {% if dashboard_stats.risk_level %}
+
+                    {{ dashboard_stats.risk_level }}
+                    current environment risk
+
+                {% else %}
+
+                    No risk assessment available
+
+                {% endif %}
+
             </p>
 
         </article>
@@ -258,8 +267,7 @@ Monitor attack exposure and prioritize defensive actions
             </div>
 
 
-            {% if dashboard_stats is defined
-                and dashboard_stats.total_assets|default(0) > 0 %}
+            {% if dashboard_stats.total_assets|default(0) > 0 %}
 
                 <div class="empty-state">
 
@@ -268,12 +276,23 @@ Monitor attack exposure and prioritize defensive actions
                     </div>
 
                     <h4>
-                        Assets Discovered
+                        {{ dashboard_stats.total_assets }}
+                        Asset{% if dashboard_stats.total_assets != 1 %}s{% endif %}
+                        Discovered
                     </h4>
 
                     <p>
-                        Open the Assets section to review discovered hosts,
-                        services, and exposure information.
+
+                        AttackLens currently tracks
+
+                        {{ dashboard_stats.open_ports|default(0) }}
+                        open port{% if dashboard_stats.open_ports|default(0) != 1 %}s{% endif %}
+
+                        and
+
+                        {{ dashboard_stats.open_services|default(0) }}
+                        identified service{% if dashboard_stats.open_services|default(0) != 1 %}s{% endif %}.
+
                     </p>
 
                 </div>
@@ -327,8 +346,7 @@ Monitor attack exposure and prioritize defensive actions
 
                 <div class="risk-score">
 
-                    {% if dashboard_stats is defined
-                        and dashboard_stats.risk_score is not none %}
+                    {% if dashboard_stats.risk_score is not none %}
 
                         {{ dashboard_stats.risk_score }}
 
@@ -342,7 +360,17 @@ Monitor attack exposure and prioritize defensive actions
 
 
                 <span>
-                    Risk Score
+
+                    {% if dashboard_stats.risk_level %}
+
+                        {{ dashboard_stats.risk_level }} Risk
+
+                    {% else %}
+
+                        Risk Score
+
+                    {% endif %}
+
                 </span>
 
             </div>
@@ -350,10 +378,17 @@ Monitor attack exposure and prioritize defensive actions
 
             <p class="risk-message">
 
-                {% if dashboard_stats is defined
-                    and dashboard_stats.risk_score is not none %}
+                {% if dashboard_stats.risk_score is not none %}
 
-                    Risk score calculated from current security findings.
+                    Current posture includes
+
+                    {{ dashboard_stats.vulnerable_assets|default(0) }}
+                    vulnerable asset{% if dashboard_stats.vulnerable_assets|default(0) != 1 %}s{% endif %}
+
+                    and
+
+                    {{ dashboard_stats.total_vulnerabilities|default(0) }}
+                    security finding{% if dashboard_stats.total_vulnerabilities|default(0) != 1 %}s{% endif %}.
 
                 {% else %}
 
@@ -414,7 +449,8 @@ Monitor attack exposure and prioritize defensive actions
 
                 <p>
                     AttackLens will generate potential attack paths
-                    after analyzing authorized scan results.
+                    after the Attack Path Engine analyzes the
+                    discovered asset environment.
                 </p>
 
             </div>
