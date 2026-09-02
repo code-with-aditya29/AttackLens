@@ -195,40 +195,116 @@ Visualize potential attack paths across discovered assets and services
 
         {% if graph_nodes|default([])|length > 0 %}
 
-            <div class="attack-graph-placeholder">
+            <div class="attack-graph-toolbar">
 
-                <div class="graph-empty-state">
+                <div class="attack-graph-toolbar-group">
 
-                    <div class="empty-icon">
-                        ⬡
-                    </div>
+                    <button type="button" id="graph-fit-button" class="secondary-button attack-graph-control">
+                        Fit Graph
+                    </button>
 
-                    <h4>
-                        Graph Data Generated
-                    </h4>
-
-                    <p>
-
-                        AttackLens generated
-
-                        {{ graph_statistics.total_nodes|default(0) }}
-
-                        graph node{% if graph_statistics.total_nodes|default(0) != 1 %}s{% endif %}
-
-                        and
-
-                        {{ graph_statistics.total_edges|default(0) }}
-
-                        relationship{% if graph_statistics.total_edges|default(0) != 1 %}s{% endif %}.
-
-                    </p>
-
-                    <p>
-                        Interactive graph visualization will be added
-                        after backend attack-path validation is complete.
-                    </p>
+                    <button type="button" id="graph-reset-button" class="secondary-button attack-graph-control">
+                        Reset View
+                    </button>
 
                 </div>
+
+                <div class="attack-graph-toolbar-group attack-path-selector-group">
+
+                    <label for="attack-path-selector">
+                        Highlight Path
+                    </label>
+
+                    <select id="attack-path-selector" class="attack-path-selector" {% if attack_paths|default([])|length == 0 %}disabled{% endif %}>
+                        <option value="">
+                            {% if attack_paths|default([])|length > 0 %}
+                                Select a path
+                            {% else %}
+                                No attack paths available
+                            {% endif %}
+                        </option>
+                    </select>
+
+                    <button type="button" id="graph-clear-button" class="secondary-button attack-graph-control" disabled>
+                        Clear Selection
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="attack-graph-workspace">
+
+                <div class="attack-graph-canvas-wrapper">
+
+                    <div id="attack-path-graph" class="attack-path-graph-canvas" role="img" aria-label="Interactive AttackLens attack path graph"></div>
+
+                    <div id="attack-graph-loading" class="attack-graph-loading" aria-live="polite">
+                        Preparing attack graph...
+                    </div>
+
+                </div>
+
+
+                <aside id="attack-path-details" class="attack-path-details-panel" aria-live="polite">
+
+                    <div class="attack-path-details-header">
+
+                        <div>
+
+                            <span class="attack-path-details-label">
+                                Selection Details
+                            </span>
+
+                            <h4 id="attack-path-details-title">
+                                Select a node or relationship
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                    <div id="attack-path-details-content" class="attack-path-details-content">
+
+                        <p class="attack-path-details-empty">
+                            Click an asset, attacker node, or relationship in the graph
+                            to inspect its security context.
+                        </p>
+
+                    </div>
+
+                </aside>
+
+            </div>
+
+
+            <div class="attack-graph-legend">
+
+                <span class="attack-graph-legend-item">
+                    <span class="attack-graph-legend-dot attacker"></span>
+                    External Attacker
+                </span>
+
+                <span class="attack-graph-legend-item">
+                    <span class="attack-graph-legend-dot low"></span>
+                    Low
+                </span>
+
+                <span class="attack-graph-legend-item">
+                    <span class="attack-graph-legend-dot medium"></span>
+                    Medium
+                </span>
+
+                <span class="attack-graph-legend-item">
+                    <span class="attack-graph-legend-dot high"></span>
+                    High
+                </span>
+
+                <span class="attack-graph-legend-item">
+                    <span class="attack-graph-legend-dot critical"></span>
+                    Critical
+                </span>
 
             </div>
 
@@ -778,5 +854,23 @@ Visualize potential attack paths across discovered assets and services
 
 
 </section>
+
+
+{% if graph_nodes|default([])|length > 0 %}
+
+<script id="attack-path-graph-data" type="application/json">
+{
+    "nodes": {{ graph_nodes|default([])|tojson }},
+    "edges": {{ graph_edges|default([])|tojson }},
+    "paths": {{ attack_paths|default([])|tojson }},
+    "statistics": {{ graph_statistics|default({})|tojson }}
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js" defer></script>
+<script src="{{ url_for('static', filename='js/attack_path_visualization.js') }}" defer></script>
+
+{% endif %}
+
 
 {% endblock %}
