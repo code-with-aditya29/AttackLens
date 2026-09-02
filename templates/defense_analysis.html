@@ -9,32 +9,762 @@ Defense Analysis
 {% endblock %}
 
 {% block page_subtitle %}
-Prioritize defensive actions to reduce potential attack paths
+Prioritize defensive areas based on current assets and potential attack paths
 {% endblock %}
 
 {% block content %}
 
-<section class="dashboard-overview">
+<section class="dashboard-overview defense-analysis-page">
+
+
+    <!-- ==========================================
+         DEFENSE ANALYSIS INTRODUCTION
+         ========================================== -->
 
     <div class="welcome-section">
+
         <div>
-            <h3>Defense Prioritization</h3>
+
+            <h3>
+                Defense Prioritization
+            </h3>
+
             <p>
-                Identify defensive actions that can reduce the greatest number of potential attack paths.
+                Analyze Asset Inventory and Attack Path evidence
+                to identify the assets, relationships, and paths
+                that deserve the greatest defensive attention.
             </p>
+
         </div>
+
     </div>
+
+
+    <!-- ==========================================
+         SUMMARY STATISTICS
+         ========================================== -->
+
+    <section class="stats-grid">
+
+
+        <!-- TOTAL FINDINGS -->
+
+        <div class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Defense Findings
+                </span>
+
+                <span class="stat-icon">
+                    ⛨
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{
+                    defense_statistics.total_findings
+                    | default(0)
+                }}
+
+            </div>
+
+            <p class="stat-description">
+                Security-relevant findings identified
+                during defensive analysis
+            </p>
+
+        </div>
+
+
+        <!-- TOTAL PRIORITIES -->
+
+        <div class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Defense Priorities
+                </span>
+
+                <span class="stat-icon">
+                    △
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{
+                    defense_statistics.total_priorities
+                    | default(0)
+                }}
+
+            </div>
+
+            <p class="stat-description">
+                Defensive areas currently ranked
+                for further review
+            </p>
+
+        </div>
+
+
+        <!-- HIGH / CRITICAL -->
+
+        <div class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    High Priority
+                </span>
+
+                <span class="stat-icon">
+                    !
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{
+                    (
+                        defense_statistics.high_priorities
+                        | default(0)
+                    )
+                    +
+                    (
+                        defense_statistics.critical_priorities
+                        | default(0)
+                    )
+                }}
+
+            </div>
+
+            <p class="stat-description">
+                High or critical defensive priorities
+                requiring attention
+            </p>
+
+        </div>
+
+
+        <!-- ATTACK PATHS -->
+
+        <div class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Attack Paths
+                </span>
+
+                <span class="stat-icon">
+                    ◇
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+
+                {{
+                    graph_statistics.total_paths
+                    | default(0)
+                }}
+
+            </div>
+
+            <p class="stat-description">
+                Potential attacker progression paths
+                considered during analysis
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- ==========================================
+         DEFENSE PRIORITIES
+         ========================================== -->
+
+    <section class="dashboard-card defense-priority-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Defense Priorities
+                </h3>
+
+                <p>
+                    Ranked defensive areas based on asset risk,
+                    attack-path presence, relationships,
+                    exposure, vulnerabilities, and
+                    security-sensitive services.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if defense_priorities|default([])|length > 0 %}
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Priority
+                            </th>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Level
+                            </th>
+
+                            <th>
+                                Score
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Reason
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for priority in defense_priorities %}
+
+                            <tr>
+
+                                <td>
+
+                                    {{
+                                        priority.title
+                                        | default(
+                                            "Defense Priority",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        priority.priority_type
+                                        | default(
+                                            "general",
+                                            true
+                                        )
+                                        | replace(
+                                            "_",
+                                            " "
+                                        )
+                                        | title
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        priority.target
+                                        | default(
+                                            "--",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        priority.priority_level
+                                        | default(
+                                            "UNKNOWN",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        priority.score
+                                        | default(0)
+                                    }}
+                                    / 100
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        priority.confidence
+                                        | default(
+                                            "UNKNOWN",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        priority.reason
+                                        | default(
+                                            "No additional reason available.",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ⛨
+                </div>
+
+                <h4>
+                    No Defense Priorities Identified
+                </h4>
+
+                <p>
+
+                    AttackLens did not identify sufficient
+                    evidence to create a defensive priority
+                    for the current environment.
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         DEFENSE FINDINGS
+         ========================================== -->
+
+    <section class="dashboard-card defense-findings-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Defense Findings
+                </h3>
+
+                <p>
+                    Security observations contributing
+                    to defensive prioritization.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if defense_findings|default([])|length > 0 %}
+
+            <div class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Finding
+                            </th>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Severity
+                            </th>
+
+                            <th>
+                                Score
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Evidence
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for finding in defense_findings %}
+
+                            <tr>
+
+                                <td>
+
+                                    {{
+                                        finding.title
+                                        | default(
+                                            "Defense Finding",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        finding.finding_type
+                                        | default(
+                                            "general",
+                                            true
+                                        )
+                                        | replace(
+                                            "_",
+                                            " "
+                                        )
+                                        | title
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        finding.target
+                                        | default(
+                                            "--",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        finding.severity
+                                        | default(
+                                            "UNKNOWN",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        finding.score
+                                        | default(0)
+                                    }}
+                                    / 100
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        finding.confidence
+                                        | default(
+                                            "UNKNOWN",
+                                            true
+                                        )
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {% if finding.evidence|default([])|length > 0 %}
+
+                                        {{
+                                            finding.evidence
+                                            | join(" ")
+                                        }}
+
+                                    {% else %}
+
+                                        No additional evidence available.
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◇
+                </div>
+
+                <h4>
+                    No Security-Relevant Findings
+                </h4>
+
+                <p>
+
+                    No current asset, relationship, or
+                    attack-path evidence met the threshold
+                    for a Defense Analysis finding.
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         ATTACK PATH CONTEXT
+         ========================================== -->
+
+    <section class="dashboard-card defense-context-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Attack Path Context
+                </h3>
+
+                <p>
+                    Graph information used by the
+                    Defense Analysis Engine.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="stats-grid defense-context-grid">
+
+
+            <div class="stat-card">
+
+                <div class="stat-card-header">
+
+                    <span class="stat-label">
+                        Graph Nodes
+                    </span>
+
+                </div>
+
+                <div class="stat-value">
+
+                    {{
+                        graph_statistics.total_nodes
+                        | default(0)
+                    }}
+
+                </div>
+
+                <p class="stat-description">
+                    Asset and attacker nodes
+                    included in analysis
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-card-header">
+
+                    <span class="stat-label">
+                        Relationships
+                    </span>
+
+                </div>
+
+                <div class="stat-value">
+
+                    {{
+                        graph_statistics.total_edges
+                        | default(0)
+                    }}
+
+                </div>
+
+                <p class="stat-description">
+                    Potential graph relationships
+                    evaluated by the engine
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-card-header">
+
+                    <span class="stat-label">
+                        Attack Paths
+                    </span>
+
+                </div>
+
+                <div class="stat-value">
+
+                    {{
+                        graph_statistics.total_paths
+                        | default(0)
+                    }}
+
+                </div>
+
+                <p class="stat-description">
+                    Potential attack paths included
+                    in defensive analysis
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-card-header">
+
+                    <span class="stat-label">
+                        Highest Priority
+                    </span>
+
+                </div>
+
+                <div class="stat-value">
+
+                    {{
+                        defense_statistics.highest_priority_score
+                        | default(0)
+                    }}
+
+                </div>
+
+                <p class="stat-description">
+                    Highest current defensive
+                    priority score
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         ANALYSIS EXPLANATION
+         ========================================== -->
 
     <section class="dashboard-card">
 
         <div class="card-header">
+
             <div>
-                <h3>Recommended Defensive Actions</h3>
+
+                <h3>
+                    How Defense Analysis Works
+                </h3>
+
                 <p>
-                    Recommendations will be prioritized based on their potential impact on identified attack paths.
+                    How AttackLens interprets defensive
+                    significance.
                 </p>
+
             </div>
+
         </div>
+
 
         <div class="empty-state">
 
@@ -42,15 +772,30 @@ Prioritize defensive actions to reduce potential attack paths
                 ⛨
             </div>
 
-            <h4>No Defense Analysis Available</h4>
+            <h4>
+                Evidence-Based Defense Prioritization
+            </h4>
 
             <p>
-                Complete attack path analysis to generate prioritized defensive recommendations.
+
+                Defense Analysis evaluates current asset risk,
+                external exposure, vulnerabilities,
+                security-sensitive services, graph
+                relationships, and generated attack paths.
+
+                The results indicate what deserves defensive
+                attention and why.
+
+                Detailed mitigation instructions are generated
+                separately by the Mitigation Recommendation
+                Engine.
+
             </p>
 
         </div>
 
     </section>
+
 
 </section>
 

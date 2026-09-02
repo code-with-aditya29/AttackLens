@@ -43,6 +43,10 @@ from routes.attack_path import (
     attack_path_bp
 )
 
+from routes.defense_analysis import (
+    defense_analysis_bp
+)
+
 
 # ==========================================
 # DASHBOARD SERVICE
@@ -180,6 +184,15 @@ def create_app():
     # ======================================
     # ASSET BLUEPRINT
     # ======================================
+    #
+    # Asset functionality is handled by:
+    #
+    # routes/asset.py
+    #
+    # Main endpoint:
+    #
+    # asset.asset_inventory
+    # ======================================
 
     app.register_blueprint(
         asset_bp
@@ -205,6 +218,28 @@ def create_app():
 
     app.register_blueprint(
         attack_path_bp
+    )
+
+
+    # ======================================
+    # DEFENSE ANALYSIS BLUEPRINT
+    # ======================================
+    #
+    # Defense Analysis functionality is
+    # handled by:
+    #
+    # routes/defense_analysis.py
+    #
+    # Endpoint:
+    #
+    # defense_analysis.defense_analysis
+    #
+    # The previous placeholder route in
+    # app.py has been removed.
+    # ======================================
+
+    app.register_blueprint(
+        defense_analysis_bp
     )
 
 
@@ -282,7 +317,7 @@ def create_app():
     # NEW SCAN
     # ======================================
     #
-    # Dashboard "New Scan" button will use
+    # Dashboard "New Scan" button uses
     # this endpoint.
     #
     # Actual scan processing remains inside
@@ -316,8 +351,8 @@ def create_app():
     #
     # asset.asset_inventory
     #
-    # Therefore the old placeholder /assets
-    # route remains removed from app.py.
+    # No duplicate /assets route should
+    # exist here.
     # ======================================
 
 
@@ -325,8 +360,7 @@ def create_app():
     # ATTACK PATHS
     # ======================================
     #
-    # Attack Path Analysis is now handled
-    # by:
+    # Attack Path Analysis is handled by:
     #
     # routes/attack_path.py
     #
@@ -334,28 +368,26 @@ def create_app():
     #
     # attack_path.attack_paths
     #
-    # The old placeholder /attack-paths
-    # route has been removed.
+    # No duplicate /attack-paths route
+    # should exist here.
     # ======================================
 
 
     # ======================================
     # DEFENSE ANALYSIS
     # ======================================
-
-    @app.route(
-        "/defense-analysis"
-    )
-    @login_required
-    def defense_analysis():
-
-        return render_template(
-
-            "defense_analysis.html",
-
-            current_page="defense_analysis"
-
-        )
+    #
+    # Defense Analysis is now handled by:
+    #
+    # routes/defense_analysis.py
+    #
+    # Endpoint:
+    #
+    # defense_analysis.defense_analysis
+    #
+    # No duplicate /defense-analysis route
+    # should exist here.
+    # ======================================
 
 
     # ======================================

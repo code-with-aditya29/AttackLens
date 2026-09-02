@@ -7145,3 +7145,1379 @@ p {
     }
 
 }
+
+/* =========================================================
+   ATTACKLENS - DEFENSE ANALYSIS UI REFINEMENT
+   Scoped only to .defense-analysis-page.
+   Existing working styles above are intentionally untouched.
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   PAGE CONTAINMENT
+   --------------------------------------------------------- */
+
+.defense-analysis-page {
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+}
+
+
+.defense-analysis-page > * {
+
+    min-width:
+        0;
+
+}
+
+
+/* ---------------------------------------------------------
+   INTRO / WELCOME CARD
+   --------------------------------------------------------- */
+
+.defense-analysis-page .welcome-section {
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+}
+
+
+.defense-analysis-page .welcome-section::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        -70px;
+
+    right:
+        -70px;
+
+    width:
+        180px;
+
+    height:
+        180px;
+
+    border-radius:
+        50%;
+
+    background:
+        var(--primary-soft);
+
+    pointer-events:
+        none;
+
+}
+
+
+.defense-analysis-page .welcome-section > * {
+
+    position:
+        relative;
+
+    z-index:
+        1;
+
+}
+
+
+.defense-analysis-page .welcome-section p {
+
+    max-width:
+        820px;
+
+}
+
+
+/* ---------------------------------------------------------
+   SUMMARY CARDS
+   --------------------------------------------------------- */
+
+.defense-analysis-page .stats-grid {
+
+    align-items:
+        stretch;
+
+}
+
+
+.defense-analysis-page .stat-card {
+
+    min-width:
+        0;
+
+    min-height:
+        164px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        space-between;
+
+}
+
+
+.defense-analysis-page .stat-card-header {
+
+    min-width:
+        0;
+
+}
+
+
+.defense-analysis-page .stat-label {
+
+    line-height:
+        1.35;
+
+}
+
+
+.defense-analysis-page .stat-value {
+
+    margin-top:
+        20px;
+
+    line-height:
+        1;
+
+}
+
+
+.defense-analysis-page .stat-description {
+
+    margin-top:
+        10px;
+
+    min-height:
+        36px;
+
+    overflow-wrap:
+        anywhere;
+
+}
+
+
+/* ---------------------------------------------------------
+   DEFENSE ANALYSIS CARDS
+   --------------------------------------------------------- */
+
+.defense-analysis-page .dashboard-card {
+
+    min-width:
+        0;
+
+    overflow:
+        hidden;
+
+}
+
+
+.defense-analysis-page
+.dashboard-card
+>
+.card-header {
+
+    margin-bottom:
+        20px;
+
+    padding-bottom:
+        18px;
+
+    border-bottom:
+        1px solid
+        var(--border-color);
+
+}
+
+
+.defense-analysis-page
+.dashboard-card
+>
+.card-header
+h3 {
+
+    font-size:
+        18px;
+
+    font-weight:
+        700;
+
+}
+
+
+.defense-analysis-page
+.dashboard-card
+>
+.card-header
+p {
+
+    max-width:
+        820px;
+
+    line-height:
+        1.6;
+
+}
+
+
+/* ---------------------------------------------------------
+   TABLE CONTAINERS
+   --------------------------------------------------------- */
+
+.defense-analysis-page .table-container,
+.defense-analysis-page .results-table-wrapper,
+.defense-analysis-page .defense-table-wrapper {
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    overflow-x:
+        auto;
+
+    overflow-y:
+        hidden;
+
+    border:
+        1px solid
+        var(--border-color);
+
+    border-radius:
+        13px;
+
+    background:
+        var(--card-bg);
+
+    box-shadow:
+        inset
+        0
+        1px
+        0
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+
+    scrollbar-width:
+        thin;
+
+    scrollbar-color:
+        var(--primary-soft)
+        transparent;
+
+}
+
+
+.defense-analysis-page
+.table-container::-webkit-scrollbar,
+.defense-analysis-page
+.results-table-wrapper::-webkit-scrollbar,
+.defense-analysis-page
+.defense-table-wrapper::-webkit-scrollbar {
+
+    height:
+        8px;
+
+}
+
+
+.defense-analysis-page
+.table-container::-webkit-scrollbar-thumb,
+.defense-analysis-page
+.results-table-wrapper::-webkit-scrollbar-thumb,
+.defense-analysis-page
+.defense-table-wrapper::-webkit-scrollbar-thumb {
+
+    border-radius:
+        999px;
+
+    background:
+        var(--primary-soft);
+
+}
+
+
+/* ---------------------------------------------------------
+   DEFENSE DATA TABLES
+   --------------------------------------------------------- */
+
+.defense-analysis-page .data-table,
+.defense-analysis-page .results-table,
+.defense-analysis-page .defense-table {
+
+    width:
+        100%;
+
+    min-width:
+        1080px;
+
+    border-collapse:
+        collapse;
+
+    border-spacing:
+        0;
+
+    table-layout:
+        fixed;
+
+    background:
+        var(--card-bg);
+
+    color:
+        var(--text-primary);
+
+}
+
+
+.defense-analysis-page .data-table thead,
+.defense-analysis-page .results-table thead,
+.defense-analysis-page .defense-table thead {
+
+    background:
+        var(--primary-light);
+
+}
+
+
+.defense-analysis-page .data-table th,
+.defense-analysis-page .results-table th,
+.defense-analysis-page .defense-table th {
+
+    padding:
+        14px
+        15px;
+
+    text-align:
+        left;
+
+    vertical-align:
+        middle;
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        11px;
+
+    font-weight:
+        750;
+
+    line-height:
+        1.35;
+
+    letter-spacing:
+        0.05em;
+
+    text-transform:
+        uppercase;
+
+    white-space:
+        nowrap;
+
+    border-right:
+        1px solid
+        var(--border-color);
+
+    border-bottom:
+        1px solid
+        var(--border-color);
+
+}
+
+
+.defense-analysis-page .data-table td,
+.defense-analysis-page .results-table td,
+.defense-analysis-page .defense-table td {
+
+    padding:
+        16px
+        15px;
+
+    vertical-align:
+        top;
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        12px;
+
+    line-height:
+        1.58;
+
+    border-right:
+        1px solid
+        var(--border-color);
+
+    border-bottom:
+        1px solid
+        var(--border-color);
+
+    overflow-wrap:
+        anywhere;
+
+    word-break:
+        normal;
+
+}
+
+
+.defense-analysis-page .data-table th:last-child,
+.defense-analysis-page .data-table td:last-child,
+.defense-analysis-page .results-table th:last-child,
+.defense-analysis-page .results-table td:last-child,
+.defense-analysis-page .defense-table th:last-child,
+.defense-analysis-page .defense-table td:last-child {
+
+    border-right:
+        none;
+
+}
+
+
+.defense-analysis-page
+.data-table
+tbody
+tr:last-child
+td,
+.defense-analysis-page
+.results-table
+tbody
+tr:last-child
+td,
+.defense-analysis-page
+.defense-table
+tbody
+tr:last-child
+td {
+
+    border-bottom:
+        none;
+
+}
+
+
+.defense-analysis-page .data-table tbody tr,
+.defense-analysis-page .results-table tbody tr,
+.defense-analysis-page .defense-table tbody tr {
+
+    background:
+        var(--card-bg);
+
+    transition:
+        background
+        0.18s
+        ease;
+
+}
+
+
+.defense-analysis-page .data-table tbody tr:hover,
+.defense-analysis-page .results-table tbody tr:hover,
+.defense-analysis-page .defense-table tbody tr:hover {
+
+    background:
+        var(--primary-soft);
+
+}
+
+
+/* ---------------------------------------------------------
+   COLUMN DISTRIBUTION
+   --------------------------------------------------------- */
+
+.defense-analysis-page
+.data-table
+th:nth-child(1),
+.defense-analysis-page
+.data-table
+td:nth-child(1),
+.defense-analysis-page
+.results-table
+th:nth-child(1),
+.defense-analysis-page
+.results-table
+td:nth-child(1),
+.defense-analysis-page
+.defense-table
+th:nth-child(1),
+.defense-analysis-page
+.defense-table
+td:nth-child(1) {
+
+    width:
+        17%;
+
+    min-width:
+        175px;
+
+}
+
+
+.defense-analysis-page
+.data-table
+th:nth-child(2),
+.defense-analysis-page
+.data-table
+td:nth-child(2),
+.defense-analysis-page
+.results-table
+th:nth-child(2),
+.defense-analysis-page
+.results-table
+td:nth-child(2),
+.defense-analysis-page
+.defense-table
+th:nth-child(2),
+.defense-analysis-page
+.defense-table
+td:nth-child(2) {
+
+    width:
+        14%;
+
+    min-width:
+        145px;
+
+}
+
+
+.defense-analysis-page
+.data-table
+th:nth-child(3),
+.defense-analysis-page
+.data-table
+td:nth-child(3),
+.defense-analysis-page
+.results-table
+th:nth-child(3),
+.defense-analysis-page
+.results-table
+td:nth-child(3),
+.defense-analysis-page
+.defense-table
+th:nth-child(3),
+.defense-analysis-page
+.defense-table
+td:nth-child(3) {
+
+    width:
+        15%;
+
+    min-width:
+        155px;
+
+}
+
+
+.defense-analysis-page
+.data-table
+th:nth-child(4),
+.defense-analysis-page
+.data-table
+td:nth-child(4),
+.defense-analysis-page
+.results-table
+th:nth-child(4),
+.defense-analysis-page
+.results-table
+td:nth-child(4),
+.defense-analysis-page
+.defense-table
+th:nth-child(4),
+.defense-analysis-page
+.defense-table
+td:nth-child(4) {
+
+    width:
+        9%;
+
+    min-width:
+        92px;
+
+}
+
+
+.defense-analysis-page
+.data-table
+th:nth-child(5),
+.defense-analysis-page
+.data-table
+td:nth-child(5),
+.defense-analysis-page
+.results-table
+th:nth-child(5),
+.defense-analysis-page
+.results-table
+td:nth-child(5),
+.defense-analysis-page
+.defense-table
+th:nth-child(5),
+.defense-analysis-page
+.defense-table
+td:nth-child(5) {
+
+    width:
+        10%;
+
+    min-width:
+        105px;
+
+}
+
+
+.defense-analysis-page
+.data-table
+th:nth-child(6),
+.defense-analysis-page
+.data-table
+td:nth-child(6),
+.defense-analysis-page
+.results-table
+th:nth-child(6),
+.defense-analysis-page
+.results-table
+td:nth-child(6),
+.defense-analysis-page
+.defense-table
+th:nth-child(6),
+.defense-analysis-page
+.defense-table
+td:nth-child(6) {
+
+    width:
+        10%;
+
+    min-width:
+        108px;
+
+}
+
+
+.defense-analysis-page
+.data-table
+th:nth-child(7),
+.defense-analysis-page
+.data-table
+td:nth-child(7),
+.defense-analysis-page
+.results-table
+th:nth-child(7),
+.defense-analysis-page
+.results-table
+td:nth-child(7),
+.defense-analysis-page
+.defense-table
+th:nth-child(7),
+.defense-analysis-page
+.defense-table
+td:nth-child(7) {
+
+    width:
+        25%;
+
+    min-width:
+        280px;
+
+}
+
+
+/* ---------------------------------------------------------
+   LONG REASON / EVIDENCE CONTENT
+   --------------------------------------------------------- */
+
+.defense-analysis-page .data-table td:last-child,
+.defense-analysis-page .results-table td:last-child,
+.defense-analysis-page .defense-table td:last-child {
+
+    color:
+        var(--text-secondary);
+
+    line-height:
+        1.68;
+
+    white-space:
+        normal;
+
+}
+
+
+.defense-analysis-page .data-table td:first-child,
+.defense-analysis-page .results-table td:first-child,
+.defense-analysis-page .defense-table td:first-child {
+
+    font-weight:
+        650;
+
+    color:
+        var(--text-primary);
+
+}
+
+
+/* ---------------------------------------------------------
+   STATUS / LEVEL BADGES
+   --------------------------------------------------------- */
+
+.defense-analysis-page .scan-result-status,
+.defense-analysis-page .risk-badge,
+.defense-analysis-page .priority-badge,
+.defense-analysis-page .severity-badge,
+.defense-analysis-page .confidence-badge {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    min-width:
+        72px;
+
+    padding:
+        6px
+        9px;
+
+    border:
+        1px solid
+        transparent;
+
+    border-radius:
+        999px;
+
+    font-size:
+        10px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1.15;
+
+    letter-spacing:
+        0.035em;
+
+    text-transform:
+        uppercase;
+
+    white-space:
+        nowrap;
+
+}
+
+
+.defense-analysis-page .low,
+.defense-analysis-page .scan-result-status.low,
+.defense-analysis-page .risk-badge.low,
+.defense-analysis-page .priority-badge.low,
+.defense-analysis-page .severity-badge.low {
+
+    color:
+        #16a34a;
+
+}
+
+
+.defense-analysis-page .medium,
+.defense-analysis-page .scan-result-status.medium,
+.defense-analysis-page .risk-badge.medium,
+.defense-analysis-page .priority-badge.medium,
+.defense-analysis-page .severity-badge.medium {
+
+    color:
+        #d97706;
+
+}
+
+
+.defense-analysis-page .high,
+.defense-analysis-page .scan-result-status.high,
+.defense-analysis-page .risk-badge.high,
+.defense-analysis-page .priority-badge.high,
+.defense-analysis-page .severity-badge.high {
+
+    color:
+        #ea580c;
+
+}
+
+
+.defense-analysis-page .critical,
+.defense-analysis-page .scan-result-status.critical,
+.defense-analysis-page .risk-badge.critical,
+.defense-analysis-page .priority-badge.critical,
+.defense-analysis-page .severity-badge.critical {
+
+    color:
+        #dc2626;
+
+}
+
+
+.defense-analysis-page .scan-result-status.low,
+.defense-analysis-page .risk-badge.low,
+.defense-analysis-page .priority-badge.low,
+.defense-analysis-page .severity-badge.low {
+
+    background:
+        rgba(
+            22,
+            163,
+            74,
+            0.11
+        );
+
+    border-color:
+        rgba(
+            22,
+            163,
+            74,
+            0.22
+        );
+
+}
+
+
+.defense-analysis-page .scan-result-status.medium,
+.defense-analysis-page .risk-badge.medium,
+.defense-analysis-page .priority-badge.medium,
+.defense-analysis-page .severity-badge.medium {
+
+    background:
+        rgba(
+            217,
+            119,
+            6,
+            0.11
+        );
+
+    border-color:
+        rgba(
+            217,
+            119,
+            6,
+            0.22
+        );
+
+}
+
+
+.defense-analysis-page .scan-result-status.high,
+.defense-analysis-page .risk-badge.high,
+.defense-analysis-page .priority-badge.high,
+.defense-analysis-page .severity-badge.high {
+
+    background:
+        rgba(
+            234,
+            88,
+            12,
+            0.11
+        );
+
+    border-color:
+        rgba(
+            234,
+            88,
+            12,
+            0.22
+        );
+
+}
+
+
+.defense-analysis-page .scan-result-status.critical,
+.defense-analysis-page .risk-badge.critical,
+.defense-analysis-page .priority-badge.critical,
+.defense-analysis-page .severity-badge.critical {
+
+    background:
+        rgba(
+            220,
+            38,
+            38,
+            0.11
+        );
+
+    border-color:
+        rgba(
+            220,
+            38,
+            38,
+            0.22
+        );
+
+}
+
+
+/* ---------------------------------------------------------
+   ATTACK PATH CONTEXT / INFORMATION CARDS
+   --------------------------------------------------------- */
+
+.defense-analysis-page
+.dashboard-card
+.scan-overview-grid,
+.defense-analysis-page
+.dashboard-card
+.defense-context-grid,
+.defense-analysis-page
+.dashboard-card
+.context-grid {
+
+    width:
+        100%;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap:
+        14px;
+
+}
+
+
+.defense-analysis-page
+.dashboard-card
+.scan-info-card,
+.defense-analysis-page
+.dashboard-card
+.context-card,
+.defense-analysis-page
+.dashboard-card
+.defense-context-card {
+
+    min-width:
+        0;
+
+    padding:
+        18px;
+
+    border:
+        1px solid
+        var(--border-color);
+
+    border-radius:
+        12px;
+
+    background:
+        var(--bg-primary);
+
+}
+
+
+.defense-analysis-page
+.dashboard-card
+.scan-info-card
+strong,
+.defense-analysis-page
+.dashboard-card
+.context-card
+strong,
+.defense-analysis-page
+.dashboard-card
+.defense-context-card
+strong {
+
+    overflow-wrap:
+        anywhere;
+
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY STATES
+   --------------------------------------------------------- */
+
+.defense-analysis-page
+.dashboard-card
+>
+.empty-state {
+
+    min-height:
+        190px;
+
+    margin-top:
+        2px;
+
+    padding:
+        30px
+        24px;
+
+    border:
+        1px dashed
+        var(--border-color);
+
+    border-radius:
+        13px;
+
+    background:
+        var(--primary-soft);
+
+}
+
+
+.defense-analysis-page
+.dashboard-card
+>
+.empty-state
+p {
+
+    max-width:
+        680px;
+
+}
+
+
+/* ---------------------------------------------------------
+   HOW DEFENSE ANALYSIS WORKS
+   --------------------------------------------------------- */
+
+.defense-analysis-page
+.dashboard-card:last-child {
+
+    position:
+        relative;
+
+}
+
+
+.defense-analysis-page
+.dashboard-card:last-child
+>
+.empty-state,
+.defense-analysis-page
+.dashboard-card:last-child
+>
+.analysis-context,
+.defense-analysis-page
+.dashboard-card:last-child
+>
+.defense-explanation {
+
+    border-style:
+        solid;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary-soft),
+            transparent 76%
+        );
+
+}
+
+
+/* ---------------------------------------------------------
+   DARK MODE
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.defense-analysis-page
+.data-table
+thead,
+[data-theme="dark"]
+.defense-analysis-page
+.results-table
+thead,
+[data-theme="dark"]
+.defense-analysis-page
+.defense-table
+thead {
+
+    background:
+        rgba(
+            139,
+            92,
+            246,
+            0.09
+        );
+
+}
+
+
+[data-theme="dark"]
+.defense-analysis-page
+.data-table
+tbody
+tr:hover,
+[data-theme="dark"]
+.defense-analysis-page
+.results-table
+tbody
+tr:hover,
+[data-theme="dark"]
+.defense-analysis-page
+.defense-table
+tbody
+tr:hover {
+
+    background:
+        rgba(
+            139,
+            92,
+            246,
+            0.07
+        );
+
+}
+
+
+[data-theme="dark"]
+.defense-analysis-page
+.dashboard-card
+.scan-info-card,
+[data-theme="dark"]
+.defense-analysis-page
+.dashboard-card
+.context-card,
+[data-theme="dark"]
+.defense-analysis-page
+.dashboard-card
+.defense-context-card {
+
+    background:
+        rgba(
+            139,
+            92,
+            246,
+            0.035
+        );
+
+}
+
+
+[data-theme="dark"]
+.defense-analysis-page
+.dashboard-card
+>
+.empty-state {
+
+    background:
+        rgba(
+            139,
+            92,
+            246,
+            0.045
+        );
+
+}
+
+
+/* ---------------------------------------------------------
+   RESPONSIVE - TABLET
+   --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+
+    .defense-analysis-page
+    .dashboard-card
+    .scan-overview-grid,
+    .defense-analysis-page
+    .dashboard-card
+    .defense-context-grid,
+    .defense-analysis-page
+    .dashboard-card
+    .context-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+    }
+
+
+    .defense-analysis-page .data-table,
+    .defense-analysis-page .results-table,
+    .defense-analysis-page .defense-table {
+
+        min-width:
+            1040px;
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   RESPONSIVE - MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+    .defense-analysis-page {
+
+        gap:
+            18px;
+
+    }
+
+
+    .defense-analysis-page .dashboard-card {
+
+        padding:
+            20px;
+
+        border-radius:
+            14px;
+
+    }
+
+
+    .defense-analysis-page
+    .dashboard-card
+    >
+    .card-header {
+
+        gap:
+            10px;
+
+        margin-bottom:
+            16px;
+
+        padding-bottom:
+            15px;
+
+    }
+
+
+    .defense-analysis-page
+    .dashboard-card
+    .scan-overview-grid,
+    .defense-analysis-page
+    .dashboard-card
+    .defense-context-grid,
+    .defense-analysis-page
+    .dashboard-card
+    .context-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .defense-analysis-page .data-table,
+    .defense-analysis-page .results-table,
+    .defense-analysis-page .defense-table {
+
+        min-width:
+            980px;
+
+    }
+
+
+    .defense-analysis-page .data-table th,
+    .defense-analysis-page .data-table td,
+    .defense-analysis-page .results-table th,
+    .defense-analysis-page .results-table td,
+    .defense-analysis-page .defense-table th,
+    .defense-analysis-page .defense-table td {
+
+        padding-left:
+            13px;
+
+        padding-right:
+            13px;
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   VERY SMALL SCREENS
+   --------------------------------------------------------- */
+
+@media (max-width: 480px) {
+
+    .defense-analysis-page .dashboard-card {
+
+        padding:
+            18px
+            16px;
+
+    }
+
+
+    .defense-analysis-page .stat-card {
+
+        min-height:
+            150px;
+
+    }
+
+
+    .defense-analysis-page .stat-value {
+
+        font-size:
+            30px;
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .defense-analysis-page
+    .data-table
+    tbody
+    tr,
+    .defense-analysis-page
+    .results-table
+    tbody
+    tr,
+    .defense-analysis-page
+    .defense-table
+    tbody
+    tr {
+
+        transition:
+            none;
+
+    }
+
+}

@@ -475,17 +475,18 @@ Monitor attack exposure and prioritize defensive actions
                 </h3>
 
                 <p>
-                    Recommended defensive actions based on attack-path impact
+                    Prioritized defensive areas based on current
+                    asset and attack-path evidence
                 </p>
 
             </div>
 
 
             <a
-                href="{{ url_for('defense_analysis') }}"
+                href="{{ url_for('defense_analysis.defense_analysis') }}"
                 class="secondary-button"
             >
-                View Recommendations
+                View Analysis
             </a>
 
         </div>
@@ -498,12 +499,12 @@ Monitor attack exposure and prioritize defensive actions
             </div>
 
             <h4>
-                No Recommendations Yet
+                Defense Analysis Available
             </h4>
 
             <p>
-                Recommendations will be generated after attack path
-                analysis is completed.
+                Review prioritized assets, relationships, and
+                attack paths that may require defensive attention.
             </p>
 
         </div>
