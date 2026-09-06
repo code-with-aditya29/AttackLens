@@ -47,6 +47,10 @@ from routes.defense_analysis import (
     defense_analysis_bp
 )
 
+from routes.mitigation import (
+    mitigation_bp
+)
+
 
 # ==========================================
 # DASHBOARD SERVICE
@@ -244,6 +248,28 @@ def create_app():
 
 
     # ======================================
+    # MITIGATION BLUEPRINT
+    # ======================================
+    #
+    # Mitigation functionality is handled
+    # by:
+    #
+    # routes/mitigation.py
+    #
+    # Endpoint:
+    #
+    # mitigation.mitigation
+    #
+    # No duplicate /mitigation route should
+    # exist in app.py.
+    # ======================================
+
+    app.register_blueprint(
+        mitigation_bp
+    )
+
+
+    # ======================================
     # DASHBOARD / HOME
     # ======================================
 
@@ -387,6 +413,24 @@ def create_app():
     #
     # No duplicate /defense-analysis route
     # should exist here.
+    # ======================================
+
+
+    # ======================================
+    # MITIGATION
+    # ======================================
+    #
+    # Mitigation Recommendations are handled
+    # by:
+    #
+    # routes/mitigation.py
+    #
+    # Endpoint:
+    #
+    # mitigation.mitigation
+    #
+    # No duplicate /mitigation route should
+    # exist here.
     # ======================================
 
 

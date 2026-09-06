@@ -444,13 +444,13 @@ Monitor attack exposure and prioritize defensive actions
                 </div>
 
                 <h4>
-                    Attack Graph Not Generated
+                    Attack Path Analysis Available
                 </h4>
 
                 <p>
-                    AttackLens will generate potential attack paths
-                    after the Attack Path Engine analyzes the
-                    discovered asset environment.
+                    Review generated security relationships,
+                    potential attacker movement, and available
+                    attack-path evidence.
                 </p>
 
             </div>
@@ -505,6 +505,59 @@ Monitor attack exposure and prioritize defensive actions
             <p>
                 Review prioritized assets, relationships, and
                 attack paths that may require defensive attention.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         MITIGATION RECOMMENDATIONS
+    =========================================== -->
+
+    <section class="dashboard-card mitigation-dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Mitigation Recommendations
+                </h3>
+
+                <p>
+                    Evidence-based defensive actions for reducing
+                    identified security exposure and attack-path risk
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('mitigation.mitigation') }}"
+                class="secondary-button"
+            >
+                View Recommendations
+            </a>
+
+        </div>
+
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ✓
+            </div>
+
+            <h4>
+                Mitigation Recommendations Available
+            </h4>
+
+            <p>
+                Review prioritized actions generated from current
+                asset, vulnerability, exposure, defense-analysis,
+                and attack-path evidence.
             </p>
 
         </div>

@@ -1,0 +1,872 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Mitigation Recommendations | AttackLens
+{% endblock %}
+
+
+{% block page_title %}
+Mitigation Recommendations
+{% endblock %}
+
+
+{% block page_subtitle %}
+Evidence-based defensive actions derived from current security analysis
+{% endblock %}
+
+
+{% block content %}
+
+<section class="dashboard-overview mitigation-page">
+
+
+    <!-- ==========================================
+         INTRODUCTION
+    =========================================== -->
+
+    <section class="welcome-section">
+
+        <div>
+
+            <h3>
+                Mitigation Recommendations
+            </h3>
+
+            <p>
+                AttackLens converts current asset,
+                vulnerability, exposure, defense-analysis,
+                and attack-path evidence into prioritized
+                defensive actions.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         SUMMARY
+    =========================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- TOTAL -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Recommendations
+                </span>
+
+                <span class="stat-icon">
+                    ✓
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{
+                    mitigation_statistics
+                    .total_recommendations
+                    |default(0)
+                }}
+            </div>
+
+            <p class="stat-description">
+                Evidence-based defensive actions
+                generated for the current environment
+            </p>
+
+        </article>
+
+
+        <!-- HIGH PRIORITY -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    High Priority
+                </span>
+
+                <span class="stat-icon">
+                    !
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{
+                    mitigation_statistics
+                    .high_priority_recommendations
+                    |default(0)
+                }}
+            </div>
+
+            <p class="stat-description">
+                High or critical recommendations
+                requiring greater attention
+            </p>
+
+        </article>
+
+
+        <!-- AFFECTED ASSETS -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Assets
+                </span>
+
+                <span class="stat-icon">
+                    ◇
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{
+                    mitigation_statistics
+                    .affected_assets
+                    |default(0)
+                }}
+            </div>
+
+            <p class="stat-description">
+                Assets associated with generated
+                defensive recommendations
+            </p>
+
+        </article>
+
+
+        <!-- HIGHEST SCORE -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Highest Priority
+                </span>
+
+                <span class="stat-icon">
+                    △
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{
+                    mitigation_statistics
+                    .highest_score
+                    |default(0)
+                }}
+            </div>
+
+            <p class="stat-description">
+
+                {% if
+                    mitigation_statistics
+                    .highest_priority
+                    |default("NONE")
+                    != "NONE"
+                %}
+
+                    {{
+                        mitigation_statistics
+                        .highest_priority
+                    }}
+                    recommendation priority
+
+                {% else %}
+
+                    No recommendation priority available
+
+                {% endif %}
+
+            </p>
+
+        </article>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         PRIORITIZED RECOMMENDATIONS
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Prioritized Recommendations
+                </h3>
+
+                <p>
+                    Defensive actions ranked using
+                    evidence already identified by
+                    AttackLens.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if recommendations %}
+
+            <div class="mitigation-table-wrapper">
+
+                <table class="mitigation-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Recommendation
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Target
+                            </th>
+
+                            <th>
+                                Priority
+                            </th>
+
+                            <th>
+                                Score
+                            </th>
+
+                            <th>
+                                Confidence
+                            </th>
+
+                            <th>
+                                Expected Effect
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for recommendation in recommendations %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>
+                                        {{
+                                            recommendation
+                                            .title
+                                        }}
+                                    </strong>
+
+                                    <span class="mitigation-description">
+
+                                        {{
+                                            recommendation
+                                            .description
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        recommendation
+                                        .category
+                                        |replace("_", " ")
+                                        |title
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        recommendation
+                                        .target
+                                        or
+                                        "Environment"
+                                    }}
+
+                                </td>
+
+
+                                <td>
+
+                                    <span
+                                        class="mitigation-badge
+                                        {{
+                                            recommendation
+                                            .priority_level
+                                            |lower
+                                        }}"
+                                    >
+
+                                        {{
+                                            recommendation
+                                            .priority_level
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        recommendation
+                                        .score
+                                    }}
+                                    / 100
+
+                                </td>
+
+
+                                <td>
+
+                                    <span
+                                        class="confidence-badge
+                                        {{
+                                            recommendation
+                                            .confidence
+                                            |lower
+                                        }}"
+                                    >
+
+                                        {{
+                                            recommendation
+                                            .confidence
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{
+                                        recommendation
+                                        .expected_effect
+                                        or
+                                        "Not specified"
+                                    }}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ✓
+                </div>
+
+                <h4>
+                    No Mitigation Recommendations
+                </h4>
+
+                <p>
+
+                    {% if
+                        graph_statistics
+                        .total_assets
+                        |default(0)
+                        == 0
+                    %}
+
+                        Complete an authorized security
+                        scan to generate evidence for
+                        mitigation analysis.
+
+                    {% else %}
+
+                        The current evidence does not
+                        support a specific mitigation
+                        recommendation.
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- ==========================================
+         RECOMMENDATION DETAILS
+    =========================================== -->
+
+    {% if recommendations %}
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h3>
+                        Recommendation Details
+                    </h3>
+
+                    <p>
+                        Evidence, recommended actions,
+                        and expected defensive effects.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="mitigation-recommendation-list">
+
+                {% for recommendation in recommendations %}
+
+                    <article class="mitigation-recommendation-card">
+
+
+                        <div class="mitigation-recommendation-header">
+
+                            <div>
+
+                                <span class="section-label">
+                                    {{
+                                        recommendation
+                                        .category
+                                        |replace("_", " ")
+                                        |upper
+                                    }}
+                                </span>
+
+                                <h4>
+                                    {{
+                                        recommendation
+                                        .title
+                                    }}
+                                </h4>
+
+                                <p>
+
+                                    Target:
+
+                                    <strong>
+                                        {{
+                                            recommendation
+                                            .target
+                                            or
+                                            "Environment"
+                                        }}
+                                    </strong>
+
+                                </p>
+
+                            </div>
+
+
+                            <span
+                                class="mitigation-badge
+                                {{
+                                    recommendation
+                                    .priority_level
+                                    |lower
+                                }}"
+                            >
+
+                                {{
+                                    recommendation
+                                    .priority_level
+                                }}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="mitigation-detail-grid">
+
+
+                            <!-- EVIDENCE -->
+
+                            <div class="mitigation-detail-panel">
+
+                                <h5>
+                                    Evidence
+                                </h5>
+
+                                {% if recommendation.evidence %}
+
+                                    <ul>
+
+                                        {% for evidence in recommendation.evidence %}
+
+                                            <li>
+                                                {{ evidence }}
+                                            </li>
+
+                                        {% endfor %}
+
+                                    </ul>
+
+                                {% else %}
+
+                                    <p>
+                                        No additional evidence available.
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- ACTIONS -->
+
+                            <div class="mitigation-detail-panel">
+
+                                <h5>
+                                    Recommended Actions
+                                </h5>
+
+                                {% if recommendation.actions %}
+
+                                    <ol>
+
+                                        {% for action in recommendation.actions %}
+
+                                            <li>
+                                                {{ action }}
+                                            </li>
+
+                                        {% endfor %}
+
+                                    </ol>
+
+                                {% endif %}
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="mitigation-effect">
+
+                            <strong>
+                                Expected Defensive Effect
+                            </strong>
+
+                            <p>
+                                {{
+                                    recommendation
+                                    .expected_effect
+                                    or
+                                    "No expected effect available."
+                                }}
+                            </p>
+
+                        </div>
+
+
+                        {% if
+                            recommendation.related_cves
+                            or
+                            recommendation.related_ports
+                            or
+                            recommendation.related_path_ids
+                        %}
+
+                            <div class="mitigation-related-evidence">
+
+
+                                {% if recommendation.related_cves %}
+
+                                    <span>
+
+                                        CVEs:
+
+                                        <strong>
+                                            {{
+                                                recommendation
+                                                .related_cves
+                                                |join(", ")
+                                            }}
+                                        </strong>
+
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if recommendation.related_ports %}
+
+                                    <span>
+
+                                        Ports:
+
+                                        <strong>
+                                            {{
+                                                recommendation
+                                                .related_ports
+                                                |join(", ")
+                                            }}
+                                        </strong>
+
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if recommendation.related_path_ids %}
+
+                                    <span>
+
+                                        Attack Paths:
+
+                                        <strong>
+                                            {{
+                                                recommendation
+                                                .related_path_ids
+                                                |length
+                                            }}
+                                        </strong>
+
+                                    </span>
+
+                                {% endif %}
+
+
+                            </div>
+
+                        {% endif %}
+
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         ANALYSIS CONTEXT
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Recommendation Context
+                </h3>
+
+                <p>
+                    How AttackLens generates mitigation
+                    recommendations.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="mitigation-context-grid">
+
+
+            <div class="mitigation-context-card">
+
+                <span>
+                    Defense Findings
+                </span>
+
+                <strong>
+                    {{
+                        defense_statistics
+                        .total_findings
+                        |default(0)
+                    }}
+                </strong>
+
+                <p>
+                    Findings considered during
+                    recommendation generation
+                </p>
+
+            </div>
+
+
+            <div class="mitigation-context-card">
+
+                <span>
+                    Attack Paths
+                </span>
+
+                <strong>
+                    {{
+                        graph_statistics
+                        .total_paths
+                        |default(
+                            graph_statistics
+                            .attack_paths
+                            |default(0)
+                        )
+                    }}
+                </strong>
+
+                <p>
+                    Potential attacker progression
+                    paths considered
+                </p>
+
+            </div>
+
+
+            <div class="mitigation-context-card">
+
+                <span>
+                    Recommendations
+                </span>
+
+                <strong>
+                    {{
+                        mitigation_statistics
+                        .total_recommendations
+                        |default(0)
+                    }}
+                </strong>
+
+                <p>
+                    Evidence-supported defensive
+                    actions generated
+                </p>
+
+            </div>
+
+
+            <div class="mitigation-context-card">
+
+                <span>
+                    Highest Score
+                </span>
+
+                <strong>
+                    {{
+                        mitigation_statistics
+                        .highest_score
+                        |default(0)
+                    }}
+                </strong>
+
+                <p>
+                    Highest current mitigation
+                    priority score
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         EXPLANATION
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    How Mitigation Works
+                </h3>
+
+                <p>
+                    Evidence-based defensive guidance,
+                    not automatic remediation.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="mitigation-explanation">
+
+            <div class="empty-icon">
+                ✓
+            </div>
+
+            <h4>
+                Evidence-Based Mitigation
+            </h4>
+
+            <p>
+                AttackLens generates recommendations
+                only when current scan, asset,
+                vulnerability, exposure, defense,
+                relationship, or attack-path evidence
+                supports them. Recommendations describe
+                defensive actions for review and do not
+                automatically modify the analyzed systems.
+            </p>
+
+        </div>
+
+    </section>
+
+
+</section>
+
+{% endblock %}
