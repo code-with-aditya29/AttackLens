@@ -51,6 +51,10 @@ from routes.mitigation import (
     mitigation_bp
 )
 
+from routes.risk_comparison import (
+    risk_comparison_bp
+)
+
 
 # ==========================================
 # DASHBOARD SERVICE
@@ -270,6 +274,33 @@ def create_app():
 
 
     # ======================================
+    # RISK COMPARISON BLUEPRINT
+    # ======================================
+    #
+    # Before vs After Risk Comparison is
+    # handled by:
+    #
+    # routes/risk_comparison.py
+    #
+    # Endpoint:
+    #
+    # risk_comparison.risk_comparison
+    #
+    # The route generates a comparison
+    # between the current security state
+    # and the projected post-mitigation
+    # security state.
+    #
+    # No duplicate /risk-comparison route
+    # should exist in app.py.
+    # ======================================
+
+    app.register_blueprint(
+        risk_comparison_bp
+    )
+
+
+    # ======================================
     # DASHBOARD / HOME
     # ======================================
 
@@ -431,6 +462,24 @@ def create_app():
     #
     # No duplicate /mitigation route should
     # exist here.
+    # ======================================
+
+
+    # ======================================
+    # RISK COMPARISON
+    # ======================================
+    #
+    # Before vs After Risk Comparison is
+    # handled by:
+    #
+    # routes/risk_comparison.py
+    #
+    # Endpoint:
+    #
+    # risk_comparison.risk_comparison
+    #
+    # No duplicate /risk-comparison route
+    # should exist here.
     # ======================================
 
 

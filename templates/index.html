@@ -565,6 +565,59 @@ Monitor attack exposure and prioritize defensive actions
     </section>
 
 
+    <!-- ==========================================
+         BEFORE VS AFTER RISK COMPARISON
+    =========================================== -->
+
+    <section class="dashboard-card risk-comparison-dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Before vs After Risk Comparison
+                </h3>
+
+                <p>
+                    Compare the current security posture with the
+                    projected post-mitigation risk state
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('risk_comparison.risk_comparison') }}"
+                class="secondary-button"
+            >
+                View Comparison
+            </a>
+
+        </div>
+
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ⇄
+            </div>
+
+            <h4>
+                Risk Comparison Available
+            </h4>
+
+            <p>
+                Review the current risk state, projected post-mitigation
+                state, and estimated reduction based on applicable
+                defensive recommendations.
+            </p>
+
+        </div>
+
+    </section>
+
+
 </section>
 
 {% endblock %}

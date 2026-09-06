@@ -10118,3 +10118,1234 @@ tr:hover {
     }
 
 }
+
+/* =========================================================
+   ATTACKLENS - BEFORE VS AFTER RISK COMPARISON UI
+   Scoped only to .risk-comparison-page.
+   Existing working styles above are intentionally untouched.
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   PAGE CONTAINMENT
+   --------------------------------------------------------- */
+
+.risk-comparison-page {
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+}
+
+
+.risk-comparison-page > * {
+
+    min-width:
+        0;
+
+}
+
+
+/* ---------------------------------------------------------
+   INTRODUCTION CARD
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.welcome-section {
+
+    position:
+        relative;
+
+    overflow:
+        hidden;
+
+}
+
+
+.risk-comparison-page
+.welcome-section::after {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        -90px;
+
+    right:
+        -70px;
+
+    width:
+        220px;
+
+    height:
+        220px;
+
+    border-radius:
+        50%;
+
+    background:
+        var(--primary-soft);
+
+    pointer-events:
+        none;
+
+}
+
+
+.risk-comparison-page
+.welcome-section
+> * {
+
+    position:
+        relative;
+
+    z-index:
+        1;
+
+}
+
+
+/* ---------------------------------------------------------
+   SUMMARY STATISTICS
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.stats-grid {
+
+    align-items:
+        stretch;
+
+}
+
+
+.risk-comparison-page
+.stat-card {
+
+    min-width:
+        0;
+
+    min-height:
+        175px;
+
+    overflow:
+        hidden;
+
+}
+
+
+.risk-comparison-page
+.stat-value {
+
+    margin-top:
+        24px;
+
+    line-height:
+        1.1;
+
+}
+
+
+.risk-comparison-page
+.stat-description {
+
+    overflow-wrap:
+        anywhere;
+
+}
+
+
+/* ---------------------------------------------------------
+   MAIN DASHBOARD CARDS
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.dashboard-card {
+
+    min-width:
+        0;
+
+    overflow:
+        hidden;
+
+}
+
+
+.risk-comparison-page
+.dashboard-card
+>
+.card-header {
+
+    padding-bottom:
+        18px;
+
+    margin-bottom:
+        22px;
+
+    border-bottom:
+        1px solid var(--border-color);
+
+}
+
+
+.risk-comparison-page
+.dashboard-card
+>
+.card-header
+h3 {
+
+    font-size:
+        18px;
+
+    font-weight:
+        700;
+
+}
+
+
+.risk-comparison-page
+.dashboard-card
+>
+.card-header
+p {
+
+    max-width:
+        820px;
+
+}
+
+
+/* ---------------------------------------------------------
+   CURRENT VS PROJECTED STATE
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-state-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(
+            0,
+            1fr
+        )
+        auto
+        minmax(
+            0,
+            1fr
+        );
+
+    gap:
+        22px;
+
+    align-items:
+        stretch;
+
+}
+
+
+/* ---------------------------------------------------------
+   BEFORE / AFTER STATE PANELS
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-state-card {
+
+    min-width:
+        0;
+
+    padding:
+        24px;
+
+    border:
+        1px solid var(--border-color);
+
+    border-radius:
+        15px;
+
+    background:
+        var(--bg-primary);
+
+}
+
+
+.risk-comparison-page
+.comparison-state-card
+h4 {
+
+    margin:
+        0
+        0
+        20px;
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        17px;
+
+    font-weight:
+        700;
+
+}
+
+
+/* ---------------------------------------------------------
+   CURRENT / PROJECTED LABEL
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.state-label {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        7px;
+
+    margin-bottom:
+        10px;
+
+    padding:
+        6px
+        10px;
+
+    border-radius:
+        999px;
+
+    background:
+        var(--primary-light);
+
+    color:
+        var(--primary);
+
+    font-size:
+        10px;
+
+    font-weight:
+        800;
+
+    letter-spacing:
+        0.10em;
+
+    text-transform:
+        uppercase;
+
+}
+
+
+/* ---------------------------------------------------------
+   RISK SCORE DISPLAY
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-risk-score {
+
+    display:
+        flex;
+
+    align-items:
+        baseline;
+
+    gap:
+        6px;
+
+    margin-bottom:
+        6px;
+
+}
+
+
+.risk-comparison-page
+.comparison-risk-score
+strong {
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        34px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1;
+
+}
+
+
+.risk-comparison-page
+.comparison-risk-score
+span {
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        13px;
+
+    font-weight:
+        600;
+
+}
+
+
+/* ---------------------------------------------------------
+   RISK LEVEL
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-risk-level {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    margin-bottom:
+        21px;
+
+    padding:
+        6px
+        10px;
+
+    border:
+        1px solid var(--border-color);
+
+    border-radius:
+        999px;
+
+    color:
+        var(--primary);
+
+    background:
+        var(--primary-light);
+
+    font-size:
+        11px;
+
+    font-weight:
+        800;
+
+}
+
+
+/* ---------------------------------------------------------
+   STATE METRICS GRID
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-metrics {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap:
+        12px;
+
+}
+
+
+.risk-comparison-page
+.comparison-metric {
+
+    min-width:
+        0;
+
+    padding:
+        14px;
+
+    border:
+        1px solid var(--border-color);
+
+    border-radius:
+        11px;
+
+    background:
+        var(--card-bg);
+
+}
+
+
+.risk-comparison-page
+.comparison-metric
+span {
+
+    display:
+        block;
+
+    margin-bottom:
+        6px;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        10px;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.05em;
+
+    text-transform:
+        uppercase;
+
+}
+
+
+.risk-comparison-page
+.comparison-metric
+strong {
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        18px;
+
+    font-weight:
+        750;
+
+}
+
+
+/* ---------------------------------------------------------
+   COMPARISON ARROW
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-arrow {
+
+    align-self:
+        center;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    gap:
+        7px;
+
+    min-width:
+        70px;
+
+    color:
+        var(--primary);
+
+}
+
+
+.risk-comparison-page
+.comparison-arrow-icon {
+
+    width:
+        50px;
+
+    height:
+        50px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    border-radius:
+        14px;
+
+    background:
+        var(--primary-light);
+
+    color:
+        var(--primary);
+
+    font-size:
+        24px;
+
+    font-weight:
+        700;
+
+}
+
+
+.risk-comparison-page
+.comparison-arrow
+span {
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        11px;
+
+    font-weight:
+        700;
+
+}
+
+
+/* ---------------------------------------------------------
+   REDUCTION BREAKDOWN
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.reduction-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap:
+        16px;
+
+}
+
+
+.risk-comparison-page
+.reduction-item {
+
+    min-width:
+        0;
+
+    padding:
+        20px;
+
+    border:
+        1px solid var(--border-color);
+
+    border-radius:
+        13px;
+
+    background:
+        var(--bg-primary);
+
+    transition:
+        transform
+        0.2s
+        ease,
+        border-color
+        0.2s
+        ease,
+        box-shadow
+        0.2s
+        ease;
+
+}
+
+
+.risk-comparison-page
+.reduction-item:hover {
+
+    transform:
+        translateY(
+            -2px
+        );
+
+    border-color:
+        var(--primary);
+
+    box-shadow:
+        var(--shadow-sm);
+
+}
+
+
+.risk-comparison-page
+.reduction-item
+span {
+
+    display:
+        block;
+
+    margin-bottom:
+        9px;
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        12px;
+
+    font-weight:
+        600;
+
+}
+
+
+.risk-comparison-page
+.reduction-item
+strong {
+
+    display:
+        block;
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        23px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1.15;
+
+}
+
+
+.risk-comparison-page
+.reduction-item
+p {
+
+    margin:
+        8px
+        0
+        0;
+
+    color:
+        var(--text-muted);
+
+    font-size:
+        11px;
+
+    line-height:
+        1.5;
+
+}
+
+
+/* ---------------------------------------------------------
+   PROJECTION CONTEXT
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.projection-context-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    gap:
+        16px;
+
+}
+
+
+.risk-comparison-page
+.projection-context-item {
+
+    min-width:
+        0;
+
+    padding:
+        20px;
+
+    border:
+        1px solid var(--border-color);
+
+    border-radius:
+        13px;
+
+    background:
+        var(--bg-primary);
+
+}
+
+
+.risk-comparison-page
+.projection-context-item
+strong {
+
+    display:
+        block;
+
+    margin-bottom:
+        8px;
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        24px;
+
+    font-weight:
+        800;
+
+}
+
+
+.risk-comparison-page
+.projection-context-item
+span {
+
+    display:
+        block;
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        12px;
+
+    line-height:
+        1.55;
+
+}
+
+
+/* ---------------------------------------------------------
+   HOW RISK COMPARISON WORKS
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.comparison-explanation {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        auto
+        minmax(
+            0,
+            1fr
+        );
+
+    gap:
+        20px;
+
+    align-items:
+        flex-start;
+
+}
+
+
+.risk-comparison-page
+.comparison-explanation-icon {
+
+    width:
+        58px;
+
+    height:
+        58px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    flex-shrink:
+        0;
+
+    border-radius:
+        16px;
+
+    background:
+        var(--primary-light);
+
+    color:
+        var(--primary);
+
+    font-size:
+        28px;
+
+}
+
+
+.risk-comparison-page
+.comparison-explanation-content {
+
+    min-width:
+        0;
+
+}
+
+
+.risk-comparison-page
+.comparison-explanation-content
+h4 {
+
+    margin:
+        0
+        0
+        12px;
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        17px;
+
+    font-weight:
+        700;
+
+}
+
+
+.risk-comparison-page
+.comparison-explanation-content
+p {
+
+    margin:
+        0;
+
+    max-width:
+        1050px;
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        13px;
+
+    line-height:
+        1.7;
+
+}
+
+
+/* ---------------------------------------------------------
+   GENERIC FALLBACK FOR UNSTYLED INNER CONTENT
+   --------------------------------------------------------- */
+
+.risk-comparison-page
+.dashboard-card
+h4 {
+
+    color:
+        var(--text-primary);
+
+}
+
+
+.risk-comparison-page
+.dashboard-card
+p {
+
+    color:
+        var(--text-secondary);
+
+}
+
+
+.risk-comparison-page
+.dashboard-card
+strong {
+
+    color:
+        var(--text-primary);
+
+}
+
+
+/* ---------------------------------------------------------
+   DARK MODE
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.risk-comparison-page
+.comparison-state-card,
+
+[data-theme="dark"]
+.risk-comparison-page
+.reduction-item,
+
+[data-theme="dark"]
+.risk-comparison-page
+.projection-context-item {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.018
+        );
+
+}
+
+
+[data-theme="dark"]
+.risk-comparison-page
+.comparison-metric {
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.025
+        );
+
+}
+
+
+/* ---------------------------------------------------------
+   LARGE TABLET / SMALL DESKTOP
+   --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+
+    .risk-comparison-page
+    .projection-context-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+    }
+
+
+    .risk-comparison-page
+    .reduction-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   TABLET
+   --------------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+    .risk-comparison-page
+    .comparison-state-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-arrow {
+
+        flex-direction:
+            row;
+
+        min-width:
+            0;
+
+        padding:
+            2px
+            0;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-arrow-icon {
+
+        transform:
+            rotate(
+                90deg
+            );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+    .risk-comparison-page {
+
+        gap:
+            18px;
+
+    }
+
+
+    .risk-comparison-page
+    .dashboard-card {
+
+        padding:
+            20px;
+
+        border-radius:
+            14px;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-metrics,
+
+    .risk-comparison-page
+    .reduction-grid,
+
+    .risk-comparison-page
+    .projection-context-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-explanation {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-explanation-icon {
+
+        width:
+            50px;
+
+        height:
+            50px;
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   VERY SMALL SCREENS
+   --------------------------------------------------------- */
+
+@media (max-width: 480px) {
+
+    .risk-comparison-page
+    .dashboard-card {
+
+        padding:
+            18px
+            16px;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-state-card {
+
+        padding:
+            18px;
+
+    }
+
+
+    .risk-comparison-page
+    .stat-card {
+
+        min-height:
+            150px;
+
+    }
+
+
+    .risk-comparison-page
+    .stat-value {
+
+        font-size:
+            30px;
+
+    }
+
+
+    .risk-comparison-page
+    .comparison-risk-score
+    strong {
+
+        font-size:
+            30px;
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .risk-comparison-page
+    .reduction-item {
+
+        transition:
+            none;
+
+    }
+
+}

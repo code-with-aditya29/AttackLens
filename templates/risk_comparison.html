@@ -1,0 +1,695 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+AttackLens | Risk Comparison
+{% endblock %}
+
+
+{% block page_title %}
+Before vs After Risk Comparison
+{% endblock %}
+
+
+{% block page_subtitle %}
+Compare the current security state with the projected post-mitigation state
+{% endblock %}
+
+
+{% block content %}
+
+<section class="dashboard-overview risk-comparison-page">
+
+
+    <!-- ==========================================
+         INTRODUCTION
+    =========================================== -->
+
+    <div class="welcome-section">
+
+        <div>
+
+            <h3>
+                Risk Reduction Projection
+            </h3>
+
+            <p>
+                AttackLens compares the current security posture
+                with an estimated post-mitigation state using
+                evidence-supported recommendations.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         SUMMARY
+    =========================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- CURRENT RISK -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Current Risk
+                </span>
+
+                <span class="stat-icon">
+                    !
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ current_state.risk_score|default(0) }}
+            </div>
+
+            <p class="stat-description">
+                {{ current_state.risk_level|default("LOW") }}
+                current environment risk
+            </p>
+
+        </article>
+
+
+        <!-- PROJECTED RISK -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Projected Risk
+                </span>
+
+                <span class="stat-icon">
+                    ↓
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ projected_state.risk_score|default(0) }}
+            </div>
+
+            <p class="stat-description">
+                {{ projected_state.risk_level|default("LOW") }}
+                projected post-mitigation risk
+            </p>
+
+        </article>
+
+
+        <!-- RISK REDUCTION -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Risk Reduction
+                </span>
+
+                <span class="stat-icon">
+                    ✓
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ reduction.risk_points|default(0) }}
+            </div>
+
+            <p class="stat-description">
+                Estimated reduction in risk-score points
+            </p>
+
+        </article>
+
+
+        <!-- REDUCTION PERCENTAGE -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Reduction %
+                </span>
+
+                <span class="stat-icon">
+                    %
+                </span>
+
+            </div>
+
+            <div class="stat-value">
+                {{ reduction.risk_percentage|default(0) }}%
+            </div>
+
+            <p class="stat-description">
+                Estimated relative risk reduction
+            </p>
+
+        </article>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         CURRENT VS PROJECTED STATE
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Current vs Projected State
+                </h3>
+
+                <p>
+                    Security metrics before and after the projected
+                    effect of applicable mitigation recommendations.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="comparison-state-grid">
+
+
+            <!-- ==================================
+                 CURRENT STATE
+            =================================== -->
+
+            <article class="comparison-state-card current-state">
+
+                <span class="state-label">
+                    Current State
+                </span>
+
+                <h4>
+                    Before Mitigation
+                </h4>
+
+
+                <div class="comparison-risk-score">
+
+                    <strong>
+                        {{ current_state.risk_score|default(0) }}
+                    </strong>
+
+                    <span>
+                        / 100
+                    </span>
+
+                </div>
+
+
+                <span class="comparison-risk-level">
+                    {{ current_state.risk_level|default("LOW") }}
+                </span>
+
+
+                <div class="comparison-metrics">
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Vulnerabilities
+                        </span>
+
+                        <strong>
+                            {{ current_state.vulnerability_count|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Vulnerable Assets
+                        </span>
+
+                        <strong>
+                            {{ current_state.vulnerable_assets|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Open Ports
+                        </span>
+
+                        <strong>
+                            {{ current_state.open_ports|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Sensitive Ports
+                        </span>
+
+                        <strong>
+                            {{ current_state.sensitive_ports|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Attack Paths
+                        </span>
+
+                        <strong>
+                            {{ current_state.attack_paths|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            High-Risk Paths
+                        </span>
+
+                        <strong>
+                            {{ current_state.high_risk_attack_paths|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+            </article>
+
+
+            <!-- ==================================
+                 PROJECTION ARROW
+            =================================== -->
+
+            <div class="comparison-arrow">
+
+                <div class="comparison-arrow-icon">
+                    →
+                </div>
+
+                <span>
+                    Projected
+                </span>
+
+            </div>
+
+
+            <!-- ==================================
+                 PROJECTED STATE
+            =================================== -->
+
+            <article class="comparison-state-card projected-state">
+
+                <span class="state-label">
+                    Projected State
+                </span>
+
+                <h4>
+                    After Mitigation
+                </h4>
+
+
+                <div class="comparison-risk-score">
+
+                    <strong>
+                        {{ projected_state.risk_score|default(0) }}
+                    </strong>
+
+                    <span>
+                        / 100
+                    </span>
+
+                </div>
+
+
+                <span class="comparison-risk-level">
+                    {{ projected_state.risk_level|default("LOW") }}
+                </span>
+
+
+                <div class="comparison-metrics">
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Vulnerabilities
+                        </span>
+
+                        <strong>
+                            {{ projected_state.vulnerability_count|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Vulnerable Assets
+                        </span>
+
+                        <strong>
+                            {{ projected_state.vulnerable_assets|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Open Ports
+                        </span>
+
+                        <strong>
+                            {{ projected_state.open_ports|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Sensitive Ports
+                        </span>
+
+                        <strong>
+                            {{ projected_state.sensitive_ports|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            Attack Paths
+                        </span>
+
+                        <strong>
+                            {{ projected_state.attack_paths|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="comparison-metric">
+
+                        <span>
+                            High-Risk Paths
+                        </span>
+
+                        <strong>
+                            {{ projected_state.high_risk_attack_paths|default(0) }}
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         PROJECTED REDUCTION BREAKDOWN
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Projected Reduction Breakdown
+                </h3>
+
+                <p>
+                    Estimated changes supported by the currently
+                    applicable mitigation recommendations.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="reduction-grid">
+
+
+            <article class="reduction-item">
+
+                <span>
+                    Risk Score
+                </span>
+
+                <strong>
+                    -{{ reduction.risk_points|default(0) }}
+                </strong>
+
+                <p>
+                    {{ reduction.risk_percentage|default(0) }}%
+                    projected reduction
+                </p>
+
+            </article>
+
+
+            <article class="reduction-item">
+
+                <span>
+                    Vulnerabilities
+                </span>
+
+                <strong>
+                    -{{ reduction.vulnerability_count|default(0) }}
+                </strong>
+
+                <p>
+                    Estimated remediated findings
+                </p>
+
+            </article>
+
+
+            <article class="reduction-item">
+
+                <span>
+                    Sensitive Ports
+                </span>
+
+                <strong>
+                    -{{ reduction.sensitive_ports|default(0) }}
+                </strong>
+
+                <p>
+                    Estimated exposure reduction
+                </p>
+
+            </article>
+
+
+            <article class="reduction-item">
+
+                <span>
+                    Attack Paths
+                </span>
+
+                <strong>
+                    -{{ reduction.attack_paths|default(0) }}
+                </strong>
+
+                <p>
+                    Estimated disrupted paths
+                </p>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         PROJECTION CONTEXT
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Projection Context
+                </h3>
+
+                <p>
+                    Evidence used to estimate the projected state.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="projection-context-grid">
+
+
+            <article class="projection-context-item">
+
+                <strong>
+                    {{ statistics.recommendation_count|default(0) }}
+                </strong>
+
+                <span>
+                    Total generated mitigation recommendations
+                </span>
+
+            </article>
+
+
+            <article class="projection-context-item">
+
+                <strong>
+                    {{ statistics.applicable_recommendations|default(0) }}
+                </strong>
+
+                <span>
+                    Recommendations used in this projection
+                </span>
+
+            </article>
+
+
+            <article class="projection-context-item">
+
+                <strong>
+                    {{ statistics.affected_assets|default(0) }}
+                </strong>
+
+                <span>
+                    Assets associated with projected actions
+                </span>
+
+            </article>
+
+
+            <article class="projection-context-item">
+
+                <strong>
+                    {{ statistics.risk_reduction_percentage|default(0) }}%
+                </strong>
+
+                <span>
+                    Estimated reduction from current risk
+                </span>
+
+            </article>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         HOW RISK COMPARISON WORKS
+    =========================================== -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    How Risk Comparison Works
+                </h3>
+
+                <p>
+                    Analytical projection rather than automatic remediation.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="comparison-explanation">
+
+
+            <div class="comparison-explanation-icon">
+                ↓
+            </div>
+
+
+            <div class="comparison-explanation-content">
+
+                <h4>
+                    Projected Post-Mitigation State
+                </h4>
+
+                <p>
+                    AttackLens estimates how the current security posture
+                    could change if the applicable mitigation recommendations
+                    are successfully implemented.
+
+                    The projected state does not indicate that AttackLens
+                    automatically modified, patched, filtered, or reconfigured
+                    the analyzed systems.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</section>
+
+{% endblock %}
