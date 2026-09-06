@@ -238,10 +238,20 @@ class RiskComparisonServiceTests(
         assets = [
             {
                 "risk_score": 12,
-                "open_ports": [
-                    80,
-                    135,
-                    445
+
+                "ports": [
+                    {
+                        "port": 80,
+                        "state": "open"
+                    },
+                    {
+                        "port": 135,
+                        "state": "open"
+                    },
+                    {
+                        "port": 445,
+                        "state": "open"
+                    }
                 ]
             }
         ]
@@ -312,7 +322,7 @@ class RiskComparisonServiceTests(
                 "recommendation_id":
                     "rec-1",
 
-                "recommendation_type":
+                "category":
                     "service_exposure",
 
                 "target":
@@ -365,7 +375,7 @@ class RiskComparisonServiceTests(
                 "recommendation_id":
                     "rec-2",
 
-                "recommendation_type":
+                "category":
                     "segmentation",
 
                 "target":
@@ -410,7 +420,7 @@ class RiskComparisonServiceTests(
 
         recommendations = [
             {
-                "recommendation_type":
+                "category":
                     "patch_vulnerability",
 
                 "target":
@@ -530,7 +540,7 @@ class RiskComparisonServiceTests(
 
         recommendations = [
             {
-                "recommendation_type":
+                "category":
                     "unknown_action",
 
                 "score":
@@ -584,15 +594,35 @@ class RiskComparisonServiceTests(
                 "target":
                     "127.0.0.1",
 
+                "created_by":
+                    "user-1",
+
                 "risk_score":
                     40,
 
-                "open_ports":
-                    [
-                        80,
-                        135,
-                        445
-                    ],
+                "ports": [
+                    {
+                        "port":
+                            80,
+
+                        "state":
+                            "open"
+                    },
+                    {
+                        "port":
+                            135,
+
+                        "state":
+                            "open"
+                    },
+                    {
+                        "port":
+                            445,
+
+                        "state":
+                            "open"
+                    }
+                ],
 
                 "vulnerabilities":
                     []
@@ -601,7 +631,8 @@ class RiskComparisonServiceTests(
 
 
         attack_graph = {
-            "paths": []
+            "paths":
+                []
         }
 
 
@@ -611,7 +642,7 @@ class RiskComparisonServiceTests(
                     "recommendation_id":
                         "rec-service",
 
-                    "recommendation_type":
+                    "category":
                         "service_exposure",
 
                     "target":

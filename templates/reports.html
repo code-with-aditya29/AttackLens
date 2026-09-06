@@ -1,56 +1,1262 @@
 {% extends "base.html" %}
 
+
 {% block title %}
 AttackLens | Reports
 {% endblock %}
+
 
 {% block page_title %}
 Reports
 {% endblock %}
 
+
 {% block page_subtitle %}
-View and generate security analysis reports
+Generate and review security assessment reports
 {% endblock %}
+
 
 {% block content %}
 
-<section class="dashboard-overview">
 
-    <div class="welcome-section">
-        <div>
-            <h3>Security Reports</h3>
-            <p>
-                Generate and review reports based on authorized scans, discovered assets, attack paths, and defense analysis.
-            </p>
-        </div>
-    </div>
+{# =========================================================
+   SAFE REPORT DATA
+   ========================================================= #}
 
-    <section class="dashboard-card">
+{% set statistics = report_data.get("statistics", {}) if report_data else {} %}
+
+{% set sections = report_data.get("sections", {}) if report_data else {} %}
+
+{% set readiness = report_data.get("readiness", {}) if report_data else {} %}
+
+
+{# =========================================================
+   REPORT SECTIONS
+   ========================================================= #}
+
+{% set assets = sections.get("assets", []) %}
+
+{% set vulnerability_summary =
+    sections.get(
+        "vulnerability_summary",
+        {}
+    )
+%}
+
+{% set attack_path_analysis =
+    sections.get(
+        "attack_path_analysis",
+        {}
+    )
+%}
+
+{% set defense_analysis =
+    sections.get(
+        "defense_analysis",
+        {}
+    )
+%}
+
+{% set mitigation_analysis =
+    sections.get(
+        "mitigation_analysis",
+        {}
+    )
+%}
+
+{% set risk_comparison =
+    sections.get(
+        "risk_comparison",
+        {}
+    )
+%}
+
+
+{# =========================================================
+   SUMMARY VALUES
+   ========================================================= #}
+
+{% set total_assets =
+    statistics.get(
+        "total_assets",
+        assets|length
+    )
+%}
+
+
+{% set attack_paths =
+    statistics.get(
+        "attack_paths",
+        statistics.get(
+            "total_attack_paths",
+            (
+                attack_path_analysis.get(
+                    "paths",
+                    []
+                )|length
+            )
+            if attack_path_analysis
+            else 0
+        )
+    )
+%}
+
+
+{% set defense_findings =
+    statistics.get(
+        "defense_findings",
+        statistics.get(
+            "total_defense_findings",
+            (
+                defense_analysis.get(
+                    "findings",
+                    []
+                )|length
+            )
+            if defense_analysis
+            else 0
+        )
+    )
+%}
+
+
+{% set recommendations =
+    statistics.get(
+        "recommendations",
+        statistics.get(
+            "total_recommendations",
+            statistics.get(
+                "recommendation_count",
+                (
+                    mitigation_analysis.get(
+                        "recommendations",
+                        []
+                    )|length
+                )
+                if mitigation_analysis
+                else 0
+            )
+        )
+    )
+%}
+
+
+{% set risk_statistics =
+    risk_comparison.get(
+        "statistics",
+        {}
+    )
+    if risk_comparison
+    else {}
+%}
+
+
+{% set projected_reduction =
+    statistics.get(
+        "risk_reduction_percentage",
+        risk_statistics.get(
+            "risk_reduction_percentage",
+            0
+        )
+    )
+%}
+
+
+{# =========================================================
+   READINESS FLAGS
+   ========================================================= #}
+
+{% set has_assets =
+    total_assets|int > 0
+%}
+
+
+{% set has_risk_assessment =
+    has_assets
+%}
+
+
+{% set has_attack_analysis =
+    attack_path_analysis
+    and
+    attack_path_analysis is mapping
+%}
+
+
+{% set has_defense_analysis =
+    defense_analysis
+    and
+    defense_analysis is mapping
+%}
+
+
+{% set has_mitigation_analysis =
+    mitigation_analysis
+    and
+    mitigation_analysis is mapping
+%}
+
+
+{% set has_risk_comparison =
+    risk_comparison
+    and
+    risk_comparison is mapping
+%}
+
+
+
+<section class="dashboard-overview reports-page">
+
+
+    <!-- ==========================================
+         REPORT INTRODUCTION
+    =========================================== -->
+
+    <section class="dashboard-card reports-intro-card">
 
         <div class="card-header">
+
             <div>
-                <h3>Generated Reports</h3>
+
+                <h3>
+                    Security Assessment Reports
+                </h3>
+
                 <p>
-                    Completed security analysis reports will appear here.
+                    Generate a structured AttackLens security report using
+                    discovered assets, risk analysis, attack paths,
+                    defense findings, mitigation recommendations,
+                    and projected risk reduction.
                 </p>
+
             </div>
-        </div>
 
-        <div class="empty-state">
 
-            <div class="empty-icon">
+            <div class="reports-header-icon">
                 ▤
             </div>
 
-            <h4>No Reports Available</h4>
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         REPORT SUMMARY
+    =========================================== -->
+
+    <section class="reports-summary-grid">
+
+
+        <!-- ASSETS -->
+
+        <div class="dashboard-card reports-summary-card">
+
+            <div class="reports-summary-icon">
+                ◇
+            </div>
+
+
+            <div class="reports-summary-content">
+
+                <span class="reports-summary-label">
+                    Assets
+                </span>
+
+
+                <strong class="reports-summary-value">
+
+                    {{ total_assets|default(0) }}
+
+                </strong>
+
+
+                <span class="reports-summary-description">
+
+                    {% if total_assets|int > 0 %}
+
+                        Assets available for reporting
+
+                    {% else %}
+
+                        No assets available for reporting
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ATTACK PATHS -->
+
+        <div class="dashboard-card reports-summary-card">
+
+            <div class="reports-summary-icon">
+                ⚠
+            </div>
+
+
+            <div class="reports-summary-content">
+
+                <span class="reports-summary-label">
+                    Attack Paths
+                </span>
+
+
+                <strong class="reports-summary-value">
+
+                    {{ attack_paths|default(0) }}
+
+                </strong>
+
+
+                <span class="reports-summary-description">
+
+                    {% if attack_paths|int > 0 %}
+
+                        Potential attacker progression paths
+
+                    {% elif has_assets %}
+
+                        No attack paths identified
+
+                    {% else %}
+
+                        Attack-path analysis unavailable
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- RECOMMENDATIONS -->
+
+        <div class="dashboard-card reports-summary-card">
+
+            <div class="reports-summary-icon">
+                ✓
+            </div>
+
+
+            <div class="reports-summary-content">
+
+                <span class="reports-summary-label">
+                    Recommendations
+                </span>
+
+
+                <strong class="reports-summary-value">
+
+                    {{ recommendations|default(0) }}
+
+                </strong>
+
+
+                <span class="reports-summary-description">
+
+                    {% if recommendations|int > 0 %}
+
+                        Evidence-based defensive actions
+
+                    {% elif has_assets %}
+
+                        No recommendations currently identified
+
+                    {% else %}
+
+                        Mitigation analysis unavailable
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- PROJECTED REDUCTION -->
+
+        <div class="dashboard-card reports-summary-card">
+
+            <div class="reports-summary-icon">
+                ↓
+            </div>
+
+
+            <div class="reports-summary-content">
+
+                <span class="reports-summary-label">
+                    Projected Reduction
+                </span>
+
+
+                <strong class="reports-summary-value">
+
+                    {{ projected_reduction|round(2) }}%
+
+                </strong>
+
+
+                <span class="reports-summary-description">
+
+                    {% if projected_reduction|float > 0 %}
+
+                        Estimated post-mitigation improvement
+
+                    {% elif has_assets %}
+
+                        No projected reduction identified
+
+                    {% else %}
+
+                        Risk comparison unavailable
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- ==========================================
+         REPORT READINESS
+    =========================================== -->
+
+    <section class="dashboard-card reports-readiness-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Report Readiness
+                </h3>
+
+                <p>
+                    AttackLens combines the currently available security
+                    analysis data into one assessment report.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="reports-readiness-grid">
+
+
+            <!-- ASSET INVENTORY -->
+
+            <div class="reports-readiness-item">
+
+                <div
+                    class="
+                        reports-readiness-status
+                        {% if has_assets %}
+                            reports-status-ready
+                        {% else %}
+                            reports-status-empty
+                        {% endif %}
+                    "
+                >
+
+                    {% if has_assets %}
+                        ✓
+                    {% else %}
+                        ○
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Asset Inventory
+                    </strong>
+
+
+                    <span>
+
+                        {% if has_assets %}
+
+                            {{ total_assets }}
+                            discovered
+                            asset{% if total_assets|int != 1 %}s{% endif %}
+                            available
+
+                        {% else %}
+
+                            No discovered assets available
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- RISK ASSESSMENT -->
+
+            <div class="reports-readiness-item">
+
+                <div
+                    class="
+                        reports-readiness-status
+                        {% if has_risk_assessment %}
+                            reports-status-ready
+                        {% else %}
+                            reports-status-empty
+                        {% endif %}
+                    "
+                >
+
+                    {% if has_risk_assessment %}
+                        ✓
+                    {% else %}
+                        ○
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Risk Assessment
+                    </strong>
+
+
+                    <span>
+
+                        {% if has_risk_assessment %}
+
+                            Current asset risk data available
+
+                        {% else %}
+
+                            No current risk data available
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ATTACK PATH ANALYSIS -->
+
+            <div class="reports-readiness-item">
+
+                <div
+                    class="
+                        reports-readiness-status
+                        {% if has_attack_analysis %}
+                            reports-status-ready
+                        {% else %}
+                            reports-status-empty
+                        {% endif %}
+                    "
+                >
+
+                    {% if has_attack_analysis %}
+                        ✓
+                    {% else %}
+                        ○
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Attack Path Analysis
+                    </strong>
+
+
+                    <span>
+
+                        {% if has_attack_analysis %}
+
+                            {% if attack_paths|int > 0 %}
+
+                                {{ attack_paths }}
+                                potential
+                                path{% if attack_paths|int != 1 %}s{% endif %}
+                                identified
+
+                            {% else %}
+
+                                Analysis complete; no attack paths identified
+
+                            {% endif %}
+
+                        {% else %}
+
+                            No attack-path analysis available
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- DEFENSE ANALYSIS -->
+
+            <div class="reports-readiness-item">
+
+                <div
+                    class="
+                        reports-readiness-status
+                        {% if has_defense_analysis %}
+                            reports-status-ready
+                        {% else %}
+                            reports-status-empty
+                        {% endif %}
+                    "
+                >
+
+                    {% if has_defense_analysis %}
+                        ✓
+                    {% else %}
+                        ○
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Defense Analysis
+                    </strong>
+
+
+                    <span>
+
+                        {% if has_defense_analysis %}
+
+                            {% if defense_findings|int > 0 %}
+
+                                {{ defense_findings }}
+                                defense
+                                finding{% if defense_findings|int != 1 %}s{% endif %}
+                                available
+
+                            {% else %}
+
+                                Analysis complete; no defense findings identified
+
+                            {% endif %}
+
+                        {% else %}
+
+                            No defense analysis available
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- MITIGATION -->
+
+            <div class="reports-readiness-item">
+
+                <div
+                    class="
+                        reports-readiness-status
+                        {% if has_mitigation_analysis %}
+                            reports-status-ready
+                        {% else %}
+                            reports-status-empty
+                        {% endif %}
+                    "
+                >
+
+                    {% if has_mitigation_analysis %}
+                        ✓
+                    {% else %}
+                        ○
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Mitigation Recommendations
+                    </strong>
+
+
+                    <span>
+
+                        {% if has_mitigation_analysis %}
+
+                            {% if recommendations|int > 0 %}
+
+                                {{ recommendations }}
+                                mitigation
+                                recommendation{% if recommendations|int != 1 %}s{% endif %}
+                                available
+
+                            {% else %}
+
+                                Analysis complete; no recommendations identified
+
+                            {% endif %}
+
+                        {% else %}
+
+                            No mitigation analysis available
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- RISK COMPARISON -->
+
+            <div class="reports-readiness-item">
+
+                <div
+                    class="
+                        reports-readiness-status
+                        {% if has_risk_comparison %}
+                            reports-status-ready
+                        {% else %}
+                            reports-status-empty
+                        {% endif %}
+                    "
+                >
+
+                    {% if has_risk_comparison %}
+                        ✓
+                    {% else %}
+                        ○
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Risk Comparison
+                    </strong>
+
+
+                    <span>
+
+                        {% if has_risk_comparison %}
+
+                            Projected risk comparison available
+
+                        {% else %}
+
+                            No projected risk comparison available
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         REPORT CONTENT
+    =========================================== -->
+
+    <section class="dashboard-card reports-sections-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Report Contents
+                </h3>
+
+                <p>
+                    Each generated AttackLens report is designed to
+                    summarize the complete security analysis workflow.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="reports-sections-grid">
+
+
+            <!-- 01 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    01
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Executive Summary
+                    </strong>
+
+                    <p>
+                        High-level overview of the analyzed environment,
+                        overall risk posture, and important findings.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 02 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    02
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Asset Inventory
+                    </strong>
+
+                    <p>
+                        Discovered assets, operating systems,
+                        exposed ports, services, and asset context.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 03 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    03
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Vulnerability & Risk Assessment
+                    </strong>
+
+                    <p>
+                        Identified vulnerabilities, CVE information,
+                        asset risk scores, and risk classifications.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 04 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    04
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Attack Path Analysis
+                    </strong>
+
+                    <p>
+                        Potential attacker progression paths and
+                        evidence-supported graph relationships.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 05 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    05
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Defense Analysis
+                    </strong>
+
+                    <p>
+                        Security findings, defensive priorities,
+                        and identified defensive focus areas.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 06 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    06
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Mitigation Recommendations
+                    </strong>
+
+                    <p>
+                        Evidence-based defensive actions and
+                        expected defensive effects.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 07 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    07
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Before vs After Risk Comparison
+                    </strong>
+
+                    <p>
+                        Current security state compared with the
+                        projected post-mitigation state.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 08 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    08
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        Methodology & Disclaimer
+                    </strong>
+
+                    <p>
+                        Explanation of analytical assumptions,
+                        evidence limitations, and report scope.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         REPORT GENERATION
+    =========================================== -->
+
+    <section class="dashboard-card reports-generation-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Generate Security Report
+                </h3>
+
+                <p>
+                    Create a PDF assessment from the latest
+                    available AttackLens analysis.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="reports-generation-content">
+
+            <div class="reports-generation-info">
+
+                <div class="reports-generation-icon">
+                    ⇩
+                </div>
+
+
+                <div>
+
+                    <h4>
+                        AttackLens Security Assessment
+                    </h4>
+
+
+                    <p>
+                        The generated PDF will contain the current
+                        security analysis and evidence available
+                        for your authorized environment.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ======================================
+                 PDF GENERATION FORM
+            ======================================= -->
+
+            <form
+                method="POST"
+                action="{{ url_for('report.generate_report') }}"
+            >
+
+                <button
+                    type="submit"
+                    class="primary-button reports-generate-button"
+                    {% if not report_generation_available %}
+                        disabled
+                    {% endif %}
+                >
+                    Generate PDF Report
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- ======================================
+             GENERATION STATUS
+        ======================================= -->
+
+        <div class="reports-generation-note">
+
+            <span>
+                ℹ
+            </span>
+
 
             <p>
-                Complete a security analysis to generate an AttackLens report.
+
+                {% if report_generation_available %}
+
+                    Report generation is ready.
+                    The PDF will use the latest available
+                    AttackLens security analysis for your
+                    authorized assets.
+
+                {% else %}
+
+                    Report generation will become available after
+                    security analysis data is available.
+
+                {% endif %}
+
             </p>
 
         </div>
 
     </section>
+
+
+    <!-- ==========================================
+         GENERATED REPORTS
+    =========================================== -->
+
+    <section class="dashboard-card reports-history-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Generated Reports
+                </h3>
+
+                <p>
+                    AttackLens security assessment PDFs are
+                    currently generated on demand.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="empty-state reports-empty-state">
+
+            <div class="empty-icon">
+                ▤
+            </div>
+
+
+            {% if report_generation_available %}
+
+                <h4>
+                    Report Ready for Generation
+                </h4>
+
+
+                <p>
+                    Your current security analysis is ready.
+                    Use the Generate PDF Report button above
+                    to create and download the latest
+                    AttackLens security assessment.
+                </p>
+
+
+                <a
+                    href="{{ url_for('report.reports') }}"
+                    class="secondary-button"
+                >
+                    Refresh Report Data
+                </a>
+
+            {% else %}
+
+                <h4>
+                    No Reports Available
+                </h4>
+
+
+                <p>
+                    Complete an authorized security analysis and
+                    generate your first AttackLens security
+                    assessment report.
+                </p>
+
+
+                <a
+                    href="{{ url_for('scan.scan_target') }}"
+                    class="secondary-button"
+                >
+                    Start New Scan
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         REPORT EXPLANATION
+    =========================================== -->
+
+    <section class="dashboard-card reports-explanation-card">
+
+        <div class="reports-explanation">
+
+            <div class="reports-explanation-icon">
+                ▤
+            </div>
+
+
+            <div>
+
+                <h4>
+                    About AttackLens Reports
+                </h4>
+
+
+                <p>
+                    AttackLens reports summarize evidence collected
+                    from authorized scans and the analytical results
+                    produced by the platform. Reported attack paths,
+                    defensive findings, mitigation recommendations,
+                    and projected risk reductions are analytical
+                    assessments and should be reviewed before
+                    operational security changes are implemented.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
 
 </section>
 

@@ -55,6 +55,10 @@ from routes.risk_comparison import (
     risk_comparison_bp
 )
 
+from routes.report import (
+    report_bp
+)
+
 
 # ==========================================
 # DASHBOARD SERVICE
@@ -255,7 +259,7 @@ def create_app():
     # MITIGATION BLUEPRINT
     # ======================================
     #
-    # Mitigation functionality is handled
+    # Mitigation Recommendations are handled
     # by:
     #
     # routes/mitigation.py
@@ -297,6 +301,34 @@ def create_app():
 
     app.register_blueprint(
         risk_comparison_bp
+    )
+
+
+    # ======================================
+    # REPORTS BLUEPRINT
+    # ======================================
+    #
+    # Security Assessment Reports are
+    # handled by:
+    #
+    # routes/report.py
+    #
+    # Endpoints:
+    #
+    # report.reports
+    # report.generate_report
+    #
+    # The Reports route collects only the
+    # authenticated user's owned assets and
+    # delegates report construction to the
+    # report service.
+    #
+    # No duplicate /reports route should
+    # exist in app.py.
+    # ======================================
+
+    app.register_blueprint(
+        report_bp
     )
 
 
@@ -486,20 +518,20 @@ def create_app():
     # ======================================
     # REPORTS
     # ======================================
-
-    @app.route(
-        "/reports"
-    )
-    @login_required
-    def reports():
-
-        return render_template(
-
-            "reports.html",
-
-            current_page="reports"
-
-        )
+    #
+    # Security Assessment Reports are
+    # handled by:
+    #
+    # routes/report.py
+    #
+    # Endpoints:
+    #
+    # report.reports
+    # report.generate_report
+    #
+    # No duplicate /reports route should
+    # exist here.
+    # ======================================
 
 
     # ======================================

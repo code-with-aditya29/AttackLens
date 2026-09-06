@@ -618,6 +618,60 @@ Monitor attack exposure and prioritize defensive actions
     </section>
 
 
+    <!-- ==========================================
+         SECURITY ASSESSMENT REPORTS
+    =========================================== -->
+
+    <section class="dashboard-card reports-dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Security Assessment Reports
+                </h3>
+
+                <p>
+                    Consolidated reporting across the AttackLens
+                    security analysis pipeline
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('report.reports') }}"
+                class="secondary-button"
+            >
+                View Reports
+            </a>
+
+        </div>
+
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ▤
+            </div>
+
+            <h4>
+                Security Reports Available
+            </h4>
+
+            <p>
+                Review report readiness and generate a consolidated
+                PDF assessment containing asset inventory, vulnerability
+                and risk assessment, attack paths, defense findings,
+                mitigation recommendations, and projected risk comparison.
+            </p>
+
+        </div>
+
+    </section>
+
+
 </section>
 
 {% endblock %}
