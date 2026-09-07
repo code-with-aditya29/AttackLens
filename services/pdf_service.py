@@ -655,11 +655,13 @@ def build_report_information(
 
         [
             "Report Type",
-            safe_text(
-                report_data.get(
-                    "report_type"
-                ),
-                default="security_assessment"
+            humanize_label(
+                safe_text(
+                    report_data.get(
+                        "report_type"
+                    ),
+                    default="security_assessment"
+                )
             ),
         ],
 
@@ -908,155 +910,73 @@ def build_asset_inventory_section(
         styles
     )
 
-    sections = get_dictionary(
-        report_data,
-        "sections"
-    )
+    sections = get_dictionary(report_data, "sections")
+    assets = sections.get("assets")
 
-    assets = sections.get(
-        "assets"
-    )
-
-    if not isinstance(
-        assets,
-        list
-    ):
+    if not isinstance(assets, list):
         assets = []
 
     if not assets:
-
         append_empty_message(
             story,
             "No analyzed assets are available for this report.",
             styles
         )
-
         return
 
-    table_data = [
-        [
-            paragraph(
-                "Target",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Hostname",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Operating System",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Open Ports",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Risk",
-                styles["table_header"]
-            ),
-        ]
-    ]
+    table_data = [[
+        paragraph("Target", styles["table_header"]),
+        paragraph("Hostname", styles["table_header"]),
+        paragraph("Operating System", styles["table_header"]),
+        paragraph("Open Ports", styles["table_header"]),
+        paragraph("Criticality", styles["table_header"]),
+        paragraph("Exposure", styles["table_header"]),
+        paragraph("Risk", styles["table_header"]),
+    ]]
 
     for asset in assets:
-
-        if not isinstance(
-            asset,
-            dict
-        ):
+        if not isinstance(asset, dict):
             continue
 
-        target = get_asset_target(
-            asset
+        target = get_asset_target(asset)
+        hostname = safe_text(asset.get("hostname"), default="-")
+        operating_system = get_asset_os(asset)
+        open_ports = get_open_ports(asset)
+        criticality = humanize_label(
+            safe_text(asset.get("criticality"), default="Unknown")
         )
-
-        hostname = safe_text(
-            asset.get(
-                "hostname"
-            ),
-            default="-"
+        exposure = humanize_label(
+            safe_text(asset.get("exposure"), default="Unknown")
         )
+        risk_score = get_asset_risk_score(asset)
+        risk_level = get_asset_risk_level(asset)
 
-        operating_system = get_asset_os(
-            asset
-        )
-
-        open_ports = get_open_ports(
-            asset
-        )
-
-        risk_score = get_asset_risk_score(
-            asset
-        )
-
-        risk_level = get_asset_risk_level(
-            asset
-        )
-
-        table_data.append(
-            [
-                paragraph(
-                    target,
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    hostname,
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    operating_system,
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    format_port_list(
-                        open_ports
-                    ),
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    format_risk(
-                        risk_score,
-                        risk_level
-                    ),
-                    styles["table_body"]
-                ),
-            ]
-        )
+        table_data.append([
+            paragraph(target, styles["table_body"]),
+            paragraph(hostname, styles["table_body"]),
+            paragraph(operating_system, styles["table_body"]),
+            paragraph(format_port_list(open_ports), styles["table_body"]),
+            paragraph(criticality, styles["table_body"]),
+            paragraph(exposure, styles["table_body"]),
+            paragraph(format_risk(risk_score, risk_level), styles["table_body"]),
+        ])
 
     table = Table(
         table_data,
         colWidths=[
-            31 * mm,
-            31 * mm,
-            54 * mm,
-            32 * mm,
-            27 * mm
+            27 * mm,
+            24 * mm,
+            38 * mm,
+            24 * mm,
+            19 * mm,
+            19 * mm,
+            23 * mm,
         ],
         repeatRows=1,
     )
-
-    apply_standard_table_style(
-        table
-    )
-
-    story.append(
-        table
-    )
-
-    story.append(
-        Spacer(
-            1,
-            6 * mm
-        )
-    )
+    apply_standard_table_style(table)
+    story.append(table)
+    story.append(Spacer(1, 6 * mm))
 
 
 # ============================================================
@@ -1078,175 +998,70 @@ def build_vulnerability_section(
         styles
     )
 
-    sections = get_dictionary(
-        report_data,
-        "sections"
-    )
+    sections = get_dictionary(report_data, "sections")
+    vulnerability_summary = get_dictionary(sections, "vulnerability_summary")
+    count = safe_integer(vulnerability_summary.get("vulnerability_count", 0))
+    vulnerable_assets = safe_integer(vulnerability_summary.get("vulnerable_assets", 0))
 
-    vulnerability_summary = get_dictionary(
-        sections,
-        "vulnerability_summary"
-    )
-
-    count = safe_integer(
-        vulnerability_summary.get(
-            "vulnerability_count",
-            0
+    if count == 0:
+        summary_text = (
+            "No vulnerability findings were identified in the current "
+            "authorized analysis."
         )
-    )
-
-    vulnerable_assets = safe_integer(
-        vulnerability_summary.get(
-            "vulnerable_assets",
-            0
+    else:
+        finding_word = "finding" if count == 1 else "findings"
+        asset_word = "asset" if vulnerable_assets == 1 else "assets"
+        summary_text = (
+            f"AttackLens identified <b>{count}</b> vulnerability {finding_word} "
+            f"across <b>{vulnerable_assets}</b> {asset_word} in the current "
+            "authorized analysis."
         )
-    )
 
-    story.append(
-        Paragraph(
-            (
-                f"AttackLens identified <b>{count}</b> vulnerability "
-                f"finding(s) across <b>{vulnerable_assets}</b> "
-                "asset(s) in the current authorized analysis."
-            ),
-            styles["body"]
-        )
-    )
+    story.append(Paragraph(summary_text, styles["body"]))
 
-    findings = vulnerability_summary.get(
-        "findings"
-    )
-
-    if not isinstance(
-        findings,
-        list
-    ):
+    findings = vulnerability_summary.get("findings")
+    if not isinstance(findings, list):
         findings = []
 
     if not findings:
-
         append_empty_message(
             story,
-            (
-                "No vulnerability or CVE findings are currently "
-                "present in the analyzed asset data."
-            ),
+            "No vulnerability or CVE findings are currently present in the analyzed asset data.",
             styles
         )
-
         return
 
-    table_data = [
-        [
-            paragraph(
-                "Target",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Finding",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Severity",
-                styles["table_header"]
-            ),
-
-            paragraph(
-                "Score",
-                styles["table_header"]
-            ),
-        ]
-    ]
+    table_data = [[
+        paragraph("Target", styles["table_header"]),
+        paragraph("Finding", styles["table_header"]),
+        paragraph("Severity", styles["table_header"]),
+        paragraph("Score", styles["table_header"]),
+    ]]
 
     for record in findings:
-
-        if not isinstance(
-            record,
-            dict
-        ):
+        if not isinstance(record, dict):
             continue
-
-        finding = record.get(
-            "finding"
-        )
-
-        if not isinstance(
-            finding,
-            dict
-        ):
+        finding = record.get("finding")
+        if not isinstance(finding, dict):
             finding = {}
-
-        finding_name = get_finding_name(
-            finding
-        )
-
-        severity = safe_text(
-            finding.get(
-                "severity"
-            ),
-            default="Unknown"
-        )
-
-        score = get_finding_score(
-            finding
-        )
-
-        table_data.append(
-            [
-                paragraph(
-                    safe_text(
-                        record.get(
-                            "target"
-                        ),
-                        default="-"
-                    ),
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    finding_name,
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    severity,
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    f"{score:.2f}",
-                    styles["table_body"]
-                ),
-            ]
-        )
+        finding_name = get_finding_name(finding)
+        severity = safe_text(finding.get("severity"), default="Unknown")
+        score = get_finding_score(finding)
+        table_data.append([
+            paragraph(safe_text(record.get("target"), default="-"), styles["table_body"]),
+            paragraph(finding_name, styles["table_body"]),
+            paragraph(severity, styles["table_body"]),
+            paragraph(f"{score:.2f}", styles["table_body"]),
+        ])
 
     table = Table(
         table_data,
-        colWidths=[
-            34 * mm,
-            83 * mm,
-            31 * mm,
-            27 * mm
-        ],
+        colWidths=[34 * mm, 82 * mm, 31 * mm, 27 * mm],
         repeatRows=1,
     )
-
-    apply_standard_table_style(
-        table
-    )
-
-    story.append(
-        table
-    )
-
-    story.append(
-        Spacer(
-            1,
-            6 * mm
-        )
-    )
+    apply_standard_table_style(table)
+    story.append(table)
+    story.append(Spacer(1, 6 * mm))
 
 
 # ============================================================
@@ -1262,155 +1077,72 @@ def build_attack_path_section(
     Render attack-path analysis.
     """
 
-    append_section_heading(
-        story,
-        "4. Attack Path Analysis",
-        styles
-    )
+    sections = get_dictionary(report_data, "sections")
+    attack_graph = get_dictionary(sections, "attack_path_analysis")
+    paths = get_list(attack_graph, "paths")
+    relationships = get_list(attack_graph, "relationships")
 
-    sections = get_dictionary(
-        report_data,
-        "sections"
-    )
+    relationship_count = len(relationships)
+    path_count = len(paths)
 
-    attack_graph = get_dictionary(
-        sections,
-        "attack_path_analysis"
-    )
-
-    paths = get_list(
-        attack_graph,
-        "paths"
-    )
-
-    relationships = get_list(
-        attack_graph,
-        "relationships"
-    )
-
-    story.append(
-        Paragraph(
-            (
-                f"The current analysis contains "
-                f"<b>{len(relationships)}</b> potential relationship(s) "
-                f"and <b>{len(paths)}</b> potential attack path(s)."
-            ),
-            styles["body"]
+    if relationship_count == 0 and path_count == 0:
+        summary_text = (
+            "No potential relationships or attack paths were identified "
+            "from the currently available evidence."
         )
+    else:
+        relationship_word = "relationship" if relationship_count == 1 else "relationships"
+        path_word = "attack path" if path_count == 1 else "attack paths"
+        summary_text = (
+            f"The current analysis contains <b>{relationship_count}</b> potential "
+            f"{relationship_word} and <b>{path_count}</b> potential {path_word}."
+        )
+
+    heading = Paragraph(
+        escape_text("4. Attack Path Analysis"),
+        styles["section_title"]
     )
+    summary = Paragraph(summary_text, styles["body"])
 
     if not paths:
-
-        append_empty_message(
-            story,
-            (
-                "No potential attack paths were identified from the "
-                "currently available evidence."
-            ),
+        empty_table = build_empty_message_table(
+            "No potential attack paths were identified from the currently available evidence.",
             styles
         )
-
+        story.append(KeepTogether([heading, summary, empty_table, Spacer(1, 5 * mm)]))
         return
 
-    table_data = [
-        [
-            paragraph(
-                "Path",
-                styles["table_header"]
-            ),
+    story.append(heading)
+    story.append(summary)
 
-            paragraph(
-                "Score",
-                styles["table_header"]
-            ),
+    table_data = [[
+        paragraph("Path", styles["table_header"]),
+        paragraph("Score", styles["table_header"]),
+        paragraph("Risk", styles["table_header"]),
+    ]]
 
-            paragraph(
-                "Risk",
-                styles["table_header"]
-            ),
-        ]
-    ]
-
-    for index, path_data in enumerate(
-        paths,
-        start=1
-    ):
-
-        if not isinstance(
-            path_data,
-            dict
-        ):
+    for index, path_data in enumerate(paths, start=1):
+        if not isinstance(path_data, dict):
             continue
-
-        path_text = format_attack_path(
-            path_data
-        )
-
-        score = safe_number(
-            path_data.get(
-                "score",
-                path_data.get(
-                    "risk_score",
-                    0
-                )
-            )
-        )
-
+        path_text = format_attack_path(path_data)
+        score = safe_number(path_data.get("score", path_data.get("risk_score", 0)))
         level = safe_risk_level(
-            path_data.get(
-                "risk_level",
-                determine_risk_level(
-                    score
-                )
-            )
+            path_data.get("risk_level", determine_risk_level(score))
         )
-
-        table_data.append(
-            [
-                paragraph(
-                    (
-                        f"{index}. "
-                        f"{path_text}"
-                    ),
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    f"{score:.2f}",
-                    styles["table_body"]
-                ),
-
-                paragraph(
-                    level,
-                    styles["table_body"]
-                ),
-            ]
-        )
+        table_data.append([
+            paragraph(f"{index}. {path_text}", styles["table_body"]),
+            paragraph(f"{score:.2f}", styles["table_body"]),
+            paragraph(level, styles["table_body"]),
+        ])
 
     table = Table(
         table_data,
-        colWidths=[
-            112 * mm,
-            28 * mm,
-            35 * mm
-        ],
+        colWidths=[111 * mm, 28 * mm, 35 * mm],
         repeatRows=1,
     )
-
-    apply_standard_table_style(
-        table
-    )
-
-    story.append(
-        table
-    )
-
-    story.append(
-        Spacer(
-            1,
-            6 * mm
-        )
-    )
+    apply_standard_table_style(table)
+    story.append(table)
+    story.append(Spacer(1, 6 * mm))
 
 
 # ============================================================
@@ -1426,100 +1158,47 @@ def build_defense_section(
     Render defense-analysis findings.
     """
 
-    append_section_heading(
-        story,
-        "5. Defense Analysis",
-        styles
-    )
-
-    sections = get_dictionary(
-        report_data,
-        "sections"
-    )
-
-    defense_analysis = get_dictionary(
-        sections,
-        "defense_analysis"
-    )
-
-    findings = get_list(
-        defense_analysis,
-        "findings"
-    )
+    append_section_heading(story, "5. Defense Analysis", styles)
+    sections = get_dictionary(report_data, "sections")
+    defense_analysis = get_dictionary(sections, "defense_analysis")
+    findings = get_list(defense_analysis, "findings")
 
     if not findings:
-
         append_empty_message(
             story,
-            (
-                "No defense findings are currently available for "
-                "the analyzed environment."
-            ),
+            "No defense findings are currently available for the analyzed environment.",
             styles
         )
-
         return
 
-    for index, finding in enumerate(
-        findings,
-        start=1
-    ):
-
-        if not isinstance(
-            finding,
-            dict
-        ):
+    for index, finding in enumerate(findings, start=1):
+        if not isinstance(finding, dict):
             continue
 
-        title = get_defense_title(
-            finding
-        )
-
-        description = get_defense_description(
-            finding
-        )
-
-        priority = get_priority(
-            finding
-        )
+        title = get_defense_title(finding)
+        description = get_defense_description(finding)
+        priority = get_priority(finding)
+        evidence = get_defense_evidence(finding)
 
         block = [
+            Paragraph(f"{index}. {escape_text(title)}", styles["subsection_title"]),
             Paragraph(
-                (
-                    f"{index}. "
-                    f"{escape_text(title)}"
-                ),
-                styles["subsection_title"]
-            ),
-
-            Paragraph(
-                (
-                    f"<b>Priority:</b> "
-                    f"{escape_text(priority)}"
-                ),
+                f"<b>Priority:</b> {escape_text(priority)}",
                 styles["body_muted"]
             ),
-
-            Paragraph(
-                escape_text(
-                    description
-                ),
-                styles["body"]
-            ),
+            Paragraph(escape_text(description), styles["body"]),
         ]
 
-        story.append(
-            KeepTogether(
-                block
+        if evidence and evidence != description:
+            block.append(
+                Paragraph(
+                    f"<b>Evidence:</b> {escape_text(evidence)}",
+                    styles["body_muted"]
+                )
             )
-        )
 
-        story.append(
-            Spacer(
-                1,
-                2 * mm
-            )
-        )
+        story.append(KeepTogether(block))
+        story.append(Spacer(1, 2 * mm))
 
 
 # ============================================================
@@ -1581,11 +1260,13 @@ def build_mitigation_section(
             recommendation
         )
 
-        category = safe_text(
-            recommendation.get(
-                "category"
-            ),
-            default="general"
+        category = humanize_label(
+            safe_text(
+                recommendation.get(
+                    "category"
+                ),
+                default="general"
+            )
         )
 
         priority = get_priority(
@@ -1990,8 +1671,12 @@ def build_methodology_section(
     styles
 ):
     """
-    Render methodology and report disclaimer.
+    Render methodology and report disclaimer on a dedicated final page.
     """
+
+    # Keep the methodology/disclaimer visually coherent instead of
+    # allowing only the final paragraph and authorization notice to spill.
+    story.append(PageBreak())
 
     append_section_heading(
         story,
@@ -2001,122 +1686,54 @@ def build_methodology_section(
 
     paragraphs = [
         (
-            "AttackLens uses data collected from authorized security "
-            "scans and analysis generated by the platform's asset, "
-            "vulnerability, risk, attack-path, defense, mitigation, "
-            "and risk-comparison modules."
+            "AttackLens uses data collected from authorized security scans "
+            "and analysis generated by the platform's asset, vulnerability, "
+            "risk, attack-path, defense, mitigation, and risk-comparison modules."
         ),
-
         (
-            "Potential relationships and attack paths are "
-            "evidence-supported analytical representations. "
-            "They do not necessarily indicate successful exploitation, "
-            "confirmed lateral movement, or verified compromise."
+            "Potential relationships and attack paths are evidence-supported "
+            "analytical representations. They do not necessarily indicate "
+            "successful exploitation, confirmed lateral movement, or verified compromise."
         ),
-
         (
-            "Mitigation recommendations are defensive guidance derived "
-            "from available evidence. AttackLens does not automatically "
-            "patch vulnerabilities, close services, modify firewall "
-            "rules, create network segments, or otherwise alter target "
-            "systems."
+            "Mitigation recommendations are defensive guidance derived from available "
+            "evidence. AttackLens does not automatically patch vulnerabilities, close "
+            "services, modify firewall rules, create network segments, or otherwise "
+            "alter target systems."
         ),
-
         (
-            "Projected risk values are estimates intended for security "
-            "prioritization and comparison. They should not be interpreted "
-            "as guaranteed post-remediation risk scores. Actual risk should "
-            "be validated after authorized remediation and reassessment."
+            "Projected risk values are estimates intended for security prioritization "
+            "and comparison. They should not be interpreted as guaranteed post-remediation "
+            "risk scores. Actual risk should be validated after authorized remediation "
+            "and reassessment."
         ),
     ]
 
     for text in paragraphs:
+        story.append(Paragraph(text, styles["body"]))
 
-        story.append(
-            Paragraph(
-                text,
-                styles["body"]
-            )
-        )
-
-    story.append(
-        Spacer(
-            1,
-            5 * mm
-        )
-    )
+    story.append(Spacer(1, 5 * mm))
 
     disclaimer_table = Table(
-        [
-            [
-                Paragraph(
-                    (
-                        "<b>Authorized Use Only:</b><br/>"
-                        "This report should only contain analysis "
-                        "from systems for which the user has "
-                        "authorization to perform security testing."
-                    ),
-                    styles["disclaimer"]
-                )
-            ]
-        ],
-        colWidths=[
-            175 * mm
-        ],
+        [[Paragraph(
+            (
+                "<b>Authorized Use Only:</b><br/>"
+                "This report should only contain analysis from systems for which "
+                "the user has authorization to perform security testing."
+            ),
+            styles["disclaimer"]
+        )]],
+        colWidths=[174 * mm],
     )
-
-    disclaimer_table.setStyle(
-        TableStyle(
-            [
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, -1),
-                    COLOR_PRIMARY_LIGHT
-                ),
-
-                (
-                    "BOX",
-                    (0, 0),
-                    (-1, -1),
-                    0.7,
-                    COLOR_PRIMARY
-                ),
-
-                (
-                    "LEFTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    10
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    10
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    10
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    10
-                ),
-            ]
-        )
-    )
-
-    story.append(
-        disclaimer_table
-    )
+    disclaimer_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), COLOR_PRIMARY_LIGHT),
+        ("BOX", (0, 0), (-1, -1), 0.7, COLOR_PRIMARY),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    story.append(disclaimer_table)
 
 
 # ============================================================
@@ -2197,6 +1814,29 @@ def append_section_heading(
     )
 
 
+def build_empty_message_table(
+    message,
+    styles
+):
+    """
+    Build a standardized empty-data message table.
+    """
+
+    table = Table(
+        [[Paragraph(escape_text(message), styles["body_muted"]) ]],
+        colWidths=[174 * mm],
+    )
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), COLOR_BACKGROUND),
+        ("BOX", (0, 0), (-1, -1), 0.5, COLOR_BORDER),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    return table
+
+
 def append_empty_message(
     story,
     message,
@@ -2206,81 +1846,8 @@ def append_empty_message(
     Append an empty-data message.
     """
 
-    table = Table(
-        [
-            [
-                Paragraph(
-                    escape_text(
-                        message
-                    ),
-                    styles["body_muted"]
-                )
-            ]
-        ],
-        colWidths=[
-            175 * mm
-        ],
-    )
-
-    table.setStyle(
-        TableStyle(
-            [
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, -1),
-                    COLOR_BACKGROUND
-                ),
-
-                (
-                    "BOX",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    COLOR_BORDER
-                ),
-
-                (
-                    "LEFTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    10
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    10
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                ),
-            ]
-        )
-    )
-
-    story.append(
-        table
-    )
-
-    story.append(
-        Spacer(
-            1,
-            5 * mm
-        )
-    )
+    story.append(build_empty_message_table(message, styles))
+    story.append(Spacer(1, 5 * mm))
 
 
 # ============================================================
@@ -2707,6 +2274,18 @@ def escape_text(
 # ============================================================
 # NUMBER HELPERS
 # ============================================================
+
+def humanize_label(value):
+    """
+    Convert internal identifiers into human-readable PDF labels.
+    """
+
+    normalized = safe_text(value)
+    if not normalized:
+        return "-"
+
+    return normalized.replace("_", " ").replace("-", " ").title()
+
 
 def safe_integer(
     value
@@ -3429,6 +3008,22 @@ def get_defense_description(
     return "Defense analysis finding generated by AttackLens."
 
 
+def get_defense_evidence(finding):
+    """
+    Retrieve explicit defense-analysis evidence when available.
+    """
+
+    if not isinstance(finding, dict):
+        return ""
+
+    for key in ("evidence", "evidence_summary", "supporting_evidence"):
+        value = clean_evidence_text(finding.get(key))
+        if value:
+            return value
+
+    return ""
+
+
 # ============================================================
 # MITIGATION HELPERS
 # ============================================================
@@ -3526,7 +3121,7 @@ def get_recommendation_evidence(
 
         return ""
 
-    return format_generic_value(
+    return clean_evidence_text(
         recommendation.get(
             "evidence"
         )
@@ -3603,6 +3198,43 @@ def get_priority(
 # ============================================================
 # GENERIC VALUE FORMATTER
 # ============================================================
+
+def clean_evidence_text(
+    value
+):
+    """
+    Clean evidence text for professional PDF display.
+
+    This function only affects presentation. It does not modify
+    the underlying defense or mitigation analysis data.
+    """
+
+    text = format_generic_value(
+        value
+    )
+
+    if not text:
+        return ""
+
+    # Remove awkward punctuation before semicolon separators.
+    text = text.replace(
+        ".;",
+        ";"
+    )
+
+    # Humanize common generated wording.
+    text = text.replace(
+        "open port(s)",
+        "open ports"
+    )
+
+    text = text.replace(
+        "Open port(s)",
+        "Open ports"
+    )
+
+    return text.strip()
+
 
 def format_generic_value(
     value
