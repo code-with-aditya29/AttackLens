@@ -44,7 +44,7 @@ Monitor attack exposure and prioritize defensive actions
         <div class="overview-actions">
 
             <a
-                href="{{ url_for('new_scan') }}"
+                href="{{ url_for('scan.scan_target') }}"
                 class="primary-button"
             >
                 + New Scan
@@ -129,47 +129,13 @@ Monitor attack exposure and prioritize defensive actions
 
             <p class="stat-description">
 
-                Services currently identified
-                across discovered assets
+                {% if dashboard_stats.total_assets|default(0) > 0 %}
 
-            </p>
-
-        </article>
-
-
-        <!-- ATTACK PATHS -->
-
-        <article class="stat-card">
-
-            <div class="stat-card-header">
-
-                <span class="stat-label">
-                    Potential Attack Paths
-                </span>
-
-                <span class="stat-icon">
-                    ⚠
-                </span>
-
-            </div>
-
-
-            <div class="stat-value">
-
-                {{ dashboard_stats.attack_paths|default(0) }}
-
-            </div>
-
-
-            <p class="stat-description">
-
-                {% if dashboard_stats.attack_paths|default(0) > 0 %}
-
-                    Potential attack paths identified
+                    Services identified across discovered assets
 
                 {% else %}
 
-                    Attack path analysis pending
+                    No service data available yet
 
                 {% endif %}
 
@@ -178,18 +144,67 @@ Monitor attack exposure and prioritize defensive actions
         </article>
 
 
-        <!-- RISK SCORE -->
+        <!-- ATTACK PATH ANALYSIS -->
 
         <article class="stat-card">
 
             <div class="stat-card-header">
 
                 <span class="stat-label">
-                    Overall Risk
+                    Attack Path Analysis
                 </span>
 
                 <span class="stat-icon">
-                    ◉
+                    △
+                </span>
+
+            </div>
+
+
+            <div class="stat-value">
+
+                {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                    Ready
+
+                {% else %}
+
+                    --
+
+                {% endif %}
+
+            </div>
+
+
+            <p class="stat-description">
+
+                {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                    Review potential attacker movement
+
+                {% else %}
+
+                    Scan data required for analysis
+
+                {% endif %}
+
+            </p>
+
+        </article>
+
+
+        <!-- HIGHEST RISK -->
+
+        <article class="stat-card">
+
+            <div class="stat-card-header">
+
+                <span class="stat-label">
+                    Highest Risk
+                </span>
+
+                <span class="stat-icon">
+                    ⚠
                 </span>
 
             </div>
@@ -215,7 +230,7 @@ Monitor attack exposure and prioritize defensive actions
                 {% if dashboard_stats.risk_level %}
 
                     {{ dashboard_stats.risk_level }}
-                    current environment risk
+                    highest observed asset risk
 
                 {% else %}
 
@@ -334,7 +349,7 @@ Monitor attack exposure and prioritize defensive actions
                     </h3>
 
                     <p>
-                        Current security posture
+                        Highest observed asset risk and security findings
                     </p>
 
                 </div>
@@ -380,7 +395,7 @@ Monitor attack exposure and prioritize defensive actions
 
                 {% if dashboard_stats.risk_score is not none %}
 
-                    Current posture includes
+                    Current scan data contains
 
                     {{ dashboard_stats.vulnerable_assets|default(0) }}
                     vulnerable asset{% if dashboard_stats.vulnerable_assets|default(0) != 1 %}s{% endif %}
@@ -392,7 +407,7 @@ Monitor attack exposure and prioritize defensive actions
 
                 {% else %}
 
-                    Run an authorized scan to calculate the security risk.
+                    Run an authorized scan to calculate asset risk.
 
                 {% endif %}
 
@@ -419,7 +434,7 @@ Monitor attack exposure and prioritize defensive actions
                 </h3>
 
                 <p>
-                    Visual representation of potential attacker movement
+                    Visualize potential attacker movement across discovered assets
                 </p>
 
             </div>
@@ -443,15 +458,30 @@ Monitor attack exposure and prioritize defensive actions
                     ⬡
                 </div>
 
-                <h4>
-                    Attack Path Analysis Available
-                </h4>
 
-                <p>
-                    Review generated security relationships,
-                    potential attacker movement, and available
-                    attack-path evidence.
-                </p>
+                {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                    <h4>
+                        Attack Path Analysis Ready
+                    </h4>
+
+                    <p>
+                        Review security relationships, potential attacker
+                        movement, and supporting attack-path evidence.
+                    </p>
+
+                {% else %}
+
+                    <h4>
+                        Scan Data Required
+                    </h4>
+
+                    <p>
+                        Discover assets and exposed services before reviewing
+                        potential attack paths.
+                    </p>
+
+                {% endif %}
 
             </div>
 
@@ -475,8 +505,7 @@ Monitor attack exposure and prioritize defensive actions
                 </h3>
 
                 <p>
-                    Prioritized defensive areas based on current
-                    asset and attack-path evidence
+                    Identify defensive priorities using current security evidence
                 </p>
 
             </div>
@@ -498,14 +527,30 @@ Monitor attack exposure and prioritize defensive actions
                 ◫
             </div>
 
-            <h4>
-                Defense Analysis Available
-            </h4>
 
-            <p>
-                Review prioritized assets, relationships, and
-                attack paths that may require defensive attention.
-            </p>
+            {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                <h4>
+                    Defense Analysis Ready
+                </h4>
+
+                <p>
+                    Review prioritized assets, relationships, and attack paths
+                    that may require defensive attention.
+                </p>
+
+            {% else %}
+
+                <h4>
+                    Security Evidence Required
+                </h4>
+
+                <p>
+                    Defense priorities become available after asset and
+                    exposure data has been discovered.
+                </p>
+
+            {% endif %}
 
         </div>
 
@@ -527,8 +572,7 @@ Monitor attack exposure and prioritize defensive actions
                 </h3>
 
                 <p>
-                    Evidence-based defensive actions for reducing
-                    identified security exposure and attack-path risk
+                    Prioritized defensive actions for reducing identified risk
                 </p>
 
             </div>
@@ -550,15 +594,30 @@ Monitor attack exposure and prioritize defensive actions
                 ✓
             </div>
 
-            <h4>
-                Mitigation Recommendations Available
-            </h4>
 
-            <p>
-                Review prioritized actions generated from current
-                asset, vulnerability, exposure, defense-analysis,
-                and attack-path evidence.
-            </p>
+            {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                <h4>
+                    Mitigation Analysis Ready
+                </h4>
+
+                <p>
+                    Review prioritized actions derived from asset,
+                    vulnerability, exposure, defense, and attack-path evidence.
+                </p>
+
+            {% else %}
+
+                <h4>
+                    Analysis Data Required
+                </h4>
+
+                <p>
+                    Mitigation recommendations become available after
+                    security data has been collected and analyzed.
+                </p>
+
+            {% endif %}
 
         </div>
 
@@ -580,8 +639,7 @@ Monitor attack exposure and prioritize defensive actions
                 </h3>
 
                 <p>
-                    Compare the current security posture with the
-                    projected post-mitigation risk state
+                    Compare current risk with the projected post-mitigation state
                 </p>
 
             </div>
@@ -603,15 +661,30 @@ Monitor attack exposure and prioritize defensive actions
                 ⇄
             </div>
 
-            <h4>
-                Risk Comparison Available
-            </h4>
 
-            <p>
-                Review the current risk state, projected post-mitigation
-                state, and estimated reduction based on applicable
-                defensive recommendations.
-            </p>
+            {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                <h4>
+                    Risk Comparison Ready
+                </h4>
+
+                <p>
+                    Review the current risk state, projected post-mitigation
+                    state, and estimated reduction from applicable defenses.
+                </p>
+
+            {% else %}
+
+                <h4>
+                    Risk Assessment Required
+                </h4>
+
+                <p>
+                    Complete security analysis before comparing current
+                    and projected risk.
+                </p>
+
+            {% endif %}
 
         </div>
 
@@ -633,8 +706,7 @@ Monitor attack exposure and prioritize defensive actions
                 </h3>
 
                 <p>
-                    Consolidated reporting across the AttackLens
-                    security analysis pipeline
+                    Consolidated reporting across the AttackLens analysis pipeline
                 </p>
 
             </div>
@@ -656,16 +728,31 @@ Monitor attack exposure and prioritize defensive actions
                 ▤
             </div>
 
-            <h4>
-                Security Reports Available
-            </h4>
 
-            <p>
-                Review report readiness and generate a consolidated
-                PDF assessment containing asset inventory, vulnerability
-                and risk assessment, attack paths, defense findings,
-                mitigation recommendations, and projected risk comparison.
-            </p>
+            {% if dashboard_stats.total_assets|default(0) > 0 %}
+
+                <h4>
+                    Security Reporting Ready
+                </h4>
+
+                <p>
+                    Review report readiness and generate a consolidated PDF
+                    covering assets, vulnerabilities, risk, attack paths,
+                    defenses, mitigations, and projected risk.
+                </p>
+
+            {% else %}
+
+                <h4>
+                    Report Data Required
+                </h4>
+
+                <p>
+                    Complete an authorized scan before generating a
+                    security assessment report.
+                </p>
+
+            {% endif %}
 
         </div>
 
