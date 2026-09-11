@@ -163,28 +163,24 @@ Monitor attack exposure and prioritize defensive actions
 
             <div class="stat-value">
 
-                {% if dashboard_stats.total_assets|default(0) > 0 %}
-
-                    Ready
-
-                {% else %}
-
-                    --
-
-                {% endif %}
+                {{ dashboard_stats.attack_paths|default(0) }}
 
             </div>
 
 
             <p class="stat-description">
 
-                {% if dashboard_stats.total_assets|default(0) > 0 %}
+                {% if dashboard_stats.total_assets|default(0) == 0 %}
 
-                    Review potential attacker movement
+                    Scan data required for analysis
+
+                {% elif dashboard_stats.attack_paths|default(0) > 0 %}
+
+                    Potential attack paths identified
 
                 {% else %}
 
-                    Scan data required for analysis
+                    No attack paths currently identified
 
                 {% endif %}
 
@@ -459,18 +455,7 @@ Monitor attack exposure and prioritize defensive actions
                 </div>
 
 
-                {% if dashboard_stats.total_assets|default(0) > 0 %}
-
-                    <h4>
-                        Attack Path Analysis Ready
-                    </h4>
-
-                    <p>
-                        Review security relationships, potential attacker
-                        movement, and supporting attack-path evidence.
-                    </p>
-
-                {% else %}
+                {% if dashboard_stats.total_assets|default(0) == 0 %}
 
                     <h4>
                         Scan Data Required
@@ -479,6 +464,32 @@ Monitor attack exposure and prioritize defensive actions
                     <p>
                         Discover assets and exposed services before reviewing
                         potential attack paths.
+                    </p>
+
+
+                {% elif dashboard_stats.attack_paths|default(0) > 0 %}
+
+                    <h4>
+                        {{ dashboard_stats.attack_paths }}
+                        Attack Path{% if dashboard_stats.attack_paths != 1 %}s{% endif %}
+                        Identified
+                    </h4>
+
+                    <p>
+                        Review security relationships, potential attacker
+                        movement, and supporting attack-path evidence.
+                    </p>
+
+
+                {% else %}
+
+                    <h4>
+                        No Attack Paths Identified
+                    </h4>
+
+                    <p>
+                        Current analysis did not identify a viable attack path
+                        across the discovered assets.
                     </p>
 
                 {% endif %}

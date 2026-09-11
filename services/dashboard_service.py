@@ -19,6 +19,15 @@
 
 
 # ==========================================
+# ATTACK PATH SERVICE
+# ==========================================
+
+from services.attack_path_service import (
+    generate_attack_graph
+)
+
+
+# ==========================================
 # RISK LEVEL ORDER
 # ==========================================
 
@@ -286,17 +295,28 @@ def get_dashboard_stats(
     # ATTACK PATHS
     # ======================================
     #
-    # Attack Path Engine has not yet been
-    # implemented.
+    # Use the existing Attack Path Engine as
+    # the single source of truth.
     #
-    # Do NOT fabricate attack paths.
+    # Normal Admin:
+    # Generate paths only from that user's
+    # already-filtered Asset Inventory.
     #
-    # Once the Attack Path Engine is added,
-    # this value will be replaced with real
-    # generated path data.
+    # Super Admin:
+    # Keep owner graphs isolated and sum the
+    # resulting path counts. Assets belonging
+    # to different users are never mixed into
+    # one attack graph.
+    #
+    # If attack-path generation fails, the
+    # dashboard safely falls back to 0 without
+    # affecting the rest of the statistics.
     # ======================================
 
-    attack_paths = 0
+    attack_paths = get_attack_path_count(
+        assets=assets,
+        created_by=created_by
+    )
 
 
     # ======================================
@@ -339,6 +359,163 @@ def get_dashboard_stats(
             attack_paths
         )
     }
+
+
+# ==========================================
+# GET ATTACK PATH COUNT
+# ==========================================
+
+def get_attack_path_count(
+    assets,
+    created_by=None
+):
+    """
+    Return the real number of generated attack
+    paths for the dashboard.
+
+    The existing Attack Path Engine remains
+    responsible for graph/path generation.
+
+    Normal Admin:
+        Generate one graph for the current
+        user's already-filtered assets.
+
+    Super Admin:
+        Generate one isolated graph per asset
+        owner, then sum the path counts.
+
+    This prevents relationships from being
+    generated between assets owned by
+    different users.
+    """
+
+    # ======================================
+    # EMPTY ASSET INVENTORY
+    # ======================================
+
+    if not assets:
+
+        return 0
+
+
+    # ======================================
+    # NORMAL ADMIN / OWNER-SCOPED GRAPH
+    # ======================================
+
+    if created_by is not None:
+
+        try:
+
+            attack_graph = (
+                generate_attack_graph(
+
+                    assets=assets,
+
+                    created_by=created_by
+
+                )
+            )
+
+            attack_paths = normalize_list(
+                attack_graph.get(
+                    "paths",
+                    []
+                )
+            )
+
+            return len(
+                attack_paths
+            )
+
+        except Exception as error:
+
+            print(
+                "Dashboard attack path "
+                f"warning: {error}"
+            )
+
+            return 0
+
+
+    # ======================================
+    # SUPER ADMIN / GLOBAL DASHBOARD
+    # ======================================
+    #
+    # Do not build one cross-owner graph.
+    # Group assets by owner and analyze each
+    # owner's environment independently.
+    # ======================================
+
+    assets_by_owner = {}
+
+    for asset in assets:
+
+        if not isinstance(
+            asset,
+            dict
+        ):
+
+            continue
+
+        owner_id = asset.get(
+            "created_by"
+        )
+
+        if owner_id is None:
+
+            continue
+
+        assets_by_owner.setdefault(
+            owner_id,
+            []
+        ).append(
+            asset
+        )
+
+
+    total_attack_paths = 0
+
+
+    for (
+        owner_id,
+        owner_assets
+    ) in assets_by_owner.items():
+
+        try:
+
+            attack_graph = (
+                generate_attack_graph(
+
+                    assets=owner_assets,
+
+                    created_by=owner_id
+
+                )
+            )
+
+            owner_attack_paths = normalize_list(
+                attack_graph.get(
+                    "paths",
+                    []
+                )
+            )
+
+            total_attack_paths += len(
+                owner_attack_paths
+            )
+
+        except Exception as error:
+
+            print(
+                "Dashboard attack path "
+                "owner analysis warning: "
+                f"{error}"
+            )
+
+            continue
+
+
+    return total_attack_paths
 
 
 # ==========================================

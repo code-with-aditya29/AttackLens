@@ -63,6 +63,26 @@ from routes.report import (
 # ==========================================
 # DASHBOARD SERVICE
 # ==========================================
+#
+# Dashboard statistics are prepared by:
+#
+# services/dashboard_service.py
+#
+# This includes:
+#
+# - Current asset count
+# - Open service count
+# - Open port count
+# - Vulnerability statistics
+# - Highest observed asset risk
+# - Real Attack Path count generated through
+#   the existing Attack Path Engine
+#
+# Attack-path generation itself remains in:
+#
+# services/attack_path_service.py
+#
+# ==========================================
 
 from services.dashboard_service import (
     get_dashboard_stats
@@ -224,6 +244,10 @@ def create_app():
     #
     # attack_path.attack_paths
     #
+    # Actual graph/path generation remains in:
+    #
+    # services/attack_path_service.py
+    #
     # The previous placeholder route in
     # app.py has been removed.
     # ======================================
@@ -358,11 +382,25 @@ def create_app():
         # ==================================
         #
         # Normal Admin:
-        # Only assets created by that user
-        # are included.
+        #
+        # Only assets created by the logged-in
+        # user are included.
+        #
+        # The Dashboard Service also uses the
+        # same owner-scoped assets to calculate
+        # the real Attack Path count.
+        #
         #
         # Super Admin:
+        #
         # Global asset statistics are shown.
+        #
+        # Attack-path calculation remains
+        # owner-isolated inside the Dashboard
+        # Service so assets belonging to
+        # different users are never combined
+        # into one attack graph.
+        #
         #
         # This keeps dashboard ownership
         # behavior aligned with the existing
@@ -389,6 +427,21 @@ def create_app():
 
         # ==================================
         # RENDER DASHBOARD
+        # ==================================
+        #
+        # dashboard_stats now contains:
+        #
+        # total_assets
+        # open_services
+        # open_ports
+        # vulnerable_assets
+        # total_vulnerabilities
+        # high_risk_assets
+        # critical_risk_assets
+        # risk_score
+        # risk_level
+        # attack_paths
+        #
         # ==================================
 
         return render_template(
@@ -456,6 +509,10 @@ def create_app():
     # Endpoint:
     #
     # attack_path.attack_paths
+    #
+    # Graph and path generation is handled by:
+    #
+    # services/attack_path_service.py
     #
     # No duplicate /attack-paths route
     # should exist here.

@@ -1888,35 +1888,253 @@ textarea:focus-visible {
 
 }
 
+/* =========================================================
+   6A. ATTACK PATH ANALYSIS STATUS CARD
+   ========================================================= */
 
-/* "Ready" is textual status rather than a number */
+.dashboard-overview
+.attack-path-stat-card {
 
-.dashboard-overview .stat-card:nth-child(3) .stat-value {
+    position: relative;
+
+}
+
+
+.dashboard-overview
+.attack-path-stat-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 18px;
+    right: 18px;
+
+    height: 2px;
+
+    border-radius:
+        0
+        0
+        999px
+        999px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #7c3aed,
+            #8b5cf6,
+            #a855f7
+        );
+
+    opacity: 0.82;
+
+}
+
+
+.dashboard-overview
+.attack-path-stat-status {
 
     width: fit-content;
 
-    margin-top: 25px;
+    min-height: 38px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    margin-top: 23px;
 
     padding:
-        7px
-        11px;
+        8px
+        13px;
+
+    border-radius: 10px;
+
+    line-height: 1;
+
+}
+
+
+.dashboard-overview
+.attack-path-stat-status strong {
+
+    color:
+        #171225;
+
+    font-size: 16px;
+    font-weight: 750;
+
+    line-height: 1;
+
+    letter-spacing: 0;
+
+}
+
+
+.dashboard-overview
+.attack-path-status-dot {
+
+    width: 8px;
+    height: 8px;
+
+    flex:
+        0
+        0
+        8px;
+
+    border-radius: 50%;
+
+}
+
+
+.dashboard-overview
+.attack-path-status-ready {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.10),
+            rgba(168, 85, 247, 0.045)
+        );
 
     border:
         1px solid
-        rgba(124, 58, 237, 0.24);
+        rgba(124, 58, 237, 0.28);
 
-    border-radius: 999px;
+}
+
+
+.dashboard-overview
+.attack-path-status-ready
+.attack-path-status-dot {
 
     background:
-        var(--primary-light);
+        #8b5cf6;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(139, 92, 246, 0.11);
+
+}
+
+
+.dashboard-overview
+.attack-path-status-waiting {
+
+    background:
+        rgba(107, 114, 128, 0.055);
+
+    border:
+        1px solid
+        rgba(107, 114, 128, 0.20);
+
+}
+
+
+.dashboard-overview
+.attack-path-status-waiting
+.attack-path-status-dot {
+
+    background:
+        #8b8497;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(107, 114, 128, 0.09);
+
+}
+
+
+[data-theme="dark"]
+.dashboard-overview
+.attack-path-stat-status strong {
 
     color:
-        var(--primary);
+        #f5f3ff;
 
-    font-size: 14px;
-    font-weight: 700;
+}
 
-    letter-spacing: 0;
+
+[data-theme="dark"]
+.dashboard-overview
+.attack-path-status-ready {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.18),
+            rgba(168, 85, 247, 0.07)
+        );
+
+    border-color:
+        rgba(139, 92, 246, 0.34);
+
+}
+
+
+[data-theme="dark"]
+.dashboard-overview
+.attack-path-status-ready
+.attack-path-status-dot {
+
+    background:
+        #a970ff;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(169, 112, 255, 0.12);
+
+}
+
+
+[data-theme="dark"]
+.dashboard-overview
+.attack-path-status-waiting {
+
+    background:
+        rgba(148, 163, 184, 0.065);
+
+    border-color:
+        rgba(148, 163, 184, 0.17);
+
+}
+
+
+[data-theme="dark"]
+.dashboard-overview
+.attack-path-status-waiting
+.attack-path-status-dot {
+
+    background:
+        #938da2;
+
+}
+
+
+@media (max-width: 576px) {
+
+    .dashboard-overview
+    .attack-path-stat-status {
+
+        min-height: 36px;
+
+        padding:
+            7px
+            11px;
+
+    }
+
+
+    .dashboard-overview
+    .attack-path-stat-status strong {
+
+        font-size:
+            15px;
+
+    }
 
 }
 
@@ -2412,13 +2630,7 @@ textarea:focus-visible {
 }
 
 
-[data-theme="dark"]
-.dashboard-overview .stat-card:nth-child(3) .stat-value {
 
-    border-color:
-        rgba(139, 92, 246, 0.28);
-
-}
 
 
 [data-theme="dark"]
