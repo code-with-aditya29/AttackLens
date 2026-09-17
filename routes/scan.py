@@ -1071,6 +1071,29 @@ def delete_scan_record(
     ]
 
 
+    # ======================================
+    # DELETE SCAN + RECONCILE ASSET
+    # ======================================
+    #
+    # delete_scan() performs the complete
+    # deletion workflow:
+    #
+    # 1. Delete the selected scan.
+    #
+    # 2. Check whether another completed scan
+    #    exists for the same owner + target.
+    #
+    # 3. If another scan exists, rebuild the
+    #    Asset from the newest remaining scan.
+    #
+    # 4. If no completed scan remains, remove
+    #    the related Asset.
+    #
+    # Downstream analysis pages derive their
+    # current information from the remaining
+    # Asset Inventory.
+    # ======================================
+
     deleted = delete_scan(
         db=db,
         scan_id=scan_id,
@@ -1081,7 +1104,9 @@ def delete_scan_record(
     if deleted:
 
         flash(
-            "Scan deleted successfully.",
+            "Scan deleted successfully. "
+            "Related asset and analysis data "
+            "have been synchronized.",
             "success"
         )
 
@@ -1146,7 +1171,17 @@ def delete_selected_scans():
 
 
     # ======================================
-    # DELETE SELECTED SCANS
+    # BULK DELETE + ASSET RECONCILIATION
+    # ======================================
+    #
+    # bulk_delete_scans() deletes all valid
+    # selected scan records and reconciles
+    # each affected owner + target only once.
+    #
+    # If older completed scans remain, their
+    # latest state becomes the current Asset.
+    #
+    # If none remain, the Asset is removed.
     # ======================================
 
     deleted_count = bulk_delete_scans(
@@ -1160,7 +1195,8 @@ def delete_selected_scans():
 
         flash(
             f"{deleted_count} scan(s) deleted "
-            "successfully.",
+            "successfully. Related assets and "
+            "analysis data have been synchronized.",
             "success"
         )
 

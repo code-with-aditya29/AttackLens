@@ -589,6 +589,265 @@ def get_scan_history(
 
 
 # ==========================================
+# RECONCILE ASSET AFTER SCAN DELETION
+# ==========================================
+
+def _reconcile_asset_after_scan_deletion(
+    db,
+    target,
+    created_by
+):
+
+    """
+    Reconcile the Asset Inventory after one
+    or more scan records have been deleted.
+
+    Asset identity:
+
+        created_by + target
+
+    Rules:
+
+    1. If completed scans still exist for the
+       same owner and target, rebuild the
+       current Asset from the newest remaining
+       completed scan.
+
+    2. first_seen is recalculated from the
+       earliest remaining completed scan.
+
+    3. last_seen and latest_scan_id are taken
+       from the newest remaining scan.
+
+    4. Manual Asset Context fields such as
+       criticality and exposure are preserved.
+
+    5. If no completed scan remains for the
+       owner and target, delete the Asset.
+
+    Downstream modules that use the Asset
+    Inventory will therefore stop displaying
+    stale information from deleted scans.
+    """
+
+    # ======================================
+    # LOCAL IMPORTS
+    # ======================================
+    #
+    # These are kept local because this
+    # function is deletion-specific and it
+    # avoids unnecessary service-level
+    # dependencies during module loading.
+    # ======================================
+
+    from services.asset_service import (
+        build_asset_update_from_scan,
+        get_scan_timestamp
+    )
+
+    from models.asset_model import (
+        create_asset_document
+    )
+
+
+    # ======================================
+    # NORMALIZE IDENTITY
+    # ======================================
+
+    target = str(
+        target or ""
+    ).strip()
+
+
+    if not target or not created_by:
+
+        return False
+
+
+    # ======================================
+    # FIND REMAINING COMPLETED SCANS
+    # ======================================
+
+    remaining_scans = list(
+
+        db.scans.find(
+
+            {
+                "target": target,
+                "created_by": created_by,
+                "status": "completed"
+            }
+
+        )
+
+    )
+
+
+    # ======================================
+    # NO COMPLETED SCANS REMAIN
+    # ======================================
+    #
+    # No scan now supports this Asset.
+    #
+    # Remove the Asset completely so that
+    # Dashboard and all downstream analysis
+    # stop using stale information.
+    # ======================================
+
+    if not remaining_scans:
+
+        db.assets.delete_one(
+
+            {
+                "target": target,
+                "created_by": created_by
+            }
+
+        )
+
+
+        return True
+
+
+    # ======================================
+    # SORT REMAINING SCANS
+    # ======================================
+
+    remaining_scans = sorted(
+
+        remaining_scans,
+
+        key=get_scan_timestamp
+
+    )
+
+
+    earliest_scan = (
+        remaining_scans[
+            0
+        ]
+    )
+
+
+    latest_scan = (
+        remaining_scans[
+            -1
+        ]
+    )
+
+
+    earliest_time = get_scan_timestamp(
+        earliest_scan
+    )
+
+
+    latest_time = get_scan_timestamp(
+        latest_scan
+    )
+
+
+    # ======================================
+    # BUILD CURRENT ASSET SNAPSHOT
+    # ======================================
+
+    asset_update = (
+        build_asset_update_from_scan(
+            latest_scan
+        )
+    )
+
+
+    if not asset_update:
+
+        return False
+
+
+    # ======================================
+    # FORCE CORRECT DISCOVERY RANGE
+    # ======================================
+
+    asset_update[
+        "first_seen"
+    ] = earliest_time
+
+
+    asset_update[
+        "last_seen"
+    ] = latest_time
+
+
+    # ======================================
+    # UPDATE EXISTING ASSET
+    # ======================================
+    #
+    # build_asset_update_from_scan() contains
+    # scan-controlled fields only.
+    #
+    # criticality and exposure are therefore
+    # intentionally preserved.
+    # ======================================
+
+    result = db.assets.update_one(
+
+        {
+            "target": target,
+            "created_by": created_by
+        },
+
+        {
+            "$set": asset_update
+        }
+
+    )
+
+
+    # ======================================
+    # RECREATE MISSING ASSET
+    # ======================================
+    #
+    # Normally an Asset already exists here.
+    #
+    # This fallback repairs an inconsistent
+    # database where completed scans exist
+    # but the corresponding Asset document
+    # is missing.
+    # ======================================
+
+    if result.matched_count == 0:
+
+        asset = create_asset_document(
+
+            target=target,
+
+            created_by=created_by
+
+        )
+
+
+        asset.update(
+            asset_update
+        )
+
+
+        asset[
+            "first_seen"
+        ] = earliest_time
+
+
+        asset[
+            "last_seen"
+        ] = latest_time
+
+
+        db.assets.insert_one(
+            asset
+        )
+
+
+    return True
+
+
+# ==========================================
 # DELETE SINGLE SCAN
 # ==========================================
 
@@ -598,12 +857,28 @@ def delete_scan(
     created_by=None
 ):
 
+    """
+    Delete one scan and synchronize the
+    Asset Inventory for the affected target.
+
+    Ownership protection is applied before
+    any deletion occurs.
+    """
+
+    # ======================================
+    # VALIDATE SCAN ID
+    # ======================================
+
     if not ObjectId.is_valid(
         scan_id
     ):
 
         return False
 
+
+    # ======================================
+    # BUILD DELETE QUERY
+    # ======================================
 
     query = {
 
@@ -620,15 +895,77 @@ def delete_scan(
 
     if created_by is not None:
 
-        query["created_by"] = created_by
+        query[
+            "created_by"
+        ] = created_by
 
+
+    # ======================================
+    # LOAD SCAN BEFORE DELETION
+    # ======================================
+    #
+    # target and created_by are required
+    # afterwards to determine which Asset
+    # must be rebuilt or removed.
+    # ======================================
+
+    scan = db.scans.find_one(
+        query
+    )
+
+
+    if not scan:
+
+        return False
+
+
+    target = str(
+
+        scan.get(
+            "target",
+            ""
+        )
+
+    ).strip()
+
+
+    scan_owner = scan.get(
+        "created_by"
+    )
+
+
+    # ======================================
+    # DELETE SCAN
+    # ======================================
 
     result = db.scans.delete_one(
         query
     )
 
 
-    return result.deleted_count == 1
+    if result.deleted_count != 1:
+
+        return False
+
+
+    # ======================================
+    # RECONCILE RELATED ASSET
+    # ======================================
+
+    if target and scan_owner:
+
+        _reconcile_asset_after_scan_deletion(
+
+            db=db,
+
+            target=target,
+
+            created_by=scan_owner
+
+        )
+
+
+    return True
 
 
 # ==========================================
@@ -640,6 +977,15 @@ def bulk_delete_scans(
     scan_ids,
     created_by=None
 ):
+
+    """
+    Delete multiple scan records and then
+    reconcile every affected Asset.
+
+    Multiple deleted scans belonging to the
+    same owner + target are reconciled only
+    once.
+    """
 
     valid_ids = []
 
@@ -668,6 +1014,10 @@ def bulk_delete_scans(
         return 0
 
 
+    # ======================================
+    # BUILD OWNERSHIP-PROTECTED QUERY
+    # ======================================
+
     query = {
 
         "_id": {
@@ -679,18 +1029,123 @@ def bulk_delete_scans(
     }
 
 
-    # ======================================
-    # USER OWNERSHIP FILTER
-    # ======================================
-
     if created_by is not None:
 
-        query["created_by"] = created_by
+        query[
+            "created_by"
+        ] = created_by
 
+
+    # ======================================
+    # LOAD SCANS BEFORE DELETION
+    # ======================================
+    #
+    # Once the documents are deleted we can
+    # no longer obtain their target/owner
+    # relationships.
+    # ======================================
+
+    scans_to_delete = list(
+
+        db.scans.find(
+            query
+        )
+
+    )
+
+
+    if not scans_to_delete:
+
+        return 0
+
+
+    # ======================================
+    # COLLECT AFFECTED ASSETS
+    # ======================================
+    #
+    # Dictionary key:
+    #
+    #     str(created_by), target
+    #
+    # Dictionary value:
+    #
+    #     original created_by value
+    #
+    # This avoids reconciling the same Asset
+    # repeatedly when several of its scans
+    # are selected together.
+    # ======================================
+
+    affected_assets = {}
+
+
+    for scan in scans_to_delete:
+
+        target = str(
+
+            scan.get(
+                "target",
+                ""
+            )
+
+        ).strip()
+
+
+        scan_owner = scan.get(
+            "created_by"
+        )
+
+
+        if not target or not scan_owner:
+
+            continue
+
+
+        key = (
+
+            str(
+                scan_owner
+            ),
+
+            target
+
+        )
+
+
+        affected_assets[
+            key
+        ] = scan_owner
+
+
+    # ======================================
+    # DELETE SELECTED SCANS
+    # ======================================
 
     result = db.scans.delete_many(
         query
     )
+
+
+    # ======================================
+    # RECONCILE AFFECTED ASSETS
+    # ======================================
+
+    if result.deleted_count > 0:
+
+        for (
+            owner_string,
+            target
+        ), scan_owner in affected_assets.items():
+
+            _reconcile_asset_after_scan_deletion(
+
+                db=db,
+
+                target=target,
+
+                created_by=scan_owner
+
+            )
 
 
     return result.deleted_count

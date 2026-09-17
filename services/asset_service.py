@@ -32,6 +32,7 @@ def normalize_list(
         value,
         list
     ):
+
         return value
 
     return []
@@ -59,6 +60,7 @@ def normalize_datetime(
         value,
         datetime
     ):
+
         return None
 
 
@@ -742,8 +744,8 @@ def sync_assets_from_completed_scans(
     created_by=None
 ):
     """
-    Rebuild/refresh Asset state from all
-    completed scans currently in MongoDB.
+    Fully synchronize Asset Inventory with
+    completed AttackLens scans.
 
     Each unique:
 
@@ -757,20 +759,34 @@ def sync_assets_from_completed_scans(
     Latest scan:
         establishes current state
 
-    This approach is deterministic and does
-    not depend on MongoDB sort behavior when
-    some historical records have missing
-    timestamp fields.
+    Assets that no longer have any completed
+    scan supporting them are removed.
+
+    Ownership rules are respected:
+
+        Normal Admin:
+            synchronizes only their own assets.
+
+        Super Admin:
+            synchronizes all users while still
+            matching each Asset by owner + target.
+
+    Manual Asset Context fields remain
+    preserved for valid Assets.
     """
 
-    query = {
+    # ======================================
+    # LOAD COMPLETED SCANS
+    # ======================================
+
+    scan_query = {
         "status": "completed"
     }
 
 
     if created_by is not None:
 
-        query[
+        scan_query[
             "created_by"
         ] = created_by
 
@@ -778,7 +794,7 @@ def sync_assets_from_completed_scans(
     scans = list(
 
         db.scans.find(
-            query
+            scan_query
         )
 
     )
@@ -836,32 +852,44 @@ def sync_assets_from_completed_scans(
 
             asset_groups[
                 group_key
-            ] = []
+            ] = {
+                "owner": owner,
+                "target": target,
+                "scans": []
+            }
 
 
         asset_groups[
             group_key
+        ][
+            "scans"
         ].append(
             scan
         )
 
 
+    # ======================================
+    # REBUILD / REFRESH VALID ASSETS
+    # ======================================
+
     synced_count = 0
 
 
-    # ======================================
-    # PROCESS EACH ASSET
-    # ======================================
+    for group_data in asset_groups.values():
 
-    for group_scans in asset_groups.values():
+        group_scans = group_data.get(
+            "scans",
+            []
+        )
+
 
         if not group_scans:
 
             continue
 
 
-        # Sort explicitly using our normalized
-        # timestamp helper.
+        # Sort explicitly using normalized
+        # timestamps.
 
         ordered_scans = sorted(
 
@@ -919,9 +947,8 @@ def sync_assets_from_completed_scans(
         # ==================================
         #
         # This also repairs assets created by
-        # the initial Assets implementation
-        # where first_seen represented asset
-        # document creation time.
+        # earlier versions where first_seen
+        # represented document creation time.
         # ==================================
 
         db.assets.update_one(
@@ -938,6 +965,7 @@ def sync_assets_from_completed_scans(
                     "first_seen": earliest_time,
 
                     "last_seen": latest_time
+
                 }
             }
 
@@ -946,6 +974,126 @@ def sync_assets_from_completed_scans(
 
         synced_count += 1
 
+
+    # ======================================
+    # REMOVE ORPHANED ASSETS
+    # ======================================
+    #
+    # An orphaned Asset is an Asset for which
+    # there is no completed scan with the same:
+    #
+    #     created_by + target
+    #
+    # This cleanup is essential when scan
+    # records have been deleted.
+    # ======================================
+
+    asset_query = {}
+
+
+    if created_by is not None:
+
+        asset_query[
+            "created_by"
+        ] = created_by
+
+
+    existing_assets = list(
+
+        db.assets.find(
+            asset_query
+        )
+
+    )
+
+
+    deleted_count = 0
+
+
+    for asset in existing_assets:
+
+        target = str(
+
+            asset.get(
+                "target",
+                ""
+            )
+
+        ).strip()
+
+
+        owner = asset.get(
+            "created_by"
+        )
+
+
+        # ==================================
+        # INVALID ASSET IDENTITY
+        # ==================================
+        #
+        # Do not automatically delete malformed
+        # records here. Only remove an Asset
+        # when we can safely establish its
+        # owner + target identity.
+        # ==================================
+
+        if not target or not owner:
+
+            continue
+
+
+        group_key = (
+
+            str(
+                owner
+            ),
+
+            target
+
+        )
+
+
+        # ==================================
+        # ASSET HAS SUPPORTING SCAN
+        # ==================================
+
+        if group_key in asset_groups:
+
+            continue
+
+
+        # ==================================
+        # ORPHANED ASSET
+        # ==================================
+
+        result = db.assets.delete_one(
+
+            {
+                "_id": asset[
+                    "_id"
+                ],
+                "created_by": owner
+            }
+
+        )
+
+
+        if result.deleted_count == 1:
+
+            deleted_count += 1
+
+
+    # ======================================
+    # RETURN SYNC COUNT
+    # ======================================
+    #
+    # Preserve the original return contract:
+    # number of valid assets synchronized.
+    #
+    # deleted_count is intentionally not
+    # returned so existing callers remain
+    # compatible.
+    # ======================================
 
     return synced_count
 
@@ -1174,6 +1322,7 @@ def get_asset_statistics(
 
             )
 
+
         except (
             TypeError,
             ValueError
@@ -1190,6 +1339,7 @@ def get_asset_statistics(
                 or 0
 
             )
+
 
         except (
             TypeError,
