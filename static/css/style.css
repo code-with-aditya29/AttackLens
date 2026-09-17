@@ -3387,7 +3387,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page {
-
     width: 100%;
     max-width: 1500px;
 
@@ -3397,7 +3396,6 @@ input:focus-visible + .custom-checkbox {
     flex-direction: column;
 
     gap: 24px;
-
 }
 
 
@@ -3406,7 +3404,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .scan-result-header {
-
     width: 100%;
 
     position: relative;
@@ -3423,27 +3420,25 @@ input:focus-visible + .custom-checkbox {
     background:
         linear-gradient(
             135deg,
-            rgba(124, 58, 237, 0.17),
-            rgba(124, 58, 237, 0.055) 42%,
+            rgba(124, 58, 237, 0.10),
+            rgba(124, 58, 237, 0.035) 42%,
             transparent 72%
         ),
         var(--card-bg);
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.48);
+        rgba(139, 92, 246, 0.34);
 
     border-radius: 17px;
 
     box-shadow:
         0 10px 30px
-        rgba(0, 0, 0, 0.15);
-
+        rgba(0, 0, 0, 0.08);
 }
 
 
 .scan-results-page .scan-result-header::before {
-
     content: "";
 
     position: absolute;
@@ -3462,14 +3457,11 @@ input:focus-visible + .custom-checkbox {
             #7c3aed,
             transparent 82%
         );
-
 }
 
 
 .scan-results-page .scan-result-header > div:first-child {
-
     min-width: 0;
-
 }
 
 
@@ -3478,16 +3470,14 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .section-label {
-
     margin-bottom: 9px;
 
-    color: #a970ff;
+    color: #8b5cf6;
 
     font-size: 11px;
     font-weight: 800;
 
     letter-spacing: 1.4px;
-
 }
 
 
@@ -3496,7 +3486,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .scan-result-header h3 {
-
     margin: 0;
 
     color: var(--text-primary);
@@ -3505,12 +3494,10 @@ input:focus-visible + .custom-checkbox {
     font-weight: 750;
 
     line-height: 1.3;
-
 }
 
 
 .scan-results-page .scan-result-header p {
-
     max-width: 720px;
 
     margin: 9px 0 0;
@@ -3520,7 +3507,6 @@ input:focus-visible + .custom-checkbox {
     font-size: 13px;
 
     line-height: 1.6;
-
 }
 
 
@@ -3529,7 +3515,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .scan-result-status {
-
     flex-shrink: 0;
 
     display: inline-flex;
@@ -3541,7 +3526,10 @@ input:focus-visible + .custom-checkbox {
 
     padding: 8px 15px;
 
-    border: 1px solid var(--border-color);
+    border:
+        1px solid
+        var(--border-color);
+
     border-radius: 999px;
 
     background: var(--bg-primary);
@@ -3551,12 +3539,10 @@ input:focus-visible + .custom-checkbox {
     font-weight: 750;
 
     white-space: nowrap;
-
 }
 
 
 .scan-results-page .status-dot {
-
     width: 8px;
     height: 8px;
 
@@ -3565,47 +3551,40 @@ input:focus-visible + .custom-checkbox {
     border-radius: 50%;
 
     background: currentColor;
-
 }
 
 
 .scan-results-page .scan-result-status.completed {
-
     border-color:
         rgba(34, 197, 94, 0.32);
 
     background:
         rgba(34, 197, 94, 0.11);
 
-    color: #22c55e;
-
+    color: #16a34a;
 }
 
 
 .scan-results-page .scan-result-status.failed {
-
     border-color:
         rgba(239, 68, 68, 0.32);
 
     background:
         rgba(239, 68, 68, 0.10);
 
-    color: #ef4444;
-
+    color: #dc2626;
 }
 
 
 .scan-results-page .scan-result-status.running,
 .scan-results-page .scan-result-status.pending {
-
     border-color:
         rgba(245, 158, 11, 0.32);
 
     background:
         rgba(245, 158, 11, 0.10);
 
-    color: #f59e0b;
-
+    color: #d97706;
 }
 
 
@@ -3614,7 +3593,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .scan-overview-grid {
-
     width: 100%;
 
     display: grid;
@@ -3623,16 +3601,15 @@ input:focus-visible + .custom-checkbox {
         repeat(4, minmax(0, 1fr));
 
     gap: 16px;
-
 }
 
 
 /* =========================================================
    3B.7 — INFORMATION CARDS
+   LIGHT MODE DEFAULT
    ========================================================= */
 
 .scan-results-page .scan-info-card {
-
     min-width: 0;
     min-height: 92px;
 
@@ -3648,42 +3625,39 @@ input:focus-visible + .custom-checkbox {
     background:
         linear-gradient(
             145deg,
-            rgba(124, 58, 237, 0.075),
+            rgba(124, 58, 237, 0.055),
             transparent 68%
         ),
-        #100d18;
+        var(--card-bg);
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.34);
+        rgba(139, 92, 246, 0.25);
 
     border-radius: 12px;
 
     box-shadow:
         inset
         0 1px 0
-        rgba(255, 255, 255, 0.015);
+        rgba(255, 255, 255, 0.25);
 
     transition:
         border-color 0.2s ease,
         transform 0.2s ease,
         box-shadow 0.2s ease;
-
 }
 
 
 .scan-results-page .scan-info-card:hover {
-
     border-color:
-        rgba(168, 85, 247, 0.62);
+        rgba(139, 92, 246, 0.48);
 
     transform:
         translateY(-1px);
 
     box-shadow:
         0 7px 18px
-        rgba(0, 0, 0, 0.16);
-
+        rgba(0, 0, 0, 0.08);
 }
 
 
@@ -3694,28 +3668,25 @@ input:focus-visible + .custom-checkbox {
 .scan-results-page
 > .scan-overview-grid
 > .scan-info-card {
-
     min-height: 108px;
 
     background:
         linear-gradient(
             145deg,
-            rgba(139, 92, 246, 0.16),
-            rgba(124, 58, 237, 0.045) 60%,
+            rgba(139, 92, 246, 0.10),
+            rgba(124, 58, 237, 0.025) 60%,
             transparent
         ),
         var(--card-bg);
 
     border-color:
-        rgba(168, 85, 247, 0.48);
-
+        rgba(168, 85, 247, 0.32);
 }
 
 
 .scan-results-page
 > .scan-overview-grid
 > .scan-info-card::before {
-
     content: "";
 
     position: absolute;
@@ -3732,7 +3703,6 @@ input:focus-visible + .custom-checkbox {
             #8b5cf6,
             #c084fc
         );
-
 }
 
 
@@ -3741,12 +3711,11 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .scan-info-label {
-
     display: block;
 
     margin-bottom: 9px;
 
-    color: #ad7cff;
+    color: #7c3aed;
 
     font-size: 11px;
     font-weight: 800;
@@ -3754,7 +3723,6 @@ input:focus-visible + .custom-checkbox {
     line-height: 1.3;
 
     letter-spacing: 0.7px;
-
 }
 
 
@@ -3763,7 +3731,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .scan-info-card strong {
-
     display: block;
 
     color: var(--text-primary);
@@ -3774,7 +3741,6 @@ input:focus-visible + .custom-checkbox {
     line-height: 1.4;
 
     overflow-wrap: anywhere;
-
 }
 
 
@@ -3783,7 +3749,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .result-card {
-
     width: 100%;
     min-width: 0;
 
@@ -3795,28 +3760,26 @@ input:focus-visible + .custom-checkbox {
     background:
         linear-gradient(
             135deg,
-            rgba(124, 58, 237, 0.05),
+            rgba(124, 58, 237, 0.04),
             transparent 42%
         ),
         var(--card-bg);
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.32);
+        rgba(139, 92, 246, 0.27);
 
     border-radius: 16px;
 
     box-shadow:
         0 8px 24px
-        rgba(0, 0, 0, 0.11);
-
+        rgba(0, 0, 0, 0.07);
 }
 
 
 /* Subtle left highlight */
 
 .scan-results-page .result-card::before {
-
     content: "";
 
     position: absolute;
@@ -3839,7 +3802,6 @@ input:focus-visible + .custom-checkbox {
             #8b5cf6,
             transparent
         );
-
 }
 
 
@@ -3848,7 +3810,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .result-card-header {
-
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -3856,19 +3817,15 @@ input:focus-visible + .custom-checkbox {
     gap: 20px;
 
     margin-bottom: 20px;
-
 }
 
 
 .scan-results-page .result-card-header > div {
-
     min-width: 0;
-
 }
 
 
 .scan-results-page .result-card-header h3 {
-
     margin: 0;
 
     color: var(--text-primary);
@@ -3877,12 +3834,10 @@ input:focus-visible + .custom-checkbox {
     font-weight: 750;
 
     line-height: 1.35;
-
 }
 
 
 .scan-results-page .result-card-header p {
-
     max-width: 900px;
 
     margin: 7px 0 0;
@@ -3892,21 +3847,17 @@ input:focus-visible + .custom-checkbox {
     font-size: 13px;
 
     line-height: 1.55;
-
 }
 
 
 /* =========================================================
    3B.13 — INTERNAL SECTION BREAK
-   Risk Assessment → Finding Breakdown
-   Finding Breakdown → Attack Surface
    ========================================================= */
 
 .scan-results-page
 .result-card
 .scan-overview-grid
 + .result-card-header {
-
     position: relative;
 
     margin-top: 38px;
@@ -3916,18 +3867,14 @@ input:focus-visible + .custom-checkbox {
 
     border-top:
         1px solid
-        rgba(139, 92, 246, 0.35);
-
+        rgba(139, 92, 246, 0.27);
 }
 
-
-/* Purple divider accent */
 
 .scan-results-page
 .result-card
 .scan-overview-grid
 + .result-card-header::before {
-
     content: "";
 
     position: absolute;
@@ -3945,30 +3892,28 @@ input:focus-visible + .custom-checkbox {
             #a855f7,
             transparent
         );
-
 }
 
 
 /* =========================================================
    3B.14 — INTERNAL ANALYSIS CARDS
+   LIGHT MODE DEFAULT
    ========================================================= */
 
 .scan-results-page
 .result-card
 .scan-overview-grid
 .scan-info-card {
-
     background:
         linear-gradient(
             145deg,
-            rgba(124, 58, 237, 0.075),
+            rgba(124, 58, 237, 0.045),
             transparent 72%
         ),
-        #100d18;
+        var(--card-bg);
 
     border-color:
-        rgba(139, 92, 246, 0.32);
-
+        rgba(139, 92, 246, 0.24);
 }
 
 
@@ -3977,7 +3922,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .result-count {
-
     min-width: 42px;
     min-height: 34px;
 
@@ -3991,41 +3935,39 @@ input:focus-visible + .custom-checkbox {
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.40);
+        rgba(139, 92, 246, 0.34);
 
     border-radius: 999px;
 
     background:
-        rgba(124, 58, 237, 0.17);
+        rgba(124, 58, 237, 0.10);
 
-    color: #a970ff;
+    color: #7c3aed;
 
     font-size: 12px;
     font-weight: 800;
 
     white-space: nowrap;
-
 }
 
 
 /* =========================================================
    3B.16 — TABLE WRAPPER
+   LIGHT MODE DEFAULT
    ========================================================= */
 
 .scan-results-page .table-wrapper {
-
     width: 100%;
 
     overflow-x: auto;
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.33);
+        rgba(139, 92, 246, 0.26);
 
     border-radius: 12px;
 
-    background: #100d18;
-
+    background: var(--card-bg);
 }
 
 
@@ -4034,7 +3976,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .results-table {
-
     width: 100%;
     min-width: 760px;
 
@@ -4043,30 +3984,29 @@ input:focus-visible + .custom-checkbox {
     background: transparent;
 
     font-size: 13px;
-
 }
 
 
 /* =========================================================
    3B.18 — TABLE HEADERS
+   LIGHT MODE DEFAULT
    ========================================================= */
 
 .scan-results-page .results-table th {
-
     padding: 14px 15px;
 
     background:
         linear-gradient(
             180deg,
-            rgba(139, 92, 246, 0.18),
-            rgba(124, 58, 237, 0.065)
+            rgba(139, 92, 246, 0.11),
+            rgba(124, 58, 237, 0.045)
         );
 
-    color: #c4b5fd;
+    color: #6d28d9;
 
     border-bottom:
         1px solid
-        rgba(139, 92, 246, 0.34);
+        rgba(139, 92, 246, 0.25);
 
     text-align: left;
 
@@ -4076,7 +4016,6 @@ input:focus-visible + .custom-checkbox {
     letter-spacing: 0.5px;
 
     white-space: nowrap;
-
 }
 
 
@@ -4085,7 +4024,6 @@ input:focus-visible + .custom-checkbox {
    ========================================================= */
 
 .scan-results-page .results-table td {
-
     padding: 14px 15px;
 
     color: var(--text-secondary);
@@ -4094,48 +4032,41 @@ input:focus-visible + .custom-checkbox {
         1px solid
         var(--border-color);
 
+    background: transparent;
+
     font-size: 13px;
 
     line-height: 1.55;
 
     vertical-align: middle;
-
 }
 
 
 .scan-results-page
 .results-table
 tbody tr:last-child td {
-
     border-bottom: none;
-
 }
 
 
 .scan-results-page
 .results-table
 tbody tr {
-
     transition:
         background 0.18s ease;
-
 }
 
 
 .scan-results-page
 .results-table
 tbody tr:hover {
-
     background:
-        rgba(139, 92, 246, 0.085);
-
+        rgba(139, 92, 246, 0.055);
 }
 
 
 .scan-results-page .results-table td strong {
-
     color: var(--text-primary);
-
 }
 
 
@@ -4144,20 +4075,16 @@ tbody tr:hover {
    ========================================================= */
 
 .scan-results-page .results-table a {
-
-    color: #a970ff;
+    color: #7c3aed;
 
     font-weight: 650;
-
 }
 
 
 .scan-results-page .results-table a:hover {
-
-    color: #c084fc;
+    color: #9333ea;
 
     text-decoration: underline;
-
 }
 
 
@@ -4166,7 +4093,6 @@ tbody tr:hover {
    ========================================================= */
 
 .scan-results-page .open-status {
-
     display: inline-flex;
     align-items: center;
 
@@ -4179,15 +4105,14 @@ tbody tr:hover {
     border-radius: 999px;
 
     background:
-        rgba(34, 197, 94, 0.11);
+        rgba(34, 197, 94, 0.10);
 
-    color: #22c55e;
+    color: #16a34a;
 
     font-size: 11px;
     font-weight: 700;
 
     white-space: nowrap;
-
 }
 
 
@@ -4196,7 +4121,6 @@ tbody tr:hover {
    ========================================================= */
 
 .scan-results-page .result-empty-state {
-
     width: 100%;
     min-height: 96px;
 
@@ -4212,40 +4136,36 @@ tbody tr:hover {
 
     border:
         1px dashed
-        rgba(139, 92, 246, 0.42);
+        rgba(139, 92, 246, 0.34);
 
     border-radius: 12px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(124, 58, 237, 0.085),
-            rgba(124, 58, 237, 0.025)
+            rgba(124, 58, 237, 0.055),
+            rgba(124, 58, 237, 0.015)
         );
 
     color: var(--text-secondary);
 
     text-align: center;
-
 }
 
 
 .scan-results-page
 .result-empty-state > span {
-
     flex-shrink: 0;
 
-    color: #a970ff;
+    color: #8b5cf6;
 
     font-size: 21px;
     font-weight: 800;
-
 }
 
 
 .scan-results-page
 .result-empty-state p {
-
     max-width: 950px;
 
     margin: 0;
@@ -4255,16 +4175,15 @@ tbody tr:hover {
     font-size: 13px;
 
     line-height: 1.65;
-
 }
 
 
 /* =========================================================
    3B.23 — OPERATING SYSTEM RESULT
+   LIGHT MODE DEFAULT
    ========================================================= */
 
 .scan-results-page .os-result-content {
-
     display: flex;
     align-items: center;
 
@@ -4274,18 +4193,17 @@ tbody tr:hover {
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.37);
+        rgba(139, 92, 246, 0.27);
 
     border-radius: 12px;
 
     background:
         linear-gradient(
             135deg,
-            rgba(124, 58, 237, 0.11),
+            rgba(124, 58, 237, 0.065),
             transparent 62%
         ),
-        #100d18;
-
+        var(--card-bg);
 }
 
 
@@ -4294,7 +4212,6 @@ tbody tr:hover {
    ========================================================= */
 
 .scan-results-page .os-result-icon {
-
     width: 50px;
     height: 50px;
 
@@ -4306,42 +4223,36 @@ tbody tr:hover {
 
     border:
         1px solid
-        rgba(139, 92, 246, 0.42);
+        rgba(139, 92, 246, 0.34);
 
     border-radius: 13px;
 
     background:
-        rgba(124, 58, 237, 0.20);
+        rgba(124, 58, 237, 0.11);
 
-    color: #a970ff;
+    color: #7c3aed;
 
     font-size: 21px;
-
 }
 
 
 .scan-results-page
 .os-result-content > div:last-child {
-
     min-width: 0;
-
 }
 
 
 .scan-results-page
 .os-result-content strong {
-
     color: var(--text-primary);
 
     font-size: 14px;
     font-weight: 750;
-
 }
 
 
 .scan-results-page
 .os-result-content p {
-
     margin: 6px 0 0;
 
     color: var(--text-secondary);
@@ -4349,7 +4260,6 @@ tbody tr:hover {
     font-size: 12px;
 
     line-height: 1.55;
-
 }
 
 
@@ -4360,16 +4270,14 @@ tbody tr:hover {
 .scan-results-page
 .results-table
 td[colspan="8"] {
-
     background:
-        rgba(124, 58, 237, 0.035);
+        rgba(124, 58, 237, 0.025);
 
     color: var(--text-secondary);
 
     font-size: 12px;
 
     line-height: 1.65;
-
 }
 
 
@@ -4378,7 +4286,6 @@ td[colspan="8"] {
    ========================================================= */
 
 .scan-results-page .scan-result-actions {
-
     width: 100%;
 
     display: flex;
@@ -4388,14 +4295,11 @@ td[colspan="8"] {
     gap: 12px;
 
     padding: 4px 0 2px;
-
 }
 
 
 .scan-results-page .rescan-form {
-
     margin: 0;
-
 }
 
 
@@ -4405,9 +4309,7 @@ td[colspan="8"] {
 .scan-results-page
 .scan-result-actions
 .secondary-button {
-
     min-height: 41px;
-
 }
 
 
@@ -4415,9 +4317,13 @@ td[colspan="8"] {
    3B.27 — DARK MODE
    ========================================================= */
 
+
+/* ---------------------------------------------------------
+   HEADER
+   --------------------------------------------------------- */
+
 [data-theme="dark"]
 .scan-results-page .scan-result-header {
-
     background:
         linear-gradient(
             135deg,
@@ -4427,14 +4333,23 @@ td[colspan="8"] {
         ),
         var(--card-bg);
 
+    border-color:
+        rgba(139, 92, 246, 0.48);
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.15);
 }
 
+
+/* ---------------------------------------------------------
+   TOP INFORMATION CARDS
+   --------------------------------------------------------- */
 
 [data-theme="dark"]
 .scan-results-page
 > .scan-overview-grid
 > .scan-info-card {
-
     background:
         linear-gradient(
             145deg,
@@ -4444,12 +4359,64 @@ td[colspan="8"] {
         ),
         var(--card-bg);
 
+    border-color:
+        rgba(168, 85, 247, 0.48);
+}
+
+
+/* ---------------------------------------------------------
+   GENERAL INFORMATION CARDS
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .scan-info-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.075),
+            transparent 68%
+        ),
+        #100d18;
+
+    border-color:
+        rgba(139, 92, 246, 0.34);
+
+    box-shadow:
+        inset
+        0 1px 0
+        rgba(255, 255, 255, 0.015);
 }
 
 
 [data-theme="dark"]
-.scan-results-page .result-card {
+.scan-results-page .scan-info-card:hover {
+    border-color:
+        rgba(168, 85, 247, 0.62);
 
+    box-shadow:
+        0 7px 18px
+        rgba(0, 0, 0, 0.16);
+}
+
+
+/* ---------------------------------------------------------
+   INFORMATION LABELS
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .scan-info-label,
+[data-theme="dark"]
+.scan-results-page .section-label {
+    color: #ad7cff;
+}
+
+
+/* ---------------------------------------------------------
+   RESULT CARDS
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .result-card {
     background:
         linear-gradient(
             135deg,
@@ -4458,6 +4425,194 @@ td[colspan="8"] {
         ),
         var(--card-bg);
 
+    border-color:
+        rgba(139, 92, 246, 0.32);
+
+    box-shadow:
+        0 8px 24px
+        rgba(0, 0, 0, 0.11);
+}
+
+
+/* ---------------------------------------------------------
+   INTERNAL ANALYSIS CARDS
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page
+.result-card
+.scan-overview-grid
+.scan-info-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.075),
+            transparent 72%
+        ),
+        #100d18;
+
+    border-color:
+        rgba(139, 92, 246, 0.32);
+}
+
+
+/* ---------------------------------------------------------
+   RESULT BADGE
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .result-count {
+    background:
+        rgba(124, 58, 237, 0.17);
+
+    color: #a970ff;
+
+    border-color:
+        rgba(139, 92, 246, 0.40);
+}
+
+
+/* ---------------------------------------------------------
+   TABLE WRAPPER
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .table-wrapper {
+    background: #100d18;
+
+    border-color:
+        rgba(139, 92, 246, 0.33);
+}
+
+
+/* ---------------------------------------------------------
+   TABLE HEADER
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .results-table th {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(139, 92, 246, 0.18),
+            rgba(124, 58, 237, 0.065)
+        );
+
+    color: #c4b5fd;
+
+    border-bottom-color:
+        rgba(139, 92, 246, 0.34);
+}
+
+
+/* ---------------------------------------------------------
+   TABLE LINKS
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .results-table a {
+    color: #a970ff;
+}
+
+
+[data-theme="dark"]
+.scan-results-page .results-table a:hover {
+    color: #c084fc;
+}
+
+
+/* ---------------------------------------------------------
+   TABLE HOVER
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page
+.results-table
+tbody tr:hover {
+    background:
+        rgba(139, 92, 246, 0.085);
+}
+
+
+/* ---------------------------------------------------------
+   OPEN PORT BADGE
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .open-status {
+    background:
+        rgba(34, 197, 94, 0.11);
+
+    color: #22c55e;
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .result-empty-state {
+    border-color:
+        rgba(139, 92, 246, 0.42);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.085),
+            rgba(124, 58, 237, 0.025)
+        );
+}
+
+
+[data-theme="dark"]
+.scan-results-page
+.result-empty-state > span {
+    color: #a970ff;
+}
+
+
+/* ---------------------------------------------------------
+   OPERATING SYSTEM RESULT
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page .os-result-content {
+    border-color:
+        rgba(139, 92, 246, 0.37);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.11),
+            transparent 62%
+        ),
+        #100d18;
+}
+
+
+[data-theme="dark"]
+.scan-results-page .os-result-icon {
+    border-color:
+        rgba(139, 92, 246, 0.42);
+
+    background:
+        rgba(124, 58, 237, 0.20);
+
+    color: #a970ff;
+}
+
+
+/* ---------------------------------------------------------
+   VULNERABILITY DETAIL ROW
+   --------------------------------------------------------- */
+
+[data-theme="dark"]
+.scan-results-page
+.results-table
+td[colspan="8"] {
+    background:
+        rgba(124, 58, 237, 0.035);
 }
 
 
@@ -4466,6 +4621,7 @@ td[colspan="8"] {
    SCAN RESULTS
    ========================================================= */
 
+   
    /* =========================================================
    PART 3C — SCAN HISTORY
    ========================================================= */
