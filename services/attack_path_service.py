@@ -342,8 +342,19 @@ def normalize_assets(
     created_by=None
 ):
     """
-    Normalize and ownership-filter Asset
-    records before graph generation.
+    Normalize, ownership-filter, and deduplicate
+    Asset records before graph generation.
+
+    Logical Asset identity:
+
+        created_by + normalized target
+
+    If duplicate historical Asset documents exist
+    for the same owner and target, only the newest
+    record is allowed into the graph.
+
+    This prevents repeated scans of the same target
+    from producing duplicate Attack Graph nodes.
     """
 
     if not isinstance(
@@ -354,7 +365,7 @@ def normalize_assets(
         return []
 
 
-    normalized = []
+    unique_assets = {}
 
 
     for asset in assets:
@@ -370,17 +381,13 @@ def normalize_assets(
         # ==================================
         # OWNERSHIP PROTECTION
         # ==================================
-        #
-        # If created_by is provided, do not
-        # allow assets belonging to another
-        # user into the same graph.
-        # ==================================
+
+        asset_owner = asset.get(
+            "created_by"
+        )
+
 
         if created_by is not None:
-
-            asset_owner = asset.get(
-                "created_by"
-            )
 
             if str(
                 asset_owner
@@ -399,6 +406,7 @@ def normalize_assets(
             "_id"
         )
 
+
         if asset_id is None:
 
             continue
@@ -415,14 +423,147 @@ def normalize_assets(
             )
         ).strip()
 
+
         if not target:
 
             continue
 
 
-        normalized.append(
-            asset
+        # ==================================
+        # LOGICAL ASSET IDENTITY
+        # ==================================
+        #
+        # Asset Inventory uses owner + target as
+        # its identity. Keep the Attack Graph
+        # consistent with the same rule.
+        #
+        # Target comparison is case-insensitive
+        # so repeated hostname scans cannot create
+        # separate logical graph nodes merely due
+        # to letter casing.
+        # ==================================
+
+        identity = (
+
+            str(
+                asset_owner
+            ),
+
+            target.lower()
+
         )
+
+
+        existing = unique_assets.get(
+            identity
+        )
+
+
+        if existing is None:
+
+            unique_assets[
+                identity
+            ] = asset
+
+            continue
+
+
+        # ==================================
+        # KEEP NEWEST DUPLICATE
+        # ==================================
+
+        existing_last_seen = existing.get(
+            "last_seen"
+        )
+
+        candidate_last_seen = asset.get(
+            "last_seen"
+        )
+
+        existing_updated_at = existing.get(
+            "updated_at"
+        )
+
+        candidate_updated_at = asset.get(
+            "updated_at"
+        )
+
+
+        replace_existing = False
+
+
+        try:
+
+            if (
+                candidate_last_seen is not None
+                and
+                (
+                    existing_last_seen is None
+                    or
+                    candidate_last_seen > existing_last_seen
+                )
+            ):
+
+                replace_existing = True
+
+        except TypeError:
+
+            pass
+
+
+        if not replace_existing:
+
+            try:
+
+                if (
+                    candidate_updated_at is not None
+                    and
+                    (
+                        existing_updated_at is None
+                        or
+                        candidate_updated_at > existing_updated_at
+                    )
+                ):
+
+                    replace_existing = True
+
+            except TypeError:
+
+                pass
+
+
+        # ObjectId string order is used only as a
+        # deterministic fallback when timestamps do
+        # not distinguish the duplicate documents.
+
+        if (
+            not replace_existing
+            and
+            existing_last_seen == candidate_last_seen
+            and
+            existing_updated_at == candidate_updated_at
+            and
+            str(asset_id) > str(
+                existing.get(
+                    "_id",
+                    ""
+                )
+            )
+        ):
+
+            replace_existing = True
+
+
+        if replace_existing:
+
+            unique_assets[
+                identity
+            ] = asset
+
+
+    normalized = list(
+        unique_assets.values()
+    )
 
 
     # ======================================
@@ -460,6 +601,10 @@ def build_asset_node(
     """
     Convert a MongoDB Asset document into a
     normalized Attack Path asset node.
+
+    If hostname and target represent the same
+    value, hostname is suppressed so the graph
+    label does not display the same name twice.
     """
 
     if not isinstance(
@@ -489,6 +634,41 @@ def build_asset_node(
     ):
 
         return None
+
+
+    # ======================================
+    # NORMALIZE HOSTNAME FOR GRAPH LABEL
+    # ======================================
+    #
+    # Nmap may return the scanned hostname as
+    # both target and hostname. Showing both in
+    # the node label produces output such as:
+    #
+    #     rapid7.com
+    #     rapid7.com
+    #
+    # Keep the hostname only when it adds new
+    # information.
+    # ======================================
+
+    raw_hostname = asset.get(
+        "hostname"
+    )
+
+    hostname = (
+        str(raw_hostname).strip()
+        if raw_hostname is not None
+        else ""
+    )
+
+
+    if (
+        not hostname
+        or
+        hostname.lower() == target.lower()
+    ):
+
+        hostname = None
 
 
     # ======================================
@@ -530,9 +710,7 @@ def build_asset_node(
 
         target=target,
 
-        hostname=asset.get(
-            "hostname"
-        ),
+        hostname=hostname,
 
         risk_score=normalize_score(
             asset.get(
