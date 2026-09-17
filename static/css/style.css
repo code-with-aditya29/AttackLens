@@ -15873,6 +15873,339 @@ tbody tr:hover td {
 
 
 /* =========================================================
+   9.5A — SCAN SELECTION
+   LIGHT MODE
+
+   Styles the scan-specific report selector introduced in
+   templates/reports.html.
+   ========================================================= */
+
+.reports-page
+.reports-generation-card
+> form[method="GET"] {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto;
+
+    align-items: end;
+
+    gap: 14px;
+
+    margin:
+        2px
+        30px
+        18px;
+
+    padding:
+        20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.055),
+            rgba(168, 85, 247, 0.012) 72%,
+            transparent
+        ),
+        #ffffff;
+
+    border:
+        1px solid
+        rgba(139, 92, 246, 0.27);
+
+    border-radius: 13px;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+.form-group {
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+label {
+
+    display: block;
+
+    color:
+        #6d28d9;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    line-height: 1.35;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.55px;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select {
+
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+
+    padding:
+        10px
+        42px
+        10px
+        14px;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    background-color:
+        #ffffff;
+
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 50%,
+            #7c3aed 50%
+        ),
+        linear-gradient(
+            135deg,
+            #7c3aed 50%,
+            transparent 50%
+        );
+
+    background-position:
+        calc(100% - 18px) 19px,
+        calc(100% - 13px) 19px;
+
+    background-size:
+        5px 5px,
+        5px 5px;
+
+    background-repeat:
+        no-repeat;
+
+    border:
+        1px solid
+        rgba(139, 92, 246, 0.38);
+
+    border-radius: 10px;
+
+    color:
+        #171225;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    outline: none;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 2px 8px
+        rgba(30, 20, 60, 0.045);
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select:hover {
+
+    border-color:
+        rgba(124, 58, 237, 0.62);
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select:focus {
+
+    border-color:
+        #7c3aed;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(124, 58, 237, 0.12);
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select option {
+
+    background:
+        #ffffff;
+
+    color:
+        #171225;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+.secondary-button {
+
+    min-width: 160px;
+    min-height: 46px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding:
+        11px
+        18px;
+
+    background:
+        rgba(124, 58, 237, 0.075);
+
+    border:
+        1px solid
+        rgba(124, 58, 237, 0.40);
+
+    border-radius: 10px;
+
+    color:
+        #6d28d9;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 750;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+.secondary-button:hover {
+
+    background:
+        rgba(124, 58, 237, 0.13);
+
+    border-color:
+        rgba(124, 58, 237, 0.62);
+
+    color:
+        #5b21b6;
+
+    transform:
+        translateY(-1px);
+
+    box-shadow:
+        0 5px 13px
+        rgba(124, 58, 237, 0.12);
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+.secondary-button:active {
+
+    transform:
+        translateY(0);
+
+}
+
+
+/* Selected scan information */
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
++ .reports-generation-note {
+
+    margin-top: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.055),
+            rgba(168, 85, 247, 0.018)
+        ),
+        #ffffff;
+
+    border-color:
+        rgba(139, 92, 246, 0.28);
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
++ .reports-generation-note p {
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+}
+
+
+.reports-page
+.reports-generation-card
+> form[method="GET"]
++ .reports-generation-note strong {
+
+    color:
+        var(--text-primary);
+
+    font-weight: 750;
+
+}
+
+
+/* =========================================================
    9.6 — REPORT SUMMARY GRID
    ========================================================= */
 
@@ -17035,6 +17368,181 @@ tbody tr:hover td {
 
 
 /* =========================================================
+   DARK — SCAN SELECTION
+   ========================================================= */
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"] {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.085),
+            rgba(168, 85, 247, 0.018) 72%,
+            transparent
+        ),
+        #100d18;
+
+    border-color:
+        rgba(139, 92, 246, 0.28);
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+label {
+
+    color:
+        #ad7cff;
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select {
+
+    background-color:
+        #15121e;
+
+    background-image:
+        linear-gradient(
+            45deg,
+            transparent 50%,
+            #a970ff 50%
+        ),
+        linear-gradient(
+            135deg,
+            #a970ff 50%,
+            transparent 50%
+        );
+
+    border-color:
+        rgba(139, 92, 246, 0.36);
+
+    color:
+        #f5f3ff;
+
+    box-shadow:
+        0 2px 8px
+        rgba(0, 0, 0, 0.10);
+
+    color-scheme: dark;
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select:hover {
+
+    border-color:
+        rgba(169, 112, 255, 0.58);
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select:focus {
+
+    border-color:
+        #8b5cf6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(139, 92, 246, 0.15);
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+select option {
+
+    background:
+        #15121e;
+
+    color:
+        #f5f3ff;
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+.secondary-button {
+
+    background:
+        rgba(124, 58, 237, 0.15);
+
+    border-color:
+        rgba(139, 92, 246, 0.42);
+
+    color:
+        #c4b5fd;
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
+.secondary-button:hover {
+
+    background:
+        rgba(124, 58, 237, 0.23);
+
+    border-color:
+        rgba(169, 112, 255, 0.58);
+
+    color:
+        #ddd6fe;
+
+    box-shadow:
+        0 5px 13px
+        rgba(0, 0, 0, 0.13);
+
+}
+
+
+[data-theme="dark"]
+.reports-page
+.reports-generation-card
+> form[method="GET"]
++ .reports-generation-note {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.075),
+            rgba(168, 85, 247, 0.018)
+        ),
+        #15121e;
+
+    border-color:
+        rgba(139, 92, 246, 0.25);
+
+}
+
+
+/* =========================================================
    DARK — GENERAL DASHBOARD CARDS
    ========================================================= */
 
@@ -17444,6 +17952,34 @@ tbody tr:hover td {
 }
 
 
+/* Scan selector responsive layout */
+
+@media (max-width: 850px) {
+
+    .reports-page
+    .reports-generation-card
+    > form[method="GET"] {
+
+        grid-template-columns:
+            1fr;
+
+        align-items: stretch;
+
+    }
+
+
+    .reports-page
+    .reports-generation-card
+    > form[method="GET"]
+    .secondary-button {
+
+        width: 100%;
+
+    }
+
+}
+
+
 /* =========================================================
    TABLET
    ========================================================= */
@@ -17559,6 +18095,18 @@ tbody tr:hover td {
 
 
     .reports-page
+    .reports-generation-card
+    > form[method="GET"] {
+
+        margin-left: 18px;
+        margin-right: 18px;
+
+        padding: 17px;
+
+    }
+
+
+    .reports-page
     .reports-generation-content {
 
         margin-left: 18px;
@@ -17669,6 +18217,7 @@ tbody tr:hover td {
    ========================================================= */
 
    /* =========================================================
+/* =========================================================
    PART 10A — ADMIN MANAGEMENT
    Scope: .admin-page
 

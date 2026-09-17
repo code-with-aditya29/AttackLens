@@ -51,6 +51,122 @@ from services.risk_comparison_service import (
 
 
 # ============================================================
+# SCAN-SPECIFIC REPORT ASSET
+# ============================================================
+
+def build_report_asset_from_scan(
+    scan,
+    asset_context=None
+):
+    """
+    Convert one completed scan document into the asset-shaped
+    snapshot expected by the existing AttackLens report pipeline.
+
+    Historical security evidence is taken from the selected scan.
+    Current Asset Inventory data is used only for manual context
+    such as criticality and exposure.
+    """
+
+    if not isinstance(
+        scan,
+        dict
+    ):
+        return None
+
+    target = str(
+        scan.get(
+            "target",
+            ""
+        )
+    ).strip()
+
+    if not target:
+        return None
+
+    if not isinstance(
+        asset_context,
+        dict
+    ):
+        asset_context = {}
+
+    ports = scan.get(
+        "ports",
+        []
+    )
+
+    services = scan.get(
+        "services",
+        []
+    )
+
+    vulnerabilities = scan.get(
+        "vulnerabilities",
+        []
+    )
+
+    if not isinstance(
+        ports,
+        list
+    ):
+        ports = []
+
+    if not isinstance(
+        services,
+        list
+    ):
+        services = []
+
+    if not isinstance(
+        vulnerabilities,
+        list
+    ):
+        vulnerabilities = []
+
+    scan_id = scan.get(
+        "_id"
+    )
+
+    scan_timestamp = (
+        scan.get(
+            "completed_at"
+        )
+        or scan.get(
+            "created_at"
+        )
+    )
+
+    return {
+        "_id": scan_id,
+        "scan_id": scan_id,
+        "latest_scan_id": scan_id,
+        "target": target,
+        "created_by": scan.get("created_by"),
+        "scan_profile": scan.get("scan_profile"),
+        "scan_status": scan.get("status"),
+        "created_at": scan.get("created_at"),
+        "started_at": scan.get("started_at"),
+        "completed_at": scan.get("completed_at"),
+        "first_seen": scan_timestamp,
+        "last_seen": scan_timestamp,
+        "hostname": scan.get("hostname"),
+        "host_status": scan.get("host_status", "unknown"),
+        "mac_address": scan.get("mac_address"),
+        "ports": ports,
+        "services": services,
+        "os_detection": scan.get("os_detection"),
+        "os_accuracy": scan.get("os_accuracy"),
+        "vulnerabilities": vulnerabilities,
+        "vulnerability_count": len(vulnerabilities),
+        "highest_severity": scan.get("highest_severity"),
+        "risk_score": scan.get("risk_score"),
+        "risk_level": scan.get("risk_level"),
+        "risk_breakdown": scan.get("risk_breakdown"),
+        "criticality": asset_context.get("criticality", "Normal"),
+        "exposure": asset_context.get("exposure", "Unknown")
+    }
+
+
+# ============================================================
 # MAIN REPORT GENERATOR
 # ============================================================
 

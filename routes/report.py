@@ -22,6 +22,7 @@ from flask import (
     flash,
     redirect,
     render_template,
+    request,
     send_file,
     session,
     url_for,
@@ -29,7 +30,14 @@ from flask import (
 
 from routes.auth import login_required
 
-from services.report_service import generate_report_data
+from services.report_service import (
+    build_report_asset_from_scan,
+    generate_report_data,
+)
+from services.scan_service import (
+    get_scan_by_id,
+    get_scan_history,
+)
 from services.pdf_service import generate_report_pdf
 
 
@@ -56,8 +64,11 @@ def reports():
     """
     Display the AttackLens Reports page.
 
-    Only assets belonging to the currently authenticated user
-    are included in the report data.
+    Reports are scoped to one completed scan belonging to the
+    currently authenticated user.
+
+    If no scan_id is supplied, the latest completed scan is
+    selected automatically.
     """
 
     db = current_app.config.get(
@@ -76,6 +87,8 @@ def reports():
             current_page="reports",
             report_data=create_empty_report_context(),
             report_generation_available=False,
+            completed_scans=[],
+            selected_scan=None,
         )
 
     current_user_id = session.get(
@@ -94,20 +107,103 @@ def reports():
             current_page="reports",
             report_data=create_empty_report_context(),
             report_generation_available=False,
+            completed_scans=[],
+            selected_scan=None,
         )
 
     try:
 
-        assets = list(
-            db.assets.find(
-                {
-                    "created_by": current_user_id
-                }
-            )
+        scan_history = get_scan_history(
+            db=db,
+            created_by=current_user_id,
+            limit=100
         )
 
+        completed_scans = [
+            scan
+            for scan in scan_history
+            if str(
+                scan.get(
+                    "status",
+                    ""
+                )
+            ).strip().lower() == "completed"
+        ]
+
+        selected_scan = None
+
+        requested_scan_id = str(
+            request.args.get(
+                "scan_id",
+                ""
+            )
+        ).strip()
+
+        if requested_scan_id:
+
+            selected_scan = get_scan_by_id(
+                db=db,
+                scan_id=requested_scan_id,
+                created_by=current_user_id
+            )
+
+            if not selected_scan:
+
+                flash(
+                    "The selected scan could not be found or is not accessible.",
+                    "warning"
+                )
+
+            elif str(
+                selected_scan.get(
+                    "status",
+                    ""
+                )
+            ).strip().lower() != "completed":
+
+                selected_scan = None
+
+                flash(
+                    "Only completed scans can be used for report generation.",
+                    "warning"
+                )
+
+        elif completed_scans:
+
+            selected_scan = completed_scans[0]
+
+        if not selected_scan:
+
+            return render_template(
+                "reports.html",
+                current_page="reports",
+                report_data=create_empty_report_context(),
+                report_generation_available=False,
+                completed_scans=completed_scans,
+                selected_scan=None,
+            )
+
+        report_asset = build_report_asset_for_scan(
+            db=db,
+            scan=selected_scan,
+            current_user_id=current_user_id
+        )
+
+        if not report_asset:
+
+            return render_template(
+                "reports.html",
+                current_page="reports",
+                report_data=create_empty_report_context(),
+                report_generation_available=False,
+                completed_scans=completed_scans,
+                selected_scan=selected_scan,
+            )
+
         report_data = generate_report_data(
-            assets=assets,
+            assets=[
+                report_asset
+            ],
             created_by=current_user_id,
         )
 
@@ -122,6 +218,8 @@ def reports():
             current_page="reports",
             report_data=report_data,
             report_generation_available=report_generation_available,
+            completed_scans=completed_scans,
+            selected_scan=selected_scan,
         )
 
     except Exception as error:
@@ -141,6 +239,8 @@ def reports():
             current_page="reports",
             report_data=create_empty_report_context(),
             report_generation_available=False,
+            completed_scans=[],
+            selected_scan=None,
         )
 
 
@@ -155,10 +255,11 @@ def reports():
 @login_required
 def generate_report():
     """
-    Generate and download the AttackLens Security Assessment PDF.
+    Generate and download one AttackLens Security Assessment PDF
+    for one completed scan.
 
-    PDF generation is allowed only when at least one authorized
-    analyzed asset is available for the logged-in user.
+    The selected scan_id is validated against the current user
+    before report generation.
     """
 
     db = current_app.config.get(
@@ -195,24 +296,39 @@ def generate_report():
             )
         )
 
-    try:
+    scan_id = str(
+        request.form.get(
+            "scan_id",
+            ""
+        )
+    ).strip()
 
-        assets = list(
-            db.assets.find(
-                {
-                    "created_by": current_user_id
-                }
+    if not scan_id:
+
+        flash(
+            "Please select a completed scan before generating a report.",
+            "warning"
+        )
+
+        return redirect(
+            url_for(
+                "report.reports"
             )
         )
 
-        if not assets:
+    try:
+
+        scan = get_scan_by_id(
+            db=db,
+            scan_id=scan_id,
+            created_by=current_user_id
+        )
+
+        if not scan:
 
             flash(
-                (
-                    "A security report cannot be generated because "
-                    "no analyzed assets are currently available."
-                ),
-                "warning"
+                "The selected scan could not be found or is not accessible.",
+                "danger"
             )
 
             return redirect(
@@ -221,8 +337,49 @@ def generate_report():
                 )
             )
 
+        if str(
+            scan.get(
+                "status",
+                ""
+            )
+        ).strip().lower() != "completed":
+
+            flash(
+                "A PDF report can only be generated from a completed scan.",
+                "warning"
+            )
+
+            return redirect(
+                url_for(
+                    "report.reports",
+                    scan_id=scan_id
+                )
+            )
+
+        report_asset = build_report_asset_for_scan(
+            db=db,
+            scan=scan,
+            current_user_id=current_user_id
+        )
+
+        if not report_asset:
+
+            flash(
+                "Unable to prepare the selected scan for reporting.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "report.reports",
+                    scan_id=scan_id
+                )
+            )
+
         report_data = generate_report_data(
-            assets=assets,
+            assets=[
+                report_asset
+            ],
             created_by=current_user_id,
         )
 
@@ -240,15 +397,22 @@ def generate_report():
 
             return redirect(
                 url_for(
-                    "report.reports"
+                    "report.reports",
+                    scan_id=scan_id
                 )
             )
 
         pdf_buffer = generate_report_pdf(
-            report_data
+            report_data,
+            authorized_by=session.get(
+                "username",
+                "Not available"
+            )
         )
 
-        filename = create_report_filename()
+        filename = create_report_filename(
+            scan
+        )
 
         return send_file(
             pdf_buffer,
@@ -271,9 +435,58 @@ def generate_report():
 
         return redirect(
             url_for(
-                "report.reports"
+                "report.reports",
+                scan_id=scan_id
             )
         )
+
+
+# ============================================================
+# SCAN-SPECIFIC REPORT ASSET HELPER
+# ============================================================
+
+def build_report_asset_for_scan(
+    db,
+    scan,
+    current_user_id
+):
+    """
+    Convert one completed scan into the asset-shaped snapshot
+    expected by the existing report-analysis pipeline.
+
+    Current Asset Inventory contributes only manual contextual
+    fields such as criticality and exposure.
+    """
+
+    if not isinstance(
+        scan,
+        dict
+    ):
+
+        return None
+
+    target = str(
+        scan.get(
+            "target",
+            ""
+        )
+    ).strip()
+
+    if not target:
+
+        return None
+
+    asset_context = db.assets.find_one(
+        {
+            "target": target,
+            "created_by": current_user_id
+        }
+    )
+
+    return build_report_asset_from_scan(
+        scan=scan,
+        asset_context=asset_context
+    )
 
 
 # ============================================================
@@ -469,9 +682,11 @@ def create_empty_report_context():
 # REPORT FILENAME
 # ============================================================
 
-def create_report_filename():
+def create_report_filename(
+    scan=None
+):
     """
-    Create a safe timestamped PDF filename.
+    Create a safe timestamped scan-specific PDF filename.
     """
 
     timestamp = datetime.now(
@@ -480,6 +695,38 @@ def create_report_filename():
         "%Y%m%d_%H%M%S"
     )
 
+    target = "scan"
+
+    if isinstance(
+        scan,
+        dict
+    ):
+
+        target = str(
+            scan.get(
+                "target",
+                "scan"
+            )
+        ).strip()
+
+    safe_target = "".join(
+        character
+        if character.isalnum()
+        or character in (
+            "-",
+            "_",
+            "."
+        )
+        else "_"
+        for character in target
+    )
+
+    safe_target = (
+        safe_target.strip("._")
+        or "scan"
+    )
+
     return (
-        f"AttackLens_Security_Assessment_{timestamp}.pdf"
+        f"AttackLens_{safe_target}_"
+        f"Security_Assessment_{timestamp}.pdf"
     )

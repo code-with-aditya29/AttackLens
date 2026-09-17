@@ -29,7 +29,7 @@ from io import BytesIO
 from datetime import datetime, timezone
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
@@ -59,8 +59,9 @@ PDF_VERSION = "1.0"
 # ============================================================
 
 COLOR_PRIMARY = colors.HexColor("#7C3AED")
-COLOR_PRIMARY_DARK = colors.HexColor("#5B21B6")
-COLOR_PRIMARY_LIGHT = colors.HexColor("#EDE9FE")
+COLOR_PRIMARY_DARK = colors.HexColor("#3B176E")
+COLOR_PRIMARY_DEEP = colors.HexColor("#6D28D9")
+COLOR_PRIMARY_LIGHT = colors.HexColor("#F1ECFF")
 
 COLOR_TEXT_PRIMARY = colors.HexColor("#211B2E")
 COLOR_TEXT_SECONDARY = colors.HexColor("#6F687D")
@@ -75,7 +76,7 @@ COLOR_WHITE = colors.white
 # MAIN PDF GENERATOR
 # ============================================================
 
-def generate_report_pdf(report_data):
+def generate_report_pdf(report_data, authorized_by=None):
     """
     Generate an AttackLens PDF report.
 
@@ -94,15 +95,25 @@ def generate_report_pdf(report_data):
         report_data
     )
 
+    # Work on a shallow copy so PDF-only presentation metadata does
+    # not mutate the normalized report document owned by report_service.
+    report_data = dict(report_data)
+
+    if authorized_by is not None:
+        report_data["authorized_by"] = safe_text(
+            authorized_by,
+            default="Not available"
+        )
+
     buffer = BytesIO()
 
     document = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        rightMargin=18 * mm,
-        leftMargin=18 * mm,
-        topMargin=20 * mm,
-        bottomMargin=18 * mm,
+        rightMargin=16 * mm,
+        leftMargin=16 * mm,
+        topMargin=22 * mm,
+        bottomMargin=20 * mm,
         title=PDF_TITLE,
         author=PDF_AUTHOR,
         subject=PDF_SUBJECT,
@@ -128,11 +139,15 @@ def generate_report_pdf(report_data):
         styles
     )
 
+    story.append(PageBreak())
+
     build_executive_summary_section(
         story,
         report_data,
         styles
     )
+
+    story.append(PageBreak())
 
     build_asset_inventory_section(
         story,
@@ -140,11 +155,15 @@ def generate_report_pdf(report_data):
         styles
     )
 
+    story.append(PageBreak())
+
     build_vulnerability_section(
         story,
         report_data,
         styles
     )
+
+    story.append(PageBreak())
 
     build_attack_path_section(
         story,
@@ -152,11 +171,15 @@ def generate_report_pdf(report_data):
         styles
     )
 
+    story.append(PageBreak())
+
     build_defense_section(
         story,
         report_data,
         styles
     )
+
+    story.append(PageBreak())
 
     build_mitigation_section(
         story,
@@ -164,11 +187,15 @@ def generate_report_pdf(report_data):
         styles
     )
 
+    story.append(PageBreak())
+
     build_risk_comparison_section(
         story,
         report_data,
         styles
     )
+
+    story.append(PageBreak())
 
     build_methodology_section(
         story,
@@ -178,8 +205,8 @@ def generate_report_pdf(report_data):
 
     document.build(
         story,
-        onFirstPage=draw_page_footer,
-        onLaterPages=draw_page_footer,
+        onFirstPage=draw_cover_footer,
+        onLaterPages=draw_page_header_footer,
     )
 
     buffer.seek(
@@ -195,7 +222,11 @@ def generate_report_pdf(report_data):
 
 def create_pdf_styles():
     """
-    Create the ParagraphStyle collection used by the PDF.
+    Create the professional ParagraphStyle collection used by the PDF.
+
+    The report uses larger print-friendly typography and a consistent
+    hierarchy across headings, body copy, tables, metadata, and
+    authorization information.
     """
 
     base_styles = getSampleStyleSheet()
@@ -205,30 +236,52 @@ def create_pdf_styles():
             "AttackLensCoverTitle",
             parent=base_styles["Title"],
             fontName="Helvetica-Bold",
-            fontSize=27,
-            leading=32,
+            fontSize=30,
+            leading=35,
             textColor=COLOR_PRIMARY,
             alignment=TA_CENTER,
-            spaceAfter=12,
+            spaceAfter=8,
         ),
 
         "cover_subtitle": ParagraphStyle(
             "AttackLensCoverSubtitle",
             parent=base_styles["Normal"],
             fontName="Helvetica",
-            fontSize=13,
-            leading=19,
+            fontSize=15,
+            leading=20,
             textColor=COLOR_TEXT_SECONDARY,
             alignment=TA_CENTER,
-            spaceAfter=8,
+            spaceAfter=6,
+        ),
+
+        "cover_target_label": ParagraphStyle(
+            "AttackLensCoverTargetLabel",
+            parent=base_styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=10.5,
+            leading=14,
+            textColor=COLOR_TEXT_SECONDARY,
+            alignment=TA_CENTER,
+            spaceAfter=4,
+        ),
+
+        "cover_target": ParagraphStyle(
+            "AttackLensCoverTarget",
+            parent=base_styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=17,
+            leading=21,
+            textColor=COLOR_TEXT_PRIMARY,
+            alignment=TA_CENTER,
+            spaceAfter=4,
         ),
 
         "cover_meta": ParagraphStyle(
             "AttackLensCoverMeta",
             parent=base_styles["Normal"],
             fontName="Helvetica",
-            fontSize=10,
-            leading=16,
+            fontSize=10.5,
+            leading=15,
             textColor=COLOR_TEXT_SECONDARY,
             alignment=TA_CENTER,
         ),
@@ -241,26 +294,28 @@ def create_pdf_styles():
             leading=21,
             textColor=COLOR_PRIMARY_DARK,
             spaceBefore=8,
-            spaceAfter=12,
+            spaceAfter=10,
+            keepWithNext=True,
         ),
 
         "subsection_title": ParagraphStyle(
             "AttackLensSubsectionTitle",
             parent=base_styles["Heading2"],
             fontName="Helvetica-Bold",
-            fontSize=12,
+            fontSize=12.5,
             leading=16,
             textColor=COLOR_TEXT_PRIMARY,
-            spaceBefore=8,
-            spaceAfter=7,
+            spaceBefore=7,
+            spaceAfter=5,
+            keepWithNext=True,
         ),
 
         "body": ParagraphStyle(
             "AttackLensBody",
             parent=base_styles["BodyText"],
             fontName="Helvetica",
-            fontSize=9.5,
-            leading=15,
+            fontSize=11,
+            leading=16,
             textColor=COLOR_TEXT_PRIMARY,
             spaceAfter=7,
         ),
@@ -269,18 +324,18 @@ def create_pdf_styles():
             "AttackLensBodyMuted",
             parent=base_styles["BodyText"],
             fontName="Helvetica",
-            fontSize=8.8,
-            leading=14,
+            fontSize=10,
+            leading=14.5,
             textColor=COLOR_TEXT_SECONDARY,
-            spaceAfter=6,
+            spaceAfter=5,
         ),
 
         "table_header": ParagraphStyle(
             "AttackLensTableHeader",
             parent=base_styles["BodyText"],
             fontName="Helvetica-Bold",
-            fontSize=8,
-            leading=11,
+            fontSize=9.5,
+            leading=12,
             textColor=COLOR_WHITE,
             alignment=TA_LEFT,
         ),
@@ -289,18 +344,27 @@ def create_pdf_styles():
             "AttackLensTableBody",
             parent=base_styles["BodyText"],
             fontName="Helvetica",
-            fontSize=7.8,
-            leading=11,
+            fontSize=9.5,
+            leading=13,
             textColor=COLOR_TEXT_PRIMARY,
+        ),
+
+        "table_sidebar": ParagraphStyle(
+            "AttackLensTableSidebar",
+            parent=base_styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=9.5,
+            leading=13,
+            textColor=COLOR_WHITE,
         ),
 
         "metric_label": ParagraphStyle(
             "AttackLensMetricLabel",
             parent=base_styles["BodyText"],
-            fontName="Helvetica",
-            fontSize=8,
-            leading=10,
-            textColor=COLOR_TEXT_SECONDARY,
+            fontName="Helvetica-Bold",
+            fontSize=10,
+            leading=13,
+            textColor=COLOR_WHITE,
             alignment=TA_CENTER,
         ),
 
@@ -308,21 +372,37 @@ def create_pdf_styles():
             "AttackLensMetricValue",
             parent=base_styles["BodyText"],
             fontName="Helvetica-Bold",
-            fontSize=15,
-            leading=18,
+            fontSize=18,
+            leading=22,
             textColor=COLOR_TEXT_PRIMARY,
             alignment=TA_CENTER,
+        ),
+
+        "authorization_label": ParagraphStyle(
+            "AttackLensAuthorizationLabel",
+            parent=base_styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=10,
+            leading=13,
+            textColor=COLOR_WHITE,
+        ),
+
+        "authorization_value": ParagraphStyle(
+            "AttackLensAuthorizationValue",
+            parent=base_styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=10,
+            leading=14,
+            textColor=COLOR_TEXT_PRIMARY,
         ),
 
         "disclaimer": ParagraphStyle(
             "AttackLensDisclaimer",
             parent=base_styles["BodyText"],
             fontName="Helvetica",
-            fontSize=8.5,
-            leading=13,
+            fontSize=9.5,
+            leading=14,
             textColor=COLOR_TEXT_SECONDARY,
-            leftIndent=8,
-            rightIndent=8,
         ),
     }
 
@@ -337,13 +417,49 @@ def build_cover_page(
     styles
 ):
     """
-    Render the report cover page.
+    Render a professional security assessment cover.
+
+    The cover deliberately avoids academic/assignment wording and
+    presents the report as a formal AttackLens assessment document.
     """
+
+    scope = get_dictionary(
+        report_data,
+        "scope"
+    )
+
+    statistics = get_dictionary(
+        report_data,
+        "statistics"
+    )
+
+    targets = scope.get(
+        "targets"
+    )
+
+    if not isinstance(
+        targets,
+        list
+    ):
+        targets = []
+
+    target_text = (
+        ", ".join(
+            safe_text(target)
+            for target in targets
+            if safe_text(target)
+        )
+        or "No target available"
+    )
+
+    authorized_by = get_authorized_scanner(
+        report_data
+    )
 
     story.append(
         Spacer(
             1,
-            35 * mm
+            27 * mm
         )
     )
 
@@ -364,93 +480,104 @@ def build_cover_page(
     story.append(
         Spacer(
             1,
-            8 * mm
+            12 * mm
         )
     )
 
-    title = safe_text(
-        report_data.get(
-            "title"
-        ),
-        default=PDF_TITLE
+    story.append(
+        Paragraph(
+            "ASSESSMENT TARGET",
+            styles["cover_target_label"]
+        )
     )
 
     story.append(
         Paragraph(
             escape_text(
-                title
+                target_text
             ),
-            styles["cover_subtitle"]
+            styles["cover_target"]
         )
     )
 
     story.append(
         Spacer(
             1,
-            18 * mm
+            11 * mm
         )
-    )
-
-    scope = get_dictionary(
-        report_data,
-        "scope"
-    )
-
-    statistics = get_dictionary(
-        report_data,
-        "statistics"
     )
 
     cover_data = [
         [
-            "Assets",
-            str(
-                safe_integer(
-                    scope.get(
-                        "asset_count",
-                        0
+            Paragraph(
+                "Assets in Scope",
+                styles["table_sidebar"]
+            ),
+            Paragraph(
+                str(
+                    safe_integer(
+                        scope.get(
+                            "asset_count",
+                            0
+                        )
                     )
-                )
+                ),
+                styles["table_body"]
             ),
         ],
-
         [
-            "Current Risk",
-            format_risk(
-                statistics.get(
-                    "current_risk_score",
-                    0
-                ),
-                statistics.get(
-                    "current_risk_level",
-                    "LOW"
-                ),
+            Paragraph(
+                "Current Risk",
+                styles["table_sidebar"]
             ),
-        ],
-
-        [
-            "Projected Risk",
-            format_risk(
-                statistics.get(
-                    "projected_risk_score",
-                    0
-                ),
-                statistics.get(
-                    "projected_risk_level",
-                    "LOW"
-                ),
-            ),
-        ],
-
-        [
-            "Projected Reduction",
-            "{:.2f}%".format(
-                safe_number(
+            Paragraph(
+                format_risk(
                     statistics.get(
-                        "risk_reduction_percentage",
+                        "current_risk_score",
                         0
+                    ),
+                    statistics.get(
+                        "current_risk_level",
+                        "LOW"
+                    ),
+                ),
+                styles["table_body"]
+            ),
+        ],
+        [
+            Paragraph(
+                "Projected Risk",
+                styles["table_sidebar"]
+            ),
+            Paragraph(
+                format_risk(
+                    statistics.get(
+                        "projected_risk_score",
+                        0
+                    ),
+                    statistics.get(
+                        "projected_risk_level",
+                        "LOW"
+                    ),
+                ),
+                styles["table_body"]
+            ),
+        ],
+        [
+            Paragraph(
+                "Projected Reduction",
+                styles["table_sidebar"]
+            ),
+            Paragraph(
+                "{:.2f}%".format(
+                    safe_number(
+                        statistics.get(
+                            "risk_reduction_percentage",
+                            0
+                        )
                     )
-                )
+                ),
+                styles["table_body"]
             ),
         ],
     ]
@@ -458,9 +585,15 @@ def build_cover_page(
     table = Table(
         cover_data,
         colWidths=[
-            55 * mm,
-            55 * mm
-        ]
+            68 * mm,
+            68 * mm
+        ],
+        rowHeights=[
+            14 * mm
+        ] * len(
+            cover_data
+        ),
+        hAlign="CENTER"
     )
 
     table.setStyle(
@@ -469,101 +602,46 @@ def build_cover_page(
                 (
                     "BACKGROUND",
                     (0, 0),
-                    (-1, -1),
+                    (0, -1),
+                    COLOR_PRIMARY
+                ),
+                (
+                    "BACKGROUND",
+                    (1, 0),
+                    (1, -1),
                     COLOR_BACKGROUND
                 ),
-
                 (
                     "BOX",
                     (0, 0),
                     (-1, -1),
-                    0.6,
+                    0.8,
                     COLOR_BORDER
                 ),
-
                 (
                     "INNERGRID",
                     (0, 0),
                     (-1, -1),
-                    0.4,
+                    0.5,
                     COLOR_BORDER
                 ),
-
-                (
-                    "TEXTCOLOR",
-                    (0, 0),
-                    (0, -1),
-                    COLOR_TEXT_SECONDARY
-                ),
-
-                (
-                    "TEXTCOLOR",
-                    (1, 0),
-                    (1, -1),
-                    COLOR_TEXT_PRIMARY
-                ),
-
-                (
-                    "FONTNAME",
-                    (0, 0),
-                    (0, -1),
-                    "Helvetica"
-                ),
-
-                (
-                    "FONTNAME",
-                    (1, 0),
-                    (1, -1),
-                    "Helvetica-Bold"
-                ),
-
-                (
-                    "FONTSIZE",
-                    (0, 0),
-                    (-1, -1),
-                    9
-                ),
-
-                (
-                    "ALIGN",
-                    (1, 0),
-                    (1, -1),
-                    "RIGHT"
-                ),
-
                 (
                     "VALIGN",
                     (0, 0),
                     (-1, -1),
                     "MIDDLE"
                 ),
-
                 (
                     "LEFTPADDING",
                     (0, 0),
                     (-1, -1),
-                    10
+                    12
                 ),
-
                 (
                     "RIGHTPADDING",
                     (0, 0),
                     (-1, -1),
-                    10
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    9
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    9
+                    12
                 ),
             ]
         )
@@ -576,7 +654,7 @@ def build_cover_page(
     story.append(
         Spacer(
             1,
-            20 * mm
+            13 * mm
         )
     )
 
@@ -586,11 +664,20 @@ def build_cover_page(
         )
     )
 
+    report_id = safe_text(
+        report_data.get(
+            "report_id"
+        ),
+        default="N/A"
+    )
+
     story.append(
         Paragraph(
             (
-                "Generated by AttackLens<br/>"
-                f"Generated: {escape_text(generated_at)}"
+                f"<b>Authorized Scanner:</b> {escape_text(authorized_by)}<br/>"
+                f"<b>Report ID:</b> {escape_text(report_id)}<br/>"
+                f"<b>Generated:</b> {escape_text(generated_at)}<br/>"
+                "<b>Classification:</b> Security Assessment"
             ),
             styles["cover_meta"]
         )
@@ -703,6 +790,13 @@ def build_report_information(
         ],
 
         [
+            "Authorized Scanner",
+            get_authorized_scanner(
+                report_data
+            ),
+        ],
+
+        [
             "Generated",
             format_datetime(
                 report_data.get(
@@ -722,7 +816,7 @@ def build_report_information(
     story.append(
         Spacer(
             1,
-            6 * mm
+            4 * mm
         )
     )
 
@@ -963,20 +1057,23 @@ def build_asset_inventory_section(
 
     table = Table(
         table_data,
+        # Keep the full Asset Inventory table within the 178 mm
+        # printable width while giving Criticality, Exposure, and Risk
+        # enough room to render cleanly without awkward word wrapping.
         colWidths=[
-            27 * mm,
-            24 * mm,
-            38 * mm,
-            24 * mm,
-            19 * mm,
-            19 * mm,
-            23 * mm,
+            25 * mm,  # Target
+            23 * mm,  # Hostname
+            32 * mm,  # Operating System
+            23 * mm,  # Open Ports
+            23 * mm,  # Criticality
+            23 * mm,  # Exposure
+            29 * mm,  # Risk
         ],
         repeatRows=1,
     )
     apply_standard_table_style(table)
     story.append(table)
-    story.append(Spacer(1, 6 * mm))
+    story.append(Spacer(1, 3 * mm))
 
 
 # ============================================================
@@ -1024,11 +1121,23 @@ def build_vulnerability_section(
         findings = []
 
     if not findings:
-        append_empty_message(
-            story,
-            "No vulnerability or CVE findings are currently present in the analyzed asset data.",
-            styles
+        table = build_status_table(
+            headers=[
+                "Target",
+                "Finding",
+                "Severity",
+                "Score"
+            ],
+            message="No vulnerability or CVE findings are currently present in the analyzed asset data.",
+            styles=styles,
+            col_widths=[
+                34 * mm,
+                82 * mm,
+                31 * mm,
+                31 * mm
+            ]
         )
+        story.append(table)
         return
 
     table_data = [[
@@ -1056,12 +1165,12 @@ def build_vulnerability_section(
 
     table = Table(
         table_data,
-        colWidths=[34 * mm, 82 * mm, 31 * mm, 27 * mm],
+        colWidths=[34 * mm, 82 * mm, 31 * mm, 31 * mm],
         repeatRows=1,
     )
     apply_standard_table_style(table)
     story.append(table)
-    story.append(Spacer(1, 6 * mm))
+    story.append(Spacer(1, 3 * mm))
 
 
 # ============================================================
@@ -1105,11 +1214,23 @@ def build_attack_path_section(
     summary = Paragraph(summary_text, styles["body"])
 
     if not paths:
-        empty_table = build_empty_message_table(
-            "No potential attack paths were identified from the currently available evidence.",
-            styles
+        empty_table = build_status_table(
+            headers=[
+                "Path",
+                "Score",
+                "Risk"
+            ],
+            message="No potential attack paths were identified from the currently available evidence.",
+            styles=styles,
+            col_widths=[
+                112 * mm,
+                30 * mm,
+                36 * mm
+            ]
         )
-        story.append(KeepTogether([heading, summary, empty_table, Spacer(1, 5 * mm)]))
+        story.append(heading)
+        story.append(summary)
+        story.append(empty_table)
         return
 
     story.append(heading)
@@ -1137,12 +1258,12 @@ def build_attack_path_section(
 
     table = Table(
         table_data,
-        colWidths=[111 * mm, 28 * mm, 35 * mm],
+        colWidths=[112 * mm, 30 * mm, 36 * mm],
         repeatRows=1,
     )
     apply_standard_table_style(table)
     story.append(table)
-    story.append(Spacer(1, 6 * mm))
+    story.append(Spacer(1, 3 * mm))
 
 
 # ============================================================
@@ -1155,50 +1276,121 @@ def build_defense_section(
     styles
 ):
     """
-    Render defense-analysis findings.
+    Render defense-analysis findings as a consistent professional table.
     """
 
-    append_section_heading(story, "5. Defense Analysis", styles)
-    sections = get_dictionary(report_data, "sections")
-    defense_analysis = get_dictionary(sections, "defense_analysis")
-    findings = get_list(defense_analysis, "findings")
+    append_section_heading(
+        story,
+        "5. Defense Analysis",
+        styles
+    )
+
+    sections = get_dictionary(
+        report_data,
+        "sections"
+    )
+
+    defense_analysis = get_dictionary(
+        sections,
+        "defense_analysis"
+    )
+
+    findings = get_list(
+        defense_analysis,
+        "findings"
+    )
 
     if not findings:
-        append_empty_message(
-            story,
-            "No defense findings are currently available for the analyzed environment.",
-            styles
+        table = build_status_table(
+            headers=[
+                "Finding",
+                "Priority",
+                "Evidence"
+            ],
+            message="No defense findings are currently available for the analyzed environment.",
+            styles=styles,
+            col_widths=[
+                58 * mm,
+                30 * mm,
+                90 * mm
+            ]
         )
+        story.append(table)
         return
 
-    for index, finding in enumerate(findings, start=1):
-        if not isinstance(finding, dict):
+    rows = [[
+        paragraph(
+            "Finding",
+            styles["table_header"]
+        ),
+        paragraph(
+            "Priority",
+            styles["table_header"]
+        ),
+        paragraph(
+            "Evidence",
+            styles["table_header"]
+        ),
+    ]]
+
+    for finding in findings:
+
+        if not isinstance(
+            finding,
+            dict
+        ):
             continue
 
-        title = get_defense_title(finding)
-        description = get_defense_description(finding)
-        priority = get_priority(finding)
-        evidence = get_defense_evidence(finding)
+        title = get_defense_title(
+            finding
+        )
 
-        block = [
-            Paragraph(f"{index}. {escape_text(title)}", styles["subsection_title"]),
-            Paragraph(
-                f"<b>Priority:</b> {escape_text(priority)}",
-                styles["body_muted"]
+        description = get_defense_description(
+            finding
+        )
+
+        priority = get_priority(
+            finding
+        )
+
+        evidence = get_defense_evidence(
+            finding
+        )
+
+        detail = evidence or description or "-"
+
+        rows.append([
+            paragraph(
+                title,
+                styles["table_body"]
             ),
-            Paragraph(escape_text(description), styles["body"]),
-        ]
+            paragraph(
+                priority,
+                styles["table_body"]
+            ),
+            paragraph(
+                detail,
+                styles["table_body"]
+            ),
+        ])
 
-        if evidence and evidence != description:
-            block.append(
-                Paragraph(
-                    f"<b>Evidence:</b> {escape_text(evidence)}",
-                    styles["body_muted"]
-                )
-            )
+    table = Table(
+        rows,
+        colWidths=[
+            58 * mm,
+            30 * mm,
+            90 * mm
+        ],
+        repeatRows=1,
+    )
 
-        story.append(KeepTogether(block))
-        story.append(Spacer(1, 2 * mm))
+    apply_standard_table_style(
+        table
+    )
+
+    story.append(
+        table
+    )
 
 
 # ============================================================
@@ -1211,7 +1403,7 @@ def build_mitigation_section(
     styles
 ):
     """
-    Render mitigation recommendations.
+    Render mitigation recommendations as a consistent professional table.
     """
 
     append_section_heading(
@@ -1236,19 +1428,45 @@ def build_mitigation_section(
     )
 
     if not recommendations:
-
-        append_empty_message(
-            story,
-            "No mitigation recommendations are currently available.",
-            styles
+        table = build_status_table(
+            headers=[
+                "Recommendation",
+                "Priority",
+                "Target",
+                "Expected Effect"
+            ],
+            message="No mitigation recommendations are currently available.",
+            styles=styles,
+            col_widths=[
+                58 * mm,
+                27 * mm,
+                38 * mm,
+                55 * mm
+            ]
         )
-
+        story.append(table)
         return
 
-    for index, recommendation in enumerate(
-        recommendations,
-        start=1
-    ):
+    rows = [[
+        paragraph(
+            "Recommendation",
+            styles["table_header"]
+        ),
+        paragraph(
+            "Priority",
+            styles["table_header"]
+        ),
+        paragraph(
+            "Target",
+            styles["table_header"]
+        ),
+        paragraph(
+            "Expected Effect",
+            styles["table_header"]
+        ),
+    ]]
+
+    for recommendation in recommendations:
 
         if not isinstance(
             recommendation,
@@ -1260,15 +1478,6 @@ def build_mitigation_section(
             recommendation
         )
 
-        category = humanize_label(
-            safe_text(
-                recommendation.get(
-                    "category"
-                ),
-                default="general"
-            )
-        )
-
         priority = get_priority(
             recommendation
         )
@@ -1277,92 +1486,47 @@ def build_mitigation_section(
             recommendation
         )
 
-        score = safe_number(
-            recommendation.get(
-                "score",
-                recommendation.get(
-                    "priority_score",
-                    0
-                )
-            )
-        )
-
-        evidence = get_recommendation_evidence(
-            recommendation
-        )
-
         expected_effect = get_expected_effect(
             recommendation
         )
 
-        block = [
-            Paragraph(
-                (
-                    f"{index}. "
-                    f"{escape_text(title)}"
-                ),
-                styles["subsection_title"]
+        rows.append([
+            paragraph(
+                title,
+                styles["table_body"]
             ),
-
-            Paragraph(
-                (
-                    f"<b>Category:</b> "
-                    f"{escape_text(category)}"
-                    f"&nbsp;&nbsp;&nbsp; "
-                    f"<b>Priority:</b> "
-                    f"{escape_text(priority)}"
-                    f"&nbsp;&nbsp;&nbsp; "
-                    f"<b>Score:</b> "
-                    f"{score:.2f}/100"
-                ),
-                styles["body_muted"]
+            paragraph(
+                priority,
+                styles["table_body"]
             ),
-
-            Paragraph(
-                (
-                    f"<b>Target:</b> "
-                    f"{escape_text(target)}"
-                ),
-                styles["body_muted"]
+            paragraph(
+                target,
+                styles["table_body"]
             ),
-        ]
+            paragraph(
+                expected_effect or "-",
+                styles["table_body"]
+            ),
+        ])
 
-        if evidence:
+    table = Table(
+        rows,
+        colWidths=[
+            58 * mm,
+            27 * mm,
+            38 * mm,
+            55 * mm
+        ],
+        repeatRows=1,
+    )
 
-            block.append(
-                Paragraph(
-                    (
-                        "<b>Evidence:</b> "
-                        f"{escape_text(evidence)}"
-                    ),
-                    styles["body"]
-                )
-            )
+    apply_standard_table_style(
+        table
+    )
 
-        if expected_effect:
-
-            block.append(
-                Paragraph(
-                    (
-                        "<b>Expected Effect:</b> "
-                        f"{escape_text(expected_effect)}"
-                    ),
-                    styles["body"]
-                )
-            )
-
-        story.append(
-            KeepTogether(
-                block
-            )
-        )
-
-        story.append(
-            Spacer(
-                1,
-                3 * mm
-            )
-        )
+    story.append(
+        table
+    )
 
 
 # ============================================================
@@ -1618,10 +1782,10 @@ def build_risk_comparison_section(
     table = Table(
         rows,
         colWidths=[
-            60 * mm,
-            38 * mm,
-            38 * mm,
-            39 * mm
+            58 * mm,
+            40 * mm,
+            40 * mm,
+            40 * mm
         ],
         repeatRows=1,
     )
@@ -1674,10 +1838,8 @@ def build_methodology_section(
     Render methodology and report disclaimer on a dedicated final page.
     """
 
-    # Keep the methodology/disclaimer visually coherent instead of
-    # allowing only the final paragraph and authorization notice to spill.
-    story.append(PageBreak())
-
+    # Allow methodology to follow the preceding analysis when space
+    # permits. ReportLab will move it naturally when the page is full.
     append_section_heading(
         story,
         "8. Methodology & Disclaimer",
@@ -1712,40 +1874,203 @@ def build_methodology_section(
     for text in paragraphs:
         story.append(Paragraph(text, styles["body"]))
 
-    story.append(Spacer(1, 5 * mm))
+    story.append(Spacer(1, 3.5 * mm))
 
-    disclaimer_table = Table(
-        [[Paragraph(
+    authorized_by = get_authorized_scanner(
+        report_data
+    )
+
+    scope = get_dictionary(
+        report_data,
+        "scope"
+    )
+
+    targets = scope.get(
+        "targets"
+    )
+
+    if not isinstance(
+        targets,
+        list
+    ):
+        targets = []
+
+    target_text = (
+        ", ".join(
+            safe_text(target)
+            for target in targets
+            if safe_text(target)
+        )
+        or "Not available"
+    )
+
+    authorization_rows = [
+        [
+            Paragraph(
+                "AUTHORIZED ASSESSMENT RECORD",
+                styles["authorization_label"]
+            ),
+            Paragraph(
+                "DETAILS",
+                styles["authorization_label"]
+            ),
+        ],
+        [
+            Paragraph(
+                "Authorized Scanner",
+                styles["authorization_label"]
+            ),
+            Paragraph(
+                escape_text(
+                    authorized_by
+                ),
+                styles["authorization_value"]
+            ),
+        ],
+        [
+            Paragraph(
+                "Assessment Target",
+                styles["authorization_label"]
+            ),
+            Paragraph(
+                escape_text(
+                    target_text
+                ),
+                styles["authorization_value"]
+            ),
+        ],
+        [
+            Paragraph(
+                "Report Generated",
+                styles["authorization_label"]
+            ),
+            Paragraph(
+                escape_text(
+                    format_datetime(
+                        report_data.get(
+                            "generated_at"
+                        )
+                    )
+                ),
+                styles["authorization_value"]
+            ),
+        ],
+    ]
+
+    authorization_table = Table(
+        authorization_rows,
+        colWidths=[
+            58 * mm,
+            120 * mm
+        ],
+    )
+
+    authorization_table.setStyle(
+        TableStyle(
+            [
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    COLOR_PRIMARY
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 1),
+                    (0, -1),
+                    COLOR_PRIMARY
+                ),
+                (
+                    "BACKGROUND",
+                    (1, 1),
+                    (1, -1),
+                    COLOR_BACKGROUND
+                ),
+                (
+                    "SPAN",
+                    (0, 0),
+                    (0, 0)
+                ),
+                (
+                    "BOX",
+                    (0, 0),
+                    (-1, -1),
+                    0.8,
+                    COLOR_PRIMARY
+                ),
+                (
+                    "INNERGRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.45,
+                    COLOR_BORDER
+                ),
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                ),
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    9
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    9
+                ),
+            ]
+        )
+    )
+
+    story.append(
+        authorization_table
+    )
+
+    story.append(
+        Spacer(
+            1,
+            4 * mm
+        )
+    )
+
+    story.append(
+        Paragraph(
             (
-                "<b>Authorized Use Only:</b><br/>"
-                "This report should only contain analysis from systems for which "
-                "the user has authorization to perform security testing."
+                "<b>Authorized Use Only:</b> This report must contain analysis "
+                "only for systems that the named scanner is authorized to assess."
             ),
             styles["disclaimer"]
-        )]],
-        colWidths=[174 * mm],
+        )
     )
-    disclaimer_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), COLOR_PRIMARY_LIGHT),
-        ("BOX", (0, 0), (-1, -1), 0.7, COLOR_PRIMARY),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, -1), 10),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
-    ]))
-    story.append(disclaimer_table)
 
 
 # ============================================================
 # PAGE FOOTER
 # ============================================================
 
-def draw_page_footer(
+def draw_cover_footer(
     canvas,
     document
 ):
     """
-    Draw footer and page number.
+    Draw a minimal footer on the cover page.
     """
 
     canvas.saveState()
@@ -1757,19 +2082,19 @@ def draw_page_footer(
     )
 
     canvas.setLineWidth(
-        0.5
+        0.45
     )
 
     canvas.line(
-        18 * mm,
-        13 * mm,
-        page_width - 18 * mm,
-        13 * mm
+        16 * mm,
+        14 * mm,
+        page_width - 16 * mm,
+        14 * mm
     )
 
     canvas.setFont(
         "Helvetica",
-        7.5
+        7.8
     )
 
     canvas.setFillColor(
@@ -1777,14 +2102,110 @@ def draw_page_footer(
     )
 
     canvas.drawString(
-        18 * mm,
-        8.5 * mm,
+        16 * mm,
+        9.5 * mm,
         "AttackLens Security Assessment"
     )
 
     canvas.drawRightString(
-        page_width - 18 * mm,
-        8.5 * mm,
+        page_width - 16 * mm,
+        9.5 * mm,
+        "Confidential - Authorized Use Only"
+    )
+
+    canvas.restoreState()
+
+
+def draw_page_header_footer(
+    canvas,
+    document
+):
+    """
+    Draw a consistent professional header and footer on report pages.
+    """
+
+    canvas.saveState()
+
+    page_width, page_height = A4
+
+    # Header
+    canvas.setFont(
+        "Helvetica-Bold",
+        8
+    )
+
+    canvas.setFillColor(
+        COLOR_PRIMARY_DARK
+    )
+
+    canvas.drawString(
+        16 * mm,
+        page_height - 12 * mm,
+        "ATTACKLENS"
+    )
+
+    canvas.setFont(
+        "Helvetica",
+        7.8
+    )
+
+    canvas.setFillColor(
+        COLOR_TEXT_MUTED
+    )
+
+    canvas.drawRightString(
+        page_width - 16 * mm,
+        page_height - 12 * mm,
+        "Security Assessment Report"
+    )
+
+    canvas.setStrokeColor(
+        COLOR_BORDER
+    )
+
+    canvas.setLineWidth(
+        0.45
+    )
+
+    canvas.line(
+        16 * mm,
+        page_height - 15 * mm,
+        page_width - 16 * mm,
+        page_height - 15 * mm
+    )
+
+    # Footer
+    canvas.line(
+        16 * mm,
+        14 * mm,
+        page_width - 16 * mm,
+        14 * mm
+    )
+
+    canvas.setFont(
+        "Helvetica",
+        7.8
+    )
+
+    canvas.setFillColor(
+        COLOR_TEXT_MUTED
+    )
+
+    canvas.drawString(
+        16 * mm,
+        9.5 * mm,
+        "AttackLens Security Assessment"
+    )
+
+    canvas.drawCentredString(
+        page_width / 2,
+        9.5 * mm,
+        "Confidential - Authorized Use Only"
+    )
+
+    canvas.drawRightString(
+        page_width - 16 * mm,
+        9.5 * mm,
         f"Page {canvas.getPageNumber()}"
     )
 
@@ -1814,6 +2235,116 @@ def append_section_heading(
     )
 
 
+def build_status_table(
+    headers,
+    message,
+    styles,
+    col_widths
+):
+    """
+    Build a normal report table even when a section has no findings.
+
+    This keeps zero-result sections visually consistent with populated
+    sections instead of falling back to an unrelated pale message box.
+    """
+
+    header_row = [
+        paragraph(
+            header,
+            styles["table_header"]
+        )
+        for header in headers
+    ]
+
+    message_row = [
+        Paragraph(
+            escape_text(
+                message
+            ),
+            styles["table_body"]
+        )
+    ]
+
+    table = Table(
+        [
+            header_row,
+            message_row
+        ],
+        colWidths=col_widths,
+        repeatRows=1,
+    )
+
+    table.setStyle(
+        TableStyle(
+            [
+                (
+                    "SPAN",
+                    (0, 1),
+                    (-1, 1)
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    COLOR_PRIMARY
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 1),
+                    (-1, 1),
+                    COLOR_BACKGROUND
+                ),
+                (
+                    "BOX",
+                    (0, 0),
+                    (-1, -1),
+                    0.7,
+                    COLOR_BORDER
+                ),
+                (
+                    "INNERGRID",
+                    (0, 0),
+                    (-1, 0),
+                    0.4,
+                    COLOR_BORDER
+                ),
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    9
+                ),
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    9
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    10
+                ),
+            ]
+        )
+    )
+
+    return table
+
+
 def build_empty_message_table(
     message,
     styles
@@ -1824,7 +2355,7 @@ def build_empty_message_table(
 
     table = Table(
         [[Paragraph(escape_text(message), styles["body_muted"]) ]],
-        colWidths=[174 * mm],
+        colWidths=[178 * mm],
     )
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), COLOR_BACKGROUND),
@@ -1847,7 +2378,7 @@ def append_empty_message(
     """
 
     story.append(build_empty_message_table(message, styles))
-    story.append(Spacer(1, 5 * mm))
+    story.append(Spacer(1, 3.5 * mm))
 
 
 # ============================================================
@@ -1869,10 +2400,10 @@ def build_key_value_table(
         table_rows.append(
             [
                 Paragraph(
-                    (
-                        f"<b>{escape_text(label)}</b>"
+                    escape_text(
+                        label
                     ),
-                    styles["table_body"]
+                    styles["table_sidebar"]
                 ),
 
                 Paragraph(
@@ -1887,8 +2418,8 @@ def build_key_value_table(
     table = Table(
         table_rows,
         colWidths=[
-            48 * mm,
-            127 * mm
+            52 * mm,
+            126 * mm
         ],
     )
 
@@ -1899,7 +2430,7 @@ def build_key_value_table(
                     "BACKGROUND",
                     (0, 0),
                     (0, -1),
-                    COLOR_BACKGROUND
+                    COLOR_PRIMARY
                 ),
 
                 (
@@ -1929,28 +2460,28 @@ def build_key_value_table(
                     "LEFTPADDING",
                     (0, 0),
                     (-1, -1),
-                    8
+                    11
                 ),
 
                 (
                     "RIGHTPADDING",
                     (0, 0),
                     (-1, -1),
-                    8
+                    11
                 ),
 
                 (
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
-                    7
+                    10
                 ),
 
                 (
                     "BOTTOMPADDING",
                     (0, 0),
                     (-1, -1),
-                    7
+                    10
                 ),
             ]
         )
@@ -1992,11 +2523,11 @@ def build_metric_table(
 
     table = Table(
         [
-            value_row,
-            label_row
+            label_row,
+            value_row
         ],
         colWidths=[
-            43.75 * mm
+            (178 * mm) / len(metrics)
         ] * len(
             metrics
         ),
@@ -2010,6 +2541,12 @@ def build_metric_table(
                     (0, 0),
                     (-1, -1),
                     COLOR_BACKGROUND
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    COLOR_PRIMARY
                 ),
 
                 (
@@ -2039,14 +2576,28 @@ def build_metric_table(
                     "TOPPADDING",
                     (0, 0),
                     (-1, 0),
-                    10
+                    12
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, 0),
+                    8
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 1),
+                    (-1, 1),
+                    8
                 ),
 
                 (
                     "BOTTOMPADDING",
                     (0, 1),
                     (-1, 1),
-                    9
+                    13
                 ),
             ]
         )
@@ -2071,6 +2622,15 @@ def apply_standard_table_style(
                     (-1, 0),
                     COLOR_PRIMARY
                 ),
+                (
+                    "ROWBACKGROUNDS",
+                    (0, 1),
+                    (-1, -1),
+                    [
+                        COLOR_WHITE,
+                        COLOR_BACKGROUND
+                    ]
+                ),
 
                 (
                     "BOX",
@@ -2092,35 +2652,35 @@ def apply_standard_table_style(
                     "VALIGN",
                     (0, 0),
                     (-1, -1),
-                    "TOP"
+                    "MIDDLE"
                 ),
 
                 (
                     "LEFTPADDING",
                     (0, 0),
                     (-1, -1),
-                    6
+                    8
                 ),
 
                 (
                     "RIGHTPADDING",
                     (0, 0),
                     (-1, -1),
-                    6
+                    8
                 ),
 
                 (
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
-                    6
+                    9
                 ),
 
                 (
                     "BOTTOMPADDING",
                     (0, 0),
                     (-1, -1),
-                    6
+                    9
                 ),
             ]
         )
@@ -2215,6 +2775,47 @@ def get_list(
         return value
 
     return []
+
+
+# ============================================================
+# AUTHORIZATION HELPERS
+# ============================================================
+
+def get_authorized_scanner(
+    report_data
+):
+    """
+    Return the authenticated display name supplied by the report route.
+
+    The PDF service never invents a person's name. If the route does
+    not provide one, the report clearly states that it is unavailable.
+    """
+
+    if not isinstance(
+        report_data,
+        dict
+    ):
+        return "Not available"
+
+    possible_keys = (
+        "authorized_by",
+        "scanner_name",
+        "generated_by_name",
+        "username"
+    )
+
+    for key in possible_keys:
+
+        value = safe_text(
+            report_data.get(
+                key
+            )
+        )
+
+        if value:
+            return value
+
+    return "Not available"
 
 
 # ============================================================

@@ -12,7 +12,7 @@ Reports
 
 
 {% block page_subtitle %}
-Generate and review security assessment reports
+Generate a dedicated security assessment for a completed scan
 {% endblock %}
 
 
@@ -223,10 +223,10 @@ Generate and review security assessment reports
                 </h3>
 
                 <p>
-                    Generate a structured AttackLens security report using
-                    discovered assets, risk analysis, attack paths,
-                    defense findings, mitigation recommendations,
-                    and projected risk reduction.
+                    Generate a structured AttackLens security report for
+                    one completed scan, including discovered services,
+                    risk analysis, attack paths, defense findings,
+                    mitigation recommendations, and projected risk reduction.
                 </p>
 
             </div>
@@ -237,6 +237,156 @@ Generate and review security assessment reports
             </div>
 
         </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         SCAN SELECTION
+    =========================================== -->
+
+    <section class="dashboard-card reports-generation-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Select Scan for Report
+                </h3>
+
+                <p>
+                    Select one completed security scan. The report preview
+                    and generated PDF will use only that scan's evidence.
+                </p>
+
+            </div>
+
+
+            <div class="reports-header-icon">
+                ◎
+            </div>
+
+        </div>
+
+
+        {% if completed_scans %}
+
+            <form
+                method="GET"
+                action="{{ url_for('report.reports') }}"
+            >
+
+                <div class="form-group">
+
+                    <label for="scan_id">
+                        Completed Scan
+                    </label>
+
+
+                    <select
+                        id="scan_id"
+                        name="scan_id"
+                        required
+                    >
+
+                        {% for scan in completed_scans %}
+
+                            <option
+                                value="{{ scan._id }}"
+                                {% if selected_scan and selected_scan._id|string == scan._id|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ scan.target }}
+
+                                {% if scan.scan_profile %}
+                                    — {{ scan.scan_profile }}
+                                {% endif %}
+
+                                {% if scan.completed_at %}
+                                    — {{ scan.completed_at.strftime('%d %b %Y %H:%M') }}
+                                {% endif %}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    Load Scan Report
+                </button>
+
+            </form>
+
+
+            {% if selected_scan %}
+
+                <div class="reports-generation-note">
+
+                    <span>
+                        ✓
+                    </span>
+
+
+                    <p>
+                        <strong>Selected target:</strong>
+                        {{ selected_scan.target }}
+
+                        {% if selected_scan.scan_profile %}
+                            &nbsp;•&nbsp;
+                            <strong>Profile:</strong>
+                            {{ selected_scan.scan_profile }}
+                        {% endif %}
+
+                        {% if selected_scan.completed_at %}
+                            &nbsp;•&nbsp;
+                            <strong>Completed:</strong>
+                            {{ selected_scan.completed_at.strftime('%d %b %Y %H:%M') }}
+                        {% endif %}
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+        {% else %}
+
+            <div class="empty-state reports-empty-state">
+
+                <div class="empty-icon">
+                    ◎
+                </div>
+
+
+                <h4>
+                    No Completed Scans
+                </h4>
+
+
+                <p>
+                    Complete an authorized security scan before
+                    generating an assessment report.
+                </p>
+
+
+                <a
+                    href="{{ url_for('scan.scan_target') }}"
+                    class="secondary-button"
+                >
+                    Start New Scan
+                </a>
+
+            </div>
+
+        {% endif %}
 
     </section>
 
@@ -275,11 +425,11 @@ Generate and review security assessment reports
 
                     {% if total_assets|int > 0 %}
 
-                        Assets available for reporting
+                        Asset in selected scan
 
                     {% else %}
 
-                        No assets available for reporting
+                        No selected scan data available
 
                     {% endif %}
 
@@ -446,8 +596,8 @@ Generate and review security assessment reports
                 </h3>
 
                 <p>
-                    AttackLens combines the currently available security
-                    analysis data into one assessment report.
+                    AttackLens combines the security evidence from the
+                    selected completed scan into one assessment report.
                 </p>
 
             </div>
@@ -546,11 +696,11 @@ Generate and review security assessment reports
 
                         {% if has_risk_assessment %}
 
-                            Current asset risk data available
+                            Selected scan risk data available
 
                         {% else %}
 
-                            No current risk data available
+                            No selected scan risk data available
 
                         {% endif %}
 
@@ -814,8 +964,8 @@ Generate and review security assessment reports
                 </h3>
 
                 <p>
-                    Each generated AttackLens report is designed to
-                    summarize the complete security analysis workflow.
+                    Each generated AttackLens report summarizes the
+                    security analysis workflow for the selected scan.
                 </p>
 
             </div>
@@ -1046,8 +1196,8 @@ Generate and review security assessment reports
                 </h3>
 
                 <p>
-                    Create a PDF assessment from the latest
-                    available AttackLens analysis.
+                    Create a dedicated PDF assessment from the
+                    currently selected completed scan.
                 </p>
 
             </div>
@@ -1072,9 +1222,9 @@ Generate and review security assessment reports
 
 
                     <p>
-                        The generated PDF will contain the current
-                        security analysis and evidence available
-                        for your authorized environment.
+                        The generated PDF will contain security
+                        analysis and evidence associated with the
+                        selected scan only.
                     </p>
 
                 </div>
@@ -1091,14 +1241,25 @@ Generate and review security assessment reports
                 action="{{ url_for('report.generate_report') }}"
             >
 
+                {% if selected_scan %}
+
+                    <input
+                        type="hidden"
+                        name="scan_id"
+                        value="{{ selected_scan._id }}"
+                    >
+
+                {% endif %}
+
+
                 <button
                     type="submit"
                     class="primary-button reports-generate-button"
-                    {% if not report_generation_available %}
+                    {% if not report_generation_available or not selected_scan %}
                         disabled
                     {% endif %}
                 >
-                    Generate PDF Report
+                    Generate PDF for Selected Scan
                 </button>
 
             </form>
@@ -1119,17 +1280,18 @@ Generate and review security assessment reports
 
             <p>
 
-                {% if report_generation_available %}
+                {% if report_generation_available and selected_scan %}
 
-                    Report generation is ready.
-                    The PDF will use the latest available
-                    AttackLens security analysis for your
-                    authorized assets.
+                    Report generation is ready for
+                    {{ selected_scan.target }}.
+                    The PDF will contain data from this
+                    selected scan only.
 
                 {% else %}
 
                     Report generation will become available after
-                    security analysis data is available.
+                    a completed scan is selected and its security
+                    analysis data is available.
 
                 {% endif %}
 
@@ -1171,7 +1333,7 @@ Generate and review security assessment reports
             </div>
 
 
-            {% if report_generation_available %}
+            {% if report_generation_available and selected_scan %}
 
                 <h4>
                     Report Ready for Generation
@@ -1179,9 +1341,9 @@ Generate and review security assessment reports
 
 
                 <p>
-                    Your current security analysis is ready.
-                    Use the Generate PDF Report button above
-                    to create and download the latest
+                    The selected scan for {{ selected_scan.target }}
+                    is ready. Use the Generate PDF for Selected Scan
+                    button above to create and download its dedicated
                     AttackLens security assessment.
                 </p>
 
@@ -1243,8 +1405,8 @@ Generate and review security assessment reports
 
                 <p>
                     AttackLens reports summarize evidence collected
-                    from authorized scans and the analytical results
-                    produced by the platform. Reported attack paths,
+                    from the selected authorized scan and the analytical
+                    results produced by the platform. Reported attack paths,
                     defensive findings, mitigation recommendations,
                     and projected risk reductions are analytical
                     assessments and should be reviewed before
