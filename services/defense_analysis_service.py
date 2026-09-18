@@ -49,23 +49,35 @@ from models.defense_analysis_model import (
 # ==========================================
 
 SENSITIVE_PORTS = {
-    21,
-    22,
-    23,
-    25,
-    53,
-    110,
-    135,
-    139,
-    445,
-    1433,
-    1521,
-    3306,
-    3389,
-    5432,
-    5900,
-    6379,
-    27017
+    21,     # FTP
+    22,     # SSH
+    23,     # Telnet
+    25,     # SMTP
+    53,     # DNS
+    110,    # POP3
+    111,    # RPCBind
+    135,    # MSRPC
+    139,    # NetBIOS / SMB
+    445,    # SMB
+    512,    # rexec
+    513,    # rlogin
+    514,    # rsh
+    1099,   # Java RMI
+    1433,   # Microsoft SQL Server
+    1521,   # Oracle Database
+    1524,   # Bind shell / backdoor-style service
+    2049,   # NFS
+    2121,   # Alternate FTP
+    3306,   # MySQL
+    3389,   # RDP
+    5432,   # PostgreSQL
+    5900,   # VNC
+    6000,   # X11
+    6379,   # Redis
+    6667,   # IRC
+    8009,   # AJP
+    8180,   # Alternate HTTP / Tomcat
+    27017   # MongoDB
 }
 
 
@@ -642,6 +654,37 @@ def calculate_asset_edge_frequency(
                 )
             )
         )
+
+
+        relationship = (
+            normalize_string(
+                edge.get(
+                    "relationship"
+                )
+            )
+            .lower()
+        )
+
+
+        # A synthetic single-host entry edge exists only so the
+        # Attack Path engine can represent a potential path on
+        # one asset. It is not an inter-asset relationship and
+        # must not increase relationship/choke-point frequency.
+        if (
+            relationship
+            ==
+            "potential_single_asset_entry"
+            or
+            (
+                source
+                and
+                target
+                and
+                source == target
+            )
+        ):
+
+            continue
 
 
         for node_id in {
@@ -1292,6 +1335,27 @@ def generate_relationship_findings(
         )
 
 
+        # Synthetic single-host entry edges support legitimate
+        # one-asset attack-path representation, but they do not
+        # represent movement between distinct assets. Therefore
+        # they must never be labeled as defensive choke points.
+        if (
+            relationship.lower()
+            ==
+            "potential_single_asset_entry"
+            or
+            (
+                source
+                and
+                target
+                and
+                source == target
+            )
+        ):
+
+            continue
+
+
         confidence = (
             normalize_confidence(
                 edge.get(
@@ -1880,6 +1944,30 @@ def generate_path_findings(
         )
 
 
+        single_host_path = (
+            len(
+                set(
+                    asset_nodes
+                )
+            )
+            ==
+            1
+        )
+
+
+        path_description = (
+            "This generated single-host attack path represents "
+            "a potential entry or compromise path supported by "
+            "the analyzed asset evidence and contributes to "
+            "defensive prioritization."
+            if single_host_path
+            else
+            "This generated attack path represents potential "
+            "attacker progression across the analyzed environment "
+            "and contributes to defensive prioritization."
+        )
+
+
         finding = (
             create_defense_finding(
 
@@ -1896,10 +1984,7 @@ def generate_path_findings(
                 ),
 
                 description=(
-                    "This generated attack path represents "
-                    "potential attacker progression across "
-                    "the analyzed environment and contributes "
-                    "to defensive prioritization."
+                    path_description
                 ),
 
                 asset_id=(
@@ -2103,9 +2188,9 @@ def generate_defense_priorities(
             )
 
             reason = (
-                "The attack path contributes directly "
-                "to potential attacker progression across "
-                "the current environment."
+                "The attack path contributes directly to the "
+                "current attack-surface and potential attacker "
+                "progression risk."
             )
 
 
@@ -2353,6 +2438,7 @@ def normalize_criticality(
     if normalized in {
         "LOW",
         "NORMAL",
+        "MEDIUM",
         "HIGH",
         "CRITICAL"
     }:
@@ -2371,8 +2457,16 @@ def get_open_ports(
     asset
 ):
     """
-    Return unique currently open TCP/UDP
-    ports from an asset.
+    Return unique currently open TCP/UDP ports from an asset.
+
+    AttackLens may receive normalized scan evidence through
+    ``ports``, ``open_ports``, or ``services`` depending on
+    which stage produced the Asset document. Defense Analysis
+    accepts all three representations so it remains consistent
+    with the Attack Path engine.
+
+    Only records that can be supported as open services are
+    returned. This function does not invent ports or services.
     """
 
     if not isinstance(
@@ -2383,17 +2477,36 @@ def get_open_ports(
         return []
 
 
-    ports = (
-        asset.get(
-            "ports"
-        )
-    )
+    # ======================================
+    # COLLECT SUPPORTED PORT SOURCES
+    # ======================================
 
+    source_records = []
 
-    if not isinstance(
-        ports,
-        list
+    for field_name in (
+        "ports",
+        "open_ports",
+        "services"
     ):
+
+        value = asset.get(
+            field_name
+        )
+
+        if isinstance(
+            value,
+            list
+        ):
+
+            source_records.append(
+                (
+                    field_name,
+                    value
+                )
+            )
+
+
+    if not source_records:
 
         return []
 
@@ -2403,91 +2516,168 @@ def get_open_ports(
     seen = set()
 
 
-    for port_record in ports:
+    # ======================================
+    # NORMALIZE PORT RECORDS
+    # ======================================
 
-        if not isinstance(
-            port_record,
-            dict
-        ):
+    for field_name, records in source_records:
 
-            continue
+        for port_record in records:
 
+            # A normalized open_ports list may contain
+            # bare integer/string port numbers.
+            if not isinstance(
+                port_record,
+                dict
+            ):
 
-        state = (
-            normalize_string(
-                port_record.get(
-                    "state"
-                )
-            )
-            .lower()
-        )
+                if field_name != "open_ports":
 
+                    continue
 
-        if state != "open":
-
-            continue
-
-
-        port_number = (
-            normalize_port_number(
-                port_record.get(
-                    "port"
-                )
-            )
-        )
-
-
-        if port_number is None:
-
-            continue
-
-
-        protocol = (
-            normalize_string(
-                port_record.get(
-                    "protocol"
-                ),
-                default="tcp"
-            )
-            .lower()
-        )
-
-
-        key = (
-            protocol,
-            port_number
-        )
-
-
-        if key in seen:
-
-            continue
-
-
-        seen.add(
-            key
-        )
-
-
-        normalized.append({
-
-            "port":
-                port_number,
-
-            "protocol":
-                protocol,
-
-            "state":
-                "open",
-
-            "service":
-                normalize_string(
-                    port_record.get(
-                        "service"
+                port_number = (
+                    normalize_port_number(
+                        port_record
                     )
                 )
 
-        })
+                if port_number is None:
+
+                    continue
+
+                key = (
+                    "tcp",
+                    port_number
+                )
+
+                if key in seen:
+
+                    continue
+
+                seen.add(
+                    key
+                )
+
+                normalized.append({
+                    "port": port_number,
+                    "protocol": "tcp",
+                    "state": "open",
+                    "service": ""
+                })
+
+                continue
+
+
+            port_number = (
+                normalize_port_number(
+                    port_record.get(
+                        "port",
+                        port_record.get(
+                            "port_number"
+                        )
+                    )
+                )
+            )
+
+
+            if port_number is None:
+
+                continue
+
+
+            # ``ports`` normally contains explicit Nmap
+            # state. ``open_ports`` is open by definition.
+            # ``services`` is accepted when it represents
+            # a discovered service and either has no state
+            # field or explicitly says open.
+            raw_state = port_record.get(
+                "state"
+            )
+
+            state = (
+                normalize_string(
+                    raw_state
+                )
+                .lower()
+            )
+
+
+            if field_name == "ports":
+
+                if state != "open":
+
+                    continue
+
+            elif field_name == "open_ports":
+
+                if state and state != "open":
+
+                    continue
+
+                state = "open"
+
+            else:
+
+                if state and state != "open":
+
+                    continue
+
+                state = "open"
+
+
+            protocol = (
+                normalize_string(
+                    port_record.get(
+                        "protocol"
+                    ),
+                    default="tcp"
+                )
+                .lower()
+            )
+
+
+            if protocol not in {
+                "tcp",
+                "udp"
+            }:
+
+                protocol = "tcp"
+
+
+            service = (
+                normalize_string(
+                    port_record.get(
+                        "service",
+                        port_record.get(
+                            "name"
+                        )
+                    )
+                )
+            )
+
+
+            key = (
+                protocol,
+                port_number
+            )
+
+
+            if key in seen:
+
+                continue
+
+
+            seen.add(
+                key
+            )
+
+
+            normalized.append({
+                "port": port_number,
+                "protocol": protocol,
+                "state": "open",
+                "service": service
+            })
 
 
     normalized.sort(
@@ -2499,7 +2689,6 @@ def get_open_ports(
 
 
     return normalized
-
 
 # ==========================================
 # SENSITIVE OPEN PORTS
@@ -2557,8 +2746,12 @@ def get_vulnerability_count(
     asset
 ):
     """
-    Safely determine current vulnerability
-    count for an asset.
+    Safely determine current vulnerability count for an asset.
+
+    Active vulnerability records are preferred when present.
+    A stored vulnerability_count remains a valid fallback when
+    the Asset document does not contain populated vulnerability
+    records.
     """
 
     if not isinstance(
@@ -2576,9 +2769,13 @@ def get_vulnerability_count(
     )
 
 
-    if isinstance(
-        vulnerabilities,
-        list
+    if (
+        isinstance(
+            vulnerabilities,
+            list
+        )
+        and
+        vulnerabilities
     ):
 
         valid_count = 0
@@ -2624,7 +2821,6 @@ def get_vulnerability_count(
             "vulnerability_count"
         )
     )
-
 
 # ==========================================
 # NORMALIZE PORT NUMBER

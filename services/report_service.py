@@ -152,6 +152,10 @@ def build_report_asset_from_scan(
         "host_status": scan.get("host_status", "unknown"),
         "mac_address": scan.get("mac_address"),
         "ports": ports,
+        "open_ports": extract_open_port_numbers(
+            ports=ports,
+            services=services
+        ),
         "services": services,
         "os_detection": scan.get("os_detection"),
         "os_accuracy": scan.get("os_accuracy"),
@@ -212,6 +216,18 @@ def generate_report_data(
 
     attack_graph = normalize_document(
         attack_graph
+    )
+
+    # --------------------------------------------------------
+    # HUMAN-READABLE ASSET REFERENCES
+    # --------------------------------------------------------
+    #
+    # Graph analysis may use internal IDs. Keep those IDs for
+    # engine correctness, but attach presentation-only metadata
+    # so reports can display targets/hostnames instead.
+    attack_graph = attach_asset_reference_map(
+        attack_graph=attack_graph,
+        assets=assets
     )
 
     # --------------------------------------------------------
@@ -323,6 +339,178 @@ def generate_report_data(
         readiness=readiness,
         statistics=statistics
     )
+
+
+# ============================================================
+# REPORT PRESENTATION NORMALIZATION
+# ============================================================
+
+def attach_asset_reference_map(
+    attack_graph,
+    assets
+):
+    """
+    Attach presentation-only mappings from internal asset IDs
+    to human-readable targets/hostnames without changing graph
+    nodes, edges, paths, scores, or security conclusions.
+    """
+
+    attack_graph = normalize_document(
+        attack_graph
+    )
+
+    assets = normalize_assets(
+        assets
+    )
+
+    asset_references = {}
+
+    for asset in assets:
+
+        target = get_asset_target(
+            asset
+        )
+
+        hostname = str(
+            asset.get(
+                "hostname"
+            )
+            or
+            ""
+        ).strip()
+
+        if (
+            hostname
+            and target
+            and hostname.lower() == target.lower()
+        ):
+            hostname = ""
+
+        reference = {
+            "target": target,
+            "hostname": hostname or None
+        }
+
+        for key in (
+            "_id",
+            "scan_id",
+            "latest_scan_id"
+        ):
+
+            value = asset.get(
+                key
+            )
+
+            if value is None:
+                continue
+
+            normalized = str(
+                value
+            ).strip()
+
+            if normalized:
+                asset_references.setdefault(
+                    normalized,
+                    reference
+                )
+
+    normalized_graph = dict(
+        attack_graph
+    )
+
+    normalized_graph[
+        "asset_references"
+    ] = asset_references
+
+    return normalized_graph
+
+
+def extract_open_port_numbers(
+    ports=None,
+    services=None
+):
+    """
+    Normalize unique observed open port numbers from the
+    selected scan snapshot. No unobserved port is inferred.
+    """
+
+    open_ports = []
+    seen = set()
+
+    collections = (
+        ("ports", ports),
+        ("services", services)
+    )
+
+    for source_name, records in collections:
+
+        if not isinstance(
+            records,
+            list
+        ):
+            continue
+
+        for record in records:
+
+            if not isinstance(
+                record,
+                dict
+            ):
+                continue
+
+            state = str(
+                record.get(
+                    "state",
+                    ""
+                )
+            ).strip().lower()
+
+            if source_name == "ports":
+
+                if state != "open":
+                    continue
+
+            elif state and state != "open":
+
+                continue
+
+            port = (
+                record.get(
+                    "port"
+                )
+                if record.get(
+                    "port"
+                ) is not None
+                else record.get(
+                    "port_number"
+                )
+            )
+
+            try:
+                port = int(
+                    port
+                )
+            except (
+                TypeError,
+                ValueError
+            ):
+                continue
+
+            if not 1 <= port <= 65535:
+                continue
+
+            if port in seen:
+                continue
+
+            seen.add(
+                port
+            )
+
+            open_ports.append(
+                port
+            )
+
+    return open_ports
 
 
 # ============================================================

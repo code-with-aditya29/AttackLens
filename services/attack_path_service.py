@@ -52,13 +52,24 @@ SENSITIVE_PORTS = {
     135: "MSRPC",
     139: "NetBIOS",
     445: "SMB",
+    512: "rexec",
+    513: "rlogin",
+    514: "rsh",
+    1099: "Java RMI",
     1433: "Microsoft SQL Server",
+    1524: "Bind Shell",
     1521: "Oracle Database",
+    2049: "NFS",
+    2121: "FTP / ProFTPD",
     3306: "MySQL",
     3389: "RDP",
     5432: "PostgreSQL",
     5900: "VNC",
+    6000: "X11",
     6379: "Redis",
+    6667: "IRC",
+    8009: "AJP13",
+    8180: "HTTP / Tomcat",
     27017: "MongoDB"
 }
 
@@ -279,6 +290,32 @@ def generate_attack_graph(
 
     edges.extend(
         relationship_edges
+    )
+
+
+    # ======================================
+    # SINGLE-ASSET ATTACK-SURFACE EDGES
+    # ======================================
+    #
+    # An attack path does not always require
+    # two different assets. A single host can
+    # expose an evidence-supported potential
+    # attack path through vulnerable or
+    # security-sensitive services.
+    #
+    # These self-contained relationships are
+    # explicitly POTENTIAL and do not claim
+    # successful exploitation.
+    # ======================================
+
+    single_asset_edges = (
+        generate_single_asset_attack_edges(
+            normalized_assets
+        )
+    )
+
+    edges.extend(
+        single_asset_edges
     )
 
 
@@ -675,11 +712,7 @@ def build_asset_node(
     # OPEN PORTS
     # ======================================
 
-    open_ports = get_open_ports(
-        asset.get(
-            "ports"
-        )
-    )
+    open_ports = get_asset_open_ports(asset)
 
 
     # ======================================
@@ -852,6 +885,180 @@ def generate_external_entry_edges(
 
 
 # ==========================================
+# GENERATE SINGLE-ASSET ATTACK EDGES
+# ==========================================
+
+def generate_single_asset_attack_edges(
+    assets
+):
+    """
+    Create evidence-supported potential attack
+    relationships for individual assets.
+
+    This allows AttackLens to represent a
+    meaningful attack path for one scanned host
+    without requiring an unrelated second asset.
+
+    A path is created only when the host has open
+    ports and at least one meaningful security
+    indicator such as a sensitive service, a
+    vulnerability finding, or HIGH/CRITICAL risk.
+
+    The relationship remains POTENTIAL. It does
+    not prove exploitation or compromise.
+    """
+
+    edges = []
+
+    for asset in normalize_list(assets):
+
+        if not isinstance(
+            asset,
+            dict
+        ):
+
+            continue
+
+        asset_id = asset.get(
+            "_id"
+        )
+
+        if asset_id is None:
+
+            continue
+
+        open_ports = get_asset_open_ports(asset)
+
+        if not open_ports:
+
+            continue
+
+
+        # A single scanned host is a valid unit of attack-path
+        # analysis.  We do not require an unrelated second asset.
+        # The path is based only on evidence present on this host.
+
+        sensitive_ports = (
+            get_sensitive_open_ports(
+                asset
+            )
+        )
+
+        vulnerability_count = (
+            get_vulnerability_count(
+                asset
+            )
+        )
+
+        risk_level = normalize_risk_level(
+            asset.get(
+                "risk_level"
+            )
+        )
+
+        meaningful_security_evidence = (
+            bool(
+                sensitive_ports
+            )
+            or
+            vulnerability_count > 0
+            or
+            risk_level in (
+                "HIGH",
+                "CRITICAL"
+            )
+        )
+
+        if not meaningful_security_evidence:
+
+            continue
+
+        evidence = [
+            "Asset exposes one or more open network services."
+        ]
+
+        if sensitive_ports:
+
+            evidence.append(
+                "Asset exposes security-sensitive service port(s): "
+                +
+                ", ".join(
+                    str(port)
+                    for port in sensitive_ports
+                )
+                +
+                "."
+            )
+
+        if vulnerability_count > 0:
+
+            evidence.append(
+                f"Asset currently contains {vulnerability_count} "
+                f"security finding(s)."
+            )
+
+        if risk_level in (
+            "HIGH",
+            "CRITICAL"
+        ):
+
+            evidence.append(
+                f"Current asset risk level is {risk_level}."
+            )
+
+        evidence.append(
+            "Relationship represents a potential single-host attack path; "
+            "successful exploitation has not been verified."
+        )
+
+        if (
+            vulnerability_count > 0
+            and
+            sensitive_ports
+        ):
+
+            confidence = "HIGH"
+
+        elif (
+            vulnerability_count > 0
+            or
+            sensitive_ports
+        ):
+
+            confidence = "MEDIUM"
+
+        else:
+
+            confidence = "LOW"
+
+        score = calculate_asset_attack_score(
+            asset,
+            confidence=confidence
+        )
+
+        edge = create_attack_edge(
+            edge_id=(
+                "single-asset-entry:"
+                f"{asset_id}"
+            ),
+            source=asset_id,
+            target=asset_id,
+            relationship=(
+                "potential_single_asset_entry"
+            ),
+            confidence=confidence,
+            score=score,
+            evidence=evidence
+        )
+
+        edges.append(
+            edge
+        )
+
+    return edges
+
+
+# ==========================================
 # EXTRACT ENTRY EVIDENCE
 # ==========================================
 
@@ -879,11 +1086,7 @@ def extract_entry_evidence(
     # OPEN PORTS
     # ======================================
 
-    open_ports = get_open_ports(
-        asset.get(
-            "ports"
-        )
-    )
+    open_ports = get_asset_open_ports(asset)
 
 
     if open_ports:
@@ -1053,11 +1256,7 @@ def calculate_entry_confidence(
         return "UNKNOWN"
 
 
-    open_ports = get_open_ports(
-        asset.get(
-            "ports"
-        )
-    )
+    open_ports = get_asset_open_ports(asset)
 
     vulnerabilities = (
         get_vulnerability_count(
@@ -1276,11 +1475,7 @@ def evaluate_asset_relationship(
     # ======================================
 
     target_open_ports = (
-        get_open_ports(
-            target.get(
-                "ports"
-            )
-        )
+        get_asset_open_ports(target)
     )
 
 
@@ -1393,11 +1588,7 @@ def evaluate_asset_relationship(
     # ======================================
 
     source_open_ports = (
-        get_open_ports(
-            source.get(
-                "ports"
-            )
-        )
+        get_asset_open_ports(source)
     )
 
     source_vulnerability_count = (
@@ -1831,12 +2022,15 @@ def discover_attack_paths(
     """
     Discover potential directed attack paths.
 
-    Current baseline:
-    - Paths begin from External Attacker.
-    - Internal-only isolated assets do not
-      become fabricated paths.
-    - Cycles are prevented.
-    - Traversal depth is limited.
+    Supported path types:
+    - External Attacker -> externally exposed asset.
+    - External Attacker -> asset -> potential pivots.
+    - Single-asset evidence-supported paths for an
+      individual scanned host.
+
+    Internal assets therefore no longer require an
+    unrelated second asset merely to produce a path.
+    Cycles are prevented and traversal depth is limited.
     """
 
     if not isinstance(
@@ -1846,7 +2040,6 @@ def discover_attack_paths(
 
         return []
 
-
     if not isinstance(
         edges,
         list
@@ -1854,15 +2047,9 @@ def discover_attack_paths(
 
         return []
 
-
     if asset_lookup is None:
 
         asset_lookup = {}
-
-
-    # ======================================
-    # REQUIRE EXTERNAL ATTACKER
-    # ======================================
 
     node_ids = {
         str(
@@ -1880,18 +2067,19 @@ def discover_attack_paths(
         ) is not None
     }
 
-
-    if "external-attacker" not in node_ids:
-
-        return []
-
+    paths = []
 
     # ======================================
-    # BUILD ADJACENCY MAP
+    # SINGLE-ASSET PATHS
+    # ======================================
+    #
+    # A self-contained edge represents an
+    # evidence-supported potential path on one
+    # host. Build it directly rather than trying
+    # to traverse the self-loop as lateral movement.
     # ======================================
 
-    adjacency = {}
-
+    traversal_edges = []
 
     for edge in edges:
 
@@ -1902,6 +2090,12 @@ def discover_attack_paths(
 
             continue
 
+        relationship = str(
+            edge.get(
+                "relationship",
+                ""
+            )
+        ).strip()
 
         source = str(
             edge.get(
@@ -1917,192 +2111,213 @@ def discover_attack_paths(
             )
         ).strip()
 
-
         if (
-            not source
-            or
-            not target
+            relationship
+            ==
+            "potential_single_asset_entry"
         ):
+
+            if (
+                source
+                and
+                source == target
+                and
+                source in node_ids
+            ):
+
+                path = build_attack_path(
+                    [
+                        source
+                    ],
+                    [
+                        edge
+                    ],
+                    asset_lookup
+                )
+
+                if path is not None:
+
+                    paths.append(
+                        path
+                    )
 
             continue
 
-
-        adjacency.setdefault(
-            source,
-            []
-        ).append(
+        traversal_edges.append(
             edge
         )
 
-
     # ======================================
-    # DETERMINISTIC EDGE ORDER
+    # EXTERNAL / MULTI-ASSET TRAVERSAL
     # ======================================
 
-    for source in adjacency:
+    if "external-attacker" in node_ids:
 
-        adjacency[source].sort(
-            key=lambda edge: (
-                -normalize_score(
-                    edge.get(
-                        "score"
-                    )
-                ),
-                str(
-                    edge.get(
-                        "target",
-                        ""
-                    )
+        adjacency = {}
+
+        for edge in traversal_edges:
+
+            source = str(
+                edge.get(
+                    "source",
+                    ""
                 )
-            )
-        )
-
-
-    paths = []
-
-
-    # ======================================
-    # DEPTH-FIRST SEARCH
-    # ======================================
-
-    def walk(
-        current_node,
-        node_path,
-        edge_path,
-        visited
-    ):
-
-        if len(
-            edge_path
-        ) >= max_depth:
-
-            if edge_path:
-
-                path = build_attack_path(
-                    node_path,
-                    edge_path,
-                    asset_lookup
-                )
-
-                if path is not None:
-
-                    paths.append(
-                        path
-                    )
-
-            return
-
-
-        outgoing_edges = adjacency.get(
-            current_node,
-            []
-        )
-
-
-        # ==================================
-        # LEAF NODE
-        # ==================================
-
-        if not outgoing_edges:
-
-            if edge_path:
-
-                path = build_attack_path(
-                    node_path,
-                    edge_path,
-                    asset_lookup
-                )
-
-                if path is not None:
-
-                    paths.append(
-                        path
-                    )
-
-            return
-
-
-        extended = False
-
-
-        for edge in outgoing_edges:
+            ).strip()
 
             target = str(
                 edge.get(
                     "target",
                     ""
                 )
-            )
+            ).strip()
 
-
-            if target in visited:
+            if (
+                not source
+                or
+                not target
+            ):
 
                 continue
 
-
-            extended = True
-
-
-            walk(
-
-                target,
-
-                node_path
-                +
-                [
-                    target
-                ],
-
-                edge_path
-                +
-                [
-                    edge
-                ],
-
-                visited
-                |
-                {
-                    target
-                }
-
+            adjacency.setdefault(
+                source,
+                []
+            ).append(
+                edge
             )
 
+        for source in adjacency:
 
-        if (
-            not extended
-            and
-            edge_path
+            adjacency[source].sort(
+                key=lambda edge: (
+                    -normalize_score(
+                        edge.get(
+                            "score"
+                        )
+                    ),
+                    str(
+                        edge.get(
+                            "target",
+                            ""
+                        )
+                    )
+                )
+            )
+
+        def walk(
+            current_node,
+            node_path,
+            edge_path,
+            visited
         ):
 
-            path = build_attack_path(
-                node_path,
-                edge_path,
-                asset_lookup
+            if len(
+                edge_path
+            ) >= max_depth:
+
+                if edge_path:
+
+                    path = build_attack_path(
+                        node_path,
+                        edge_path,
+                        asset_lookup
+                    )
+
+                    if path is not None:
+
+                        paths.append(
+                            path
+                        )
+
+                return
+
+            outgoing_edges = adjacency.get(
+                current_node,
+                []
             )
 
-            if path is not None:
+            if not outgoing_edges:
 
-                paths.append(
-                    path
+                if edge_path:
+
+                    path = build_attack_path(
+                        node_path,
+                        edge_path,
+                        asset_lookup
+                    )
+
+                    if path is not None:
+
+                        paths.append(
+                            path
+                        )
+
+                return
+
+            extended = False
+
+            for edge in outgoing_edges:
+
+                target = str(
+                    edge.get(
+                        "target",
+                        ""
+                    )
                 )
 
+                if target in visited:
 
-    walk(
+                    continue
 
-        "external-attacker",
+                extended = True
 
-        [
-            "external-attacker"
-        ],
+                walk(
+                    target,
+                    node_path
+                    +
+                    [
+                        target
+                    ],
+                    edge_path
+                    +
+                    [
+                        edge
+                    ],
+                    visited
+                    |
+                    {
+                        target
+                    }
+                )
 
-        [],
+            if (
+                not extended
+                and
+                edge_path
+            ):
 
-        {
-            "external-attacker"
-        }
+                path = build_attack_path(
+                    node_path,
+                    edge_path,
+                    asset_lookup
+                )
 
-    )
+                if path is not None:
 
+                    paths.append(
+                        path
+                    )
+
+        walk(
+            "external-attacker",
+            [
+                "external-attacker"
+            ],
+            [],
+            {
+                "external-attacker"
+            }
+        )
 
     return deduplicate_paths(
         paths
@@ -2797,6 +3012,71 @@ def get_open_ports(
 
 
 # ==========================================
+# GET ASSET OPEN PORTS
+# ==========================================
+
+def get_asset_open_ports(asset):
+    """
+    Return open-port records from an Asset document.
+
+    AttackLens has evolved across scan/asset versions, so
+    network evidence may be stored in ``ports``, ``services``
+    or ``open_ports``.  The attack-path engine accepts all
+    three representations and merges them conservatively.
+
+    This prevents a valid single-host attack path from being
+    missed merely because the Asset document uses a different
+    scan-result field name.
+    """
+
+    if not isinstance(asset, dict):
+        return []
+
+    candidates = []
+
+    # Primary/current representation.
+    candidates.extend(normalize_list(asset.get("ports")))
+
+    # Some scan snapshots store service records directly.
+    candidates.extend(normalize_list(asset.get("services")))
+
+    # Compatibility with assets that store only port numbers
+    # or compact open-port dictionaries.
+    raw_open_ports = normalize_list(asset.get("open_ports"))
+
+    for item in raw_open_ports:
+        if isinstance(item, dict):
+            record = dict(item)
+            record.setdefault("state", "open")
+            candidates.append(record)
+        else:
+            port_number = normalize_port_number(item)
+            if port_number is not None:
+                candidates.append({
+                    "port": port_number,
+                    "protocol": "tcp",
+                    "state": "open"
+                })
+
+    # Service records produced by some Nmap parsers do not
+    # repeat state because only open services are persisted.
+    normalized_candidates = []
+
+    for item in candidates:
+        if not isinstance(item, dict):
+            continue
+
+        record = dict(item)
+
+        if record.get("state") in (None, ""):
+            record["state"] = "open"
+
+        normalized_candidates.append(record)
+
+    return get_open_ports(normalized_candidates)
+
+
+# ==========================================
 # GET SENSITIVE OPEN PORTS
 # ==========================================
 
@@ -2808,11 +3088,7 @@ def get_sensitive_open_ports(
     an Asset document.
     """
 
-    open_ports = get_open_ports(
-        asset.get(
-            "ports"
-        )
-    )
+    open_ports = get_asset_open_ports(asset)
 
 
     sensitive = []

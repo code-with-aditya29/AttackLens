@@ -1191,6 +1191,13 @@ def build_attack_path_section(
     paths = get_list(attack_graph, "paths")
     relationships = get_list(attack_graph, "relationships")
 
+    # Build a presentation-only lookup so attack-path node IDs can be
+    # rendered as human-readable asset targets in the PDF.
+    assets = sections.get("assets")
+    if not isinstance(assets, list):
+        assets = []
+    asset_lookup = build_asset_display_lookup(assets)
+
     relationship_count = len(relationships)
     path_count = len(paths)
 
@@ -1245,7 +1252,7 @@ def build_attack_path_section(
     for index, path_data in enumerate(paths, start=1):
         if not isinstance(path_data, dict):
             continue
-        path_text = format_attack_path(path_data)
+        path_text = format_attack_path(path_data, asset_lookup=asset_lookup)
         score = safe_number(path_data.get("score", path_data.get("risk_score", 0)))
         level = safe_risk_level(
             path_data.get("risk_level", determine_risk_level(score))
@@ -3426,86 +3433,104 @@ def get_finding_score(
 # ATTACK PATH HELPERS
 # ============================================================
 
+def build_asset_display_lookup(assets):
+    """
+    Build a presentation-only mapping from internal asset identifiers
+    to human-readable targets.
+
+    The PDF must never expose MongoDB/ObjectId-style identifiers when
+    the corresponding asset target is available in the report scope.
+    """
+
+    lookup = {}
+
+    if not isinstance(assets, list):
+        return lookup
+
+    for asset in assets:
+        if not isinstance(asset, dict):
+            continue
+
+        target = get_asset_target(asset)
+        if not target or target == "Unknown asset":
+            continue
+
+        # Map the target to itself as well as every common asset-ID field.
+        lookup[str(target)] = str(target)
+
+        for key in ("_id", "id", "asset_id"):
+            identifier = safe_text(asset.get(key))
+            if identifier:
+                lookup[identifier] = str(target)
+
+    return lookup
+
+
 def format_attack_path(
-    path_data
+    path_data,
+    asset_lookup=None
 ):
     """
-    Format attack-path node progression.
+    Format attack-path node progression for human-readable PDF output.
+
+    Internal asset identifiers are translated to report-scope targets
+    whenever possible. Single-host synthetic paths are displayed once
+    instead of as an ID-to-same-ID self loop.
     """
 
-    if not isinstance(
-        path_data,
-        dict
-    ):
-
+    if not isinstance(path_data, dict):
         return "Unknown path"
 
-    for key in (
-        "path",
-        "nodes",
-        "asset_ids",
-        "targets"
-    ):
+    if not isinstance(asset_lookup, dict):
+        asset_lookup = {}
 
-        value = path_data.get(
-            key
-        )
+    def display_node(item):
+        if isinstance(item, dict):
+            target = get_asset_target(item)
+            if target and target != "Unknown asset":
+                return target
 
-        if isinstance(
-            value,
-            list
-        ) and value:
+            for key in ("_id", "id", "asset_id"):
+                identifier = safe_text(item.get(key))
+                if identifier:
+                    return asset_lookup.get(identifier, identifier)
 
+            return ""
+
+        normalized = safe_text(item)
+        if not normalized:
+            return ""
+
+        return asset_lookup.get(normalized, normalized)
+
+    for key in ("path", "nodes", "asset_ids", "targets"):
+        value = path_data.get(key)
+
+        if isinstance(value, list) and value:
             result = []
 
             for item in value:
-
-                if isinstance(
-                    item,
-                    dict
-                ):
-
-                    result.append(
-                        get_asset_target(
-                            item
-                        )
-                    )
-
-                else:
-
-                    normalized = safe_text(
-                        item
-                    )
-
-                    if normalized:
-
-                        result.append(
-                            normalized
-                        )
+                display = display_node(item)
+                if display and (not result or result[-1] != display):
+                    result.append(display)
 
             if result:
+                if len(result) == 1:
+                    return f"{result[0]} (single-host potential entry path)"
 
-                return " -> ".join(
-                    result
-                )
+                return " -> ".join(result)
 
-    source = safe_text(
-        path_data.get(
-            "source"
-        )
-    )
-
-    target = safe_text(
-        path_data.get(
-            "target"
-        )
-    )
+    source = display_node(path_data.get("source"))
+    target = display_node(path_data.get("target"))
 
     if source and target:
+        if source == target:
+            return f"{source} (single-host potential entry path)"
 
-        return (
-            f"{source} -> {target}"
-        )
+        return f"{source} -> {target}"
+
+    if source or target:
+        return source or target
 
     return "Potential attack path"
 
@@ -3778,6 +3803,7 @@ def get_priority(
         return "LOW"
 
     for key in (
+        "priority_level",
         "priority",
         "severity",
         "risk_level"

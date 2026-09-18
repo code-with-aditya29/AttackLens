@@ -29,23 +29,35 @@ from models.mitigation_model import (
 
 SENSITIVE_PORTS = {
 
-    21,
-    22,
-    23,
-    25,
-    53,
-    110,
-    135,
-    139,
-    445,
-    1433,
-    1521,
-    3306,
-    3389,
-    5432,
-    5900,
-    6379,
-    27017
+    21,     # FTP
+    22,     # SSH
+    23,     # Telnet
+    25,     # SMTP
+    53,     # DNS
+    110,    # POP3
+    111,    # RPCBind
+    135,    # MSRPC
+    139,    # NetBIOS / SMB
+    445,    # SMB
+    512,    # rexec
+    513,    # rlogin
+    514,    # rsh
+    1099,   # Java RMI
+    1433,   # Microsoft SQL Server
+    1521,   # Oracle Database
+    1524,   # Bind shell / backdoor-style service
+    2049,   # NFS
+    2121,   # Alternate FTP
+    3306,   # MySQL
+    3389,   # RDP
+    5432,   # PostgreSQL
+    5900,   # VNC
+    6000,   # X11
+    6379,   # Redis
+    6667,   # IRC
+    8009,   # AJP
+    8180,   # Alternate HTTP / Tomcat
+    27017   # MongoDB
 }
 
 
@@ -404,8 +416,13 @@ def build_defense_score_index(
     defense_analysis
 ):
     """
-    Build highest known defensive significance
-    score for each target.
+    Build the highest known defensive significance
+    score for each asset.
+
+    Scores are indexed by both human-readable target
+    and internal asset ID. This prevents priority loss
+    when Defense Analysis represents an item by asset_id
+    while Mitigation works from the asset target.
     """
 
     scores = {}
@@ -433,17 +450,6 @@ def build_defense_score_index(
 
             continue
 
-        target = str(
-            item.get(
-                "target",
-                ""
-            )
-        ).strip()
-
-        if not target:
-
-            continue
-
         score = normalize_score(
             item.get(
                 "score",
@@ -451,17 +457,96 @@ def build_defense_score_index(
             )
         )
 
-        scores[
-            target
-        ] = max(
-            scores.get(
-                target,
-                0
-            ),
-            score
-        )
+        keys = []
+
+        target = str(
+            item.get(
+                "target",
+                ""
+            )
+            or
+            ""
+        ).strip()
+
+        asset_id = str(
+            item.get(
+                "asset_id",
+                ""
+            )
+            or
+            ""
+        ).strip()
+
+        if target:
+
+            keys.append(
+                target
+            )
+
+        if asset_id:
+
+            keys.append(
+                asset_id
+            )
+
+        for key in keys:
+
+            scores[
+                key
+            ] = max(
+                scores.get(
+                    key,
+                    0
+                ),
+                score
+            )
 
     return scores
+
+# ==========================================
+# GET ASSET DEFENSE SCORE
+# ==========================================
+
+def get_asset_defense_score(
+    asset,
+    defense_scores
+):
+    """
+    Return the highest Defense Analysis score
+    associated with an asset by target or asset ID.
+    """
+
+    if not isinstance(
+        defense_scores,
+        dict
+    ):
+
+        return 0
+
+    target = get_asset_target(
+        asset
+    )
+
+    asset_id = get_asset_id(
+        asset
+    )
+
+    return normalize_score(
+        max(
+            defense_scores.get(
+                target,
+                0
+            )
+            if target
+            else 0,
+            defense_scores.get(
+                asset_id,
+                0
+            )
+            if asset_id
+            else 0
+        )
+    )
 
 
 # ==========================================
@@ -512,11 +597,9 @@ def generate_sensitive_service_recommendations(
             )
         )
 
-        defense_score = normalize_score(
-            defense_scores.get(
-                target,
-                0
-            )
+        defense_score = get_asset_defense_score(
+            asset,
+            defense_scores
         )
 
         score = normalize_score(
@@ -694,11 +777,9 @@ def generate_external_exposure_recommendations(
             )
         )
 
-        defense_score = normalize_score(
-            defense_scores.get(
-                target,
-                0
-            )
+        defense_score = get_asset_defense_score(
+            asset,
+            defense_scores
         )
 
         score = normalize_score(
@@ -855,11 +936,9 @@ def generate_vulnerability_recommendations(
             )
         )
 
-        defense_score = normalize_score(
-            defense_scores.get(
-                target,
-                0
-            )
+        defense_score = get_asset_defense_score(
+            asset,
+            defense_scores
         )
 
         severity_score = {
@@ -1062,6 +1141,25 @@ def generate_relationship_recommendations(
         )
 
         if not is_relationship:
+
+            continue
+
+        # A single-host synthetic relationship represents
+        # an exposed attack surface, not evidence of lateral
+        # reachability between two distinct assets. Service
+        # and attack-path recommendations handle that case.
+        finding_type_normalized = finding_type
+
+        if (
+            "single_asset"
+            in finding_type_normalized
+            or
+            "single-host"
+            in title
+            or
+            "single host"
+            in title
+        ):
 
             continue
 
@@ -1291,9 +1389,30 @@ def generate_attack_path_recommendations(
             target_asset
         )
 
+        asset_risk_score = normalize_risk_score(
+            target_asset.get(
+                "risk_score"
+            )
+        )
+
+        defense_score = get_asset_defense_score(
+            target_asset,
+            build_defense_score_index(
+                defense_analysis
+            )
+        )
+
+        recommendation_score = normalize_score(
+            max(
+                path_score,
+                asset_risk_score,
+                defense_score
+            )
+        )
+
         priority_level = (
             determine_priority_level(
-                path_score
+                recommendation_score
             )
         )
 
@@ -1311,6 +1430,22 @@ def generate_attack_path_recommendations(
                 f"is {path_score}/100."
             )
         )
+
+        evidence.append(
+            (
+                "Affected asset risk score "
+                f"is {asset_risk_score}/100."
+            )
+        )
+
+        if defense_score > 0:
+
+            evidence.append(
+                (
+                    "Highest associated Defense Analysis "
+                    f"score is {defense_score}/100."
+                )
+            )
 
         recommendation = (
             create_mitigation_recommendation(
@@ -1343,7 +1478,7 @@ def generate_attack_path_recommendations(
                     priority_level,
 
                 score=
-                    path_score,
+                    recommendation_score,
 
                 confidence=
                     confidence,
@@ -1439,6 +1574,11 @@ def get_open_ports(
 ):
     """
     Return directly observed open TCP/UDP ports.
+
+    Accepts AttackLens Asset evidence stored under
+    ports, open_ports, or services so Mitigation uses
+    the same observed service surface as Attack Path
+    and Defense Analysis.
     """
 
     if not isinstance(
@@ -1448,59 +1588,98 @@ def get_open_ports(
 
         return []
 
-    ports = asset.get(
-        "ports"
-    )
+    source_records = []
 
-    if not isinstance(
-        ports,
-        list
+    for field_name in (
+        "ports",
+        "open_ports",
+        "services"
     ):
 
-        return []
+        value = asset.get(
+            field_name
+        )
 
-    open_ports = []
-
-    for port_data in ports:
-
-        if not isinstance(
-            port_data,
-            dict
+        if isinstance(
+            value,
+            list
         ):
 
-            continue
-
-        state = str(
-            port_data.get(
-                "state",
-                ""
+            source_records.append(
+                (
+                    field_name,
+                    value
+                )
             )
-        ).strip().lower()
 
-        if state != "open":
+    open_ports = set()
 
-            continue
+    for field_name, records in source_records:
 
-        port = normalize_port_number(
-            port_data.get(
-                "port"
+        for port_data in records:
+
+            if isinstance(
+                port_data,
+                dict
+            ):
+
+                state = str(
+                    port_data.get(
+                        "state",
+                        ""
+                    )
+                    or
+                    ""
+                ).strip().lower()
+
+                if (
+                    field_name == "ports"
+                    and
+                    state != "open"
+                ):
+
+                    continue
+
+                if (
+                    field_name != "ports"
+                    and
+                    state
+                    and
+                    state != "open"
+                ):
+
+                    continue
+
+                port = normalize_port_number(
+                    port_data.get(
+                        "port",
+                        port_data.get(
+                            "port_number"
+                        )
+                    )
+                )
+
+            else:
+
+                if field_name != "open_ports":
+
+                    continue
+
+                port = normalize_port_number(
+                    port_data
+                )
+
+            if port is None:
+
+                continue
+
+            open_ports.add(
+                port
             )
-        )
-
-        if port is None:
-
-            continue
-
-        open_ports.append(
-            port
-        )
 
     return sorted(
-        set(
-            open_ports
-        )
+        open_ports
     )
-
 
 # ==========================================
 # GET SENSITIVE OPEN PORTS
@@ -1554,15 +1733,38 @@ def get_vulnerabilities(
 
         return []
 
-    return [
-        vulnerability
-        for vulnerability
-        in vulnerabilities
-        if isinstance(
+    current = []
+
+    for vulnerability in vulnerabilities:
+
+        if not isinstance(
             vulnerability,
             dict
+        ):
+
+            continue
+
+        status = str(
+            vulnerability.get(
+                "status",
+                "potential"
+            )
+            or
+            "potential"
+        ).strip().lower()
+
+        if status in {
+            "resolved",
+            "rejected"
+        }:
+
+            continue
+
+        current.append(
+            vulnerability
         )
-    ]
+
+    return current
 
 
 # ==========================================

@@ -39,23 +39,35 @@ from models.risk_comparison_model import (
 # ==========================================
 
 SENSITIVE_PORTS = {
-    21,
-    22,
-    23,
-    25,
-    53,
-    110,
-    135,
-    139,
-    445,
-    1433,
-    1521,
-    3306,
-    3389,
-    5432,
-    5900,
-    6379,
-    27017
+    21,     # FTP
+    22,     # SSH
+    23,     # Telnet
+    25,     # SMTP
+    53,     # DNS
+    110,    # POP3
+    111,    # RPCBind
+    135,    # MSRPC
+    139,    # NetBIOS / SMB
+    445,    # SMB
+    512,    # rexec
+    513,    # rlogin
+    514,    # rsh
+    1099,   # Java RMI
+    1433,   # Microsoft SQL Server
+    1521,   # Oracle Database
+    1524,   # Bind shell / backdoor-style service
+    2049,   # NFS
+    2121,   # Alternate FTP
+    3306,   # MySQL
+    3389,   # RDP
+    5432,   # PostgreSQL
+    5900,   # VNC
+    6000,   # X11
+    6379,   # Redis
+    6667,   # IRC
+    8009,   # AJP
+    8180,   # Alternate HTTP / Tomcat
+    27017   # MongoDB
 }
 
 
@@ -1238,74 +1250,58 @@ def get_asset_open_ports(
 
         return []
 
-
-    ports = asset.get(
-        "ports",
-        []
-    )
-
-
-    if not isinstance(
-        ports,
-        list
-    ):
-
-        return []
-
+    # Keep this extractor aligned with the other AttackLens analysis
+    # engines. Scan-derived assets may expose port evidence through
+    # ``ports``, ``open_ports``, or ``services`` depending on the
+    # normalization stage that produced the report snapshot.
+    sources = [
+        (asset.get("ports", []), True),
+        (asset.get("open_ports", []), False),
+        (asset.get("services", []), False),
+    ]
 
     open_ports = []
-
     seen = set()
 
+    for records, require_explicit_open in sources:
 
-    for port_data in ports:
-
-        if not isinstance(
-            port_data,
-            dict
-        ):
-
+        if not isinstance(records, list):
             continue
 
+        for port_data in records:
 
-        state = str(
-            port_data.get(
-                "state",
-                ""
+            if isinstance(port_data, (int, str)):
+                port = normalize_port_number(port_data)
+                if port is None or port in seen:
+                    continue
+                seen.add(port)
+                open_ports.append(port)
+                continue
+
+            if not isinstance(port_data, dict):
+                continue
+
+            state = str(
+                port_data.get("state", "")
+            ).strip().lower()
+
+            if require_explicit_open:
+                if state != "open":
+                    continue
+            elif state and state != "open":
+                continue
+
+            port = normalize_port_number(
+                port_data.get("port")
+                if port_data.get("port") is not None
+                else port_data.get("portid")
             )
-        ).strip().lower()
 
+            if port is None or port in seen:
+                continue
 
-        if state != "open":
-
-            continue
-
-
-        port = normalize_port_number(
-            port_data.get(
-                "port"
-            )
-        )
-
-
-        if port is None:
-
-            continue
-
-
-        if port in seen:
-
-            continue
-
-
-        seen.add(
-            port
-        )
-
-        open_ports.append(
-            port
-        )
-
+            seen.add(port)
+            open_ports.append(port)
 
     return open_ports
 
