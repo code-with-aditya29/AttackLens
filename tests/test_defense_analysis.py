@@ -2214,8 +2214,20 @@ class TestDefenseAnalysisEngine(
             self.low_risk_asset
         )
 
+        # Remove every supported source of open-port evidence.
+        # get_open_ports() intentionally supports ports, open_ports,
+        # and services, so this test must invalidate all three sources
+        # before expecting an empty result.
         asset[
             "ports"
+        ] = None
+
+        asset[
+            "open_ports"
+        ] = None
+
+        asset[
+            "services"
         ] = None
 
         self.assertEqual(

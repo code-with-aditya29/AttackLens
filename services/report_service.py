@@ -219,18 +219,6 @@ def generate_report_data(
     )
 
     # --------------------------------------------------------
-    # HUMAN-READABLE ASSET REFERENCES
-    # --------------------------------------------------------
-    #
-    # Graph analysis may use internal IDs. Keep those IDs for
-    # engine correctness, but attach presentation-only metadata
-    # so reports can display targets/hostnames instead.
-    attack_graph = attach_asset_reference_map(
-        attack_graph=attack_graph,
-        assets=assets
-    )
-
-    # --------------------------------------------------------
     # DEFENSE ANALYSIS
     # --------------------------------------------------------
 
@@ -287,6 +275,18 @@ def generate_report_data(
 
     risk_comparison = normalize_document(
         risk_comparison
+    )
+
+    # --------------------------------------------------------
+    # HUMAN-READABLE ASSET REFERENCES
+    # --------------------------------------------------------
+    #
+    # Keep presentation-only metadata out of the analysis
+    # pipeline. Attach it only after all analysis modules have
+    # consumed the original normalized attack graph.
+    attack_graph = attach_asset_reference_map(
+        attack_graph=attack_graph,
+        assets=assets
     )
 
     # --------------------------------------------------------

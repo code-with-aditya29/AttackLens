@@ -2444,12 +2444,37 @@ def build_attack_path(
 
         if relationship:
 
-            evidence.append(
-
-                f"{source} -> {target}: "
-                f"{relationship}"
-
+            source_label = get_human_readable_node_label(
+                source,
+                asset_lookup
             )
+
+            target_label = get_human_readable_node_label(
+                target,
+                asset_lookup
+            )
+
+            if (
+                relationship
+                ==
+                "potential_single_asset_entry"
+                and
+                source
+                and
+                source == target
+            ):
+
+                evidence.append(
+                    f"{source_label}: "
+                    "potential single-host entry path"
+                )
+
+            else:
+
+                evidence.append(
+                    f"{source_label} -> {target_label}: "
+                    f"{humanize_relationship(relationship)}"
+                )
 
 
         edge_evidence = normalize_list(
@@ -2505,6 +2530,91 @@ def build_attack_path(
         evidence=evidence
 
     )
+
+
+# ==========================================
+# HUMAN-READABLE PATH LABELS
+# ==========================================
+
+def get_human_readable_node_label(
+    node_id,
+    asset_lookup=None
+):
+    """
+    Resolve an internal graph node identifier to a
+    human-readable target/hostname for evidence only.
+
+    Internal IDs remain unchanged in graph structure.
+    """
+
+    normalized_id = str(
+        node_id or ""
+    ).strip()
+
+    if normalized_id == "external-attacker":
+        return "External Attacker"
+
+    if not isinstance(
+        asset_lookup,
+        dict
+    ):
+        return normalized_id or "Unknown Asset"
+
+    asset = (
+        asset_lookup.get(normalized_id)
+        or
+        asset_lookup.get(node_id)
+    )
+
+    if not isinstance(
+        asset,
+        dict
+    ):
+        return normalized_id or "Unknown Asset"
+
+    target = str(
+        asset.get("target", "")
+    ).strip()
+
+    hostname = str(
+        asset.get("hostname", "")
+        or
+        ""
+    ).strip()
+
+    if target:
+        return target
+
+    if hostname:
+        return hostname
+
+    return normalized_id or "Unknown Asset"
+
+
+def humanize_relationship(
+    relationship
+):
+    """
+    Convert an internal relationship key into a
+    readable evidence label.
+    """
+
+    value = str(
+        relationship or ""
+    ).strip()
+
+    labels = {
+        "external_entry": "external entry",
+        "potential_pivot": "potential pivot",
+        "potential_single_asset_entry": (
+            "potential single-host entry path"
+        )
+    }
+
+    if value in labels:
+        return labels[value]
+
+    return value.replace("_", " ").strip()
 
 
 # ==========================================
