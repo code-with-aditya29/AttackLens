@@ -2,33 +2,19 @@ import unittest
 
 
 from services.vulnerability_service import (
-
     normalize_service,
-
     normalize_text,
-
     meaningful_tokens,
-
     normalize_version,
-
     version_to_tuple,
-
     compare_versions,
-
     versions_equal,
-
     product_matches_cpe,
-
     evaluate_version_match,
-
     extract_windows_version,
-
     evaluate_os_cpes,
-
     evaluate_cve_applicability,
-
     sort_findings_by_severity
-
 )
 
 
@@ -39,7 +25,6 @@ from services.vulnerability_service import (
 
 class TestCVEEngine(unittest.TestCase):
 
-
     # ======================================
     # SERVICE NORMALIZATION
     # ======================================
@@ -47,51 +32,39 @@ class TestCVEEngine(unittest.TestCase):
     def test_normalize_service(self):
 
         service = {
-
             "port": 5000,
-
             "name": "http",
-
             "product": "Werkzeug httpd",
-
             "version": "3.1.8"
-
         }
-
 
         result = normalize_service(
             service
         )
 
-
         self.assertIsNotNone(
             result
         )
-
 
         self.assertEqual(
             result["port"],
             5000
         )
 
-
         self.assertEqual(
             result["service"],
             "http"
         )
-
 
         self.assertEqual(
             result["product"],
             "Werkzeug httpd"
         )
 
-
         self.assertEqual(
             result["version"],
             "3.1.8"
         )
-
 
     # ======================================
     # EMPTY PRODUCT
@@ -100,27 +73,19 @@ class TestCVEEngine(unittest.TestCase):
     def test_service_without_product_is_rejected(self):
 
         service = {
-
             "port": 445,
-
             "name": "microsoft-ds",
-
             "product": "",
-
             "version": ""
-
         }
-
 
         result = normalize_service(
             service
         )
 
-
         self.assertIsNone(
             result
         )
-
 
     # ======================================
     # UNKNOWN VERSION NORMALIZATION
@@ -129,32 +94,23 @@ class TestCVEEngine(unittest.TestCase):
     def test_unknown_version_becomes_none(self):
 
         service = {
-
             "port": 135,
-
             "name": "msrpc",
-
             "product": "Microsoft Windows RPC",
-
             "version": "-"
-
         }
-
 
         result = normalize_service(
             service
         )
 
-
         self.assertIsNotNone(
             result
         )
 
-
         self.assertIsNone(
             result["version"]
         )
-
 
     # ======================================
     # TEXT NORMALIZATION
@@ -166,12 +122,10 @@ class TestCVEEngine(unittest.TestCase):
             "VMware-Authentication_Daemon"
         )
 
-
         self.assertEqual(
             result,
             "vmware authentication daemon"
         )
-
 
     # ======================================
     # TOKEN NORMALIZATION
@@ -183,24 +137,20 @@ class TestCVEEngine(unittest.TestCase):
             "Werkzeug HTTP Server"
         )
 
-
         self.assertIn(
             "werkzeug",
             result
         )
-
 
         self.assertNotIn(
             "http",
             result
         )
 
-
         self.assertNotIn(
             "server",
             result
         )
-
 
     # ======================================
     # VERSION NORMALIZATION
@@ -209,15 +159,11 @@ class TestCVEEngine(unittest.TestCase):
     def test_normalize_version(self):
 
         self.assertEqual(
-
             normalize_version(
                 "v3.1.8"
             ),
-
             "3.1.8"
-
         )
-
 
     # ======================================
     # VERSION TUPLE
@@ -229,12 +175,10 @@ class TestCVEEngine(unittest.TestCase):
             "3.1.8"
         )
 
-
         self.assertEqual(
             result,
             (3, 1, 8)
         )
-
 
     # ======================================
     # VERSION COMPARISON
@@ -247,12 +191,10 @@ class TestCVEEngine(unittest.TestCase):
             "3.1.8"
         )
 
-
         self.assertEqual(
             result,
             0
         )
-
 
     def test_version_comparison_lower(self):
 
@@ -261,12 +203,10 @@ class TestCVEEngine(unittest.TestCase):
             "3.1.8"
         )
 
-
         self.assertEqual(
             result,
             -1
         )
-
 
     def test_version_comparison_higher(self):
 
@@ -275,24 +215,19 @@ class TestCVEEngine(unittest.TestCase):
             "3.1.8"
         )
 
-
         self.assertEqual(
             result,
             1
         )
 
-
     def test_versions_equal_padding(self):
 
         self.assertTrue(
-
             versions_equal(
                 "1.0",
                 "1.0.0"
             )
-
         )
-
 
     # ======================================
     # PRODUCT MATCHING
@@ -301,58 +236,38 @@ class TestCVEEngine(unittest.TestCase):
     def test_werkzeug_product_match(self):
 
         affected_product = {
-
             "vendor": "palletsprojects",
-
             "product": "werkzeug",
-
             "version": None
-
         }
 
-
         result = product_matches_cpe(
-
             "Werkzeug httpd",
-
             affected_product
-
         )
-
 
         self.assertTrue(
             result
         )
-
 
     def test_vmware_product_match(self):
 
         affected_product = {
-
             "vendor": "vmware",
-
             "product": (
                 "vmware authentication daemon"
             ),
-
             "version": None
-
         }
 
-
         result = product_matches_cpe(
-
             "VMware Authentication Daemon",
-
             affected_product
-
         )
-
 
         self.assertTrue(
             result
         )
-
 
     # ======================================
     # VERSION RANGE MATCHING
@@ -361,95 +276,59 @@ class TestCVEEngine(unittest.TestCase):
     def test_version_inside_affected_range(self):
 
         affected_product = {
-
             "version": None,
-
             "version_start_including": "1.0",
-
             "version_start_excluding": None,
-
             "version_end_including": "2.0",
-
             "version_end_excluding": None
-
         }
 
-
         result = evaluate_version_match(
-
             discovered_version="1.5",
-
             affected_product=affected_product
-
         )
-
 
         self.assertTrue(
             result
         )
 
-
     def test_version_outside_affected_range(self):
 
         affected_product = {
-
             "version": None,
-
             "version_start_including": "1.0",
-
             "version_start_excluding": None,
-
             "version_end_including": "2.0",
-
             "version_end_excluding": None
-
         }
 
-
         result = evaluate_version_match(
-
             discovered_version="3.0",
-
             affected_product=affected_product
-
         )
-
 
         self.assertFalse(
             result
         )
-
 
     def test_version_end_excluding(self):
 
         affected_product = {
-
             "version": None,
-
             "version_start_including": None,
-
             "version_start_excluding": None,
-
             "version_end_including": None,
-
             "version_end_excluding": "3.1.8"
-
         }
 
-
         result = evaluate_version_match(
-
             discovered_version="3.1.8",
-
             affected_product=affected_product
-
         )
-
 
         self.assertFalse(
             result
         )
-
 
     # ======================================
     # WINDOWS VERSION DETECTION
@@ -461,12 +340,10 @@ class TestCVEEngine(unittest.TestCase):
             "Microsoft Windows 11 24H2 - 25H2"
         )
 
-
         self.assertEqual(
             result,
             "windows_11"
         )
-
 
     def test_windows_xp_detection(self):
 
@@ -474,12 +351,10 @@ class TestCVEEngine(unittest.TestCase):
             "Microsoft Windows XP"
         )
 
-
         self.assertEqual(
             result,
             "windows_xp"
         )
-
 
     # ======================================
     # PLATFORM MATCHING
@@ -488,74 +363,48 @@ class TestCVEEngine(unittest.TestCase):
     def test_windows_11_platform_matches(self):
 
         os_cpes = [
-
             {
-
                 "part": "o",
-
                 "vendor": "microsoft",
-
                 "product": "windows 11",
-
                 "version": None
-
             }
-
         ]
 
-
         result = evaluate_os_cpes(
-
             os_cpes=os_cpes,
-
             os_detection=(
                 "Microsoft Windows 11 "
                 "24H2 - 25H2"
             )
-
         )
-
 
         self.assertTrue(
             result
         )
 
-
     def test_windows_xp_platform_rejected_for_windows_11(self):
 
         os_cpes = [
-
             {
-
                 "part": "o",
-
                 "vendor": "microsoft",
-
                 "product": "windows xp",
-
                 "version": None
-
             }
-
         ]
 
-
         result = evaluate_os_cpes(
-
             os_cpes=os_cpes,
-
             os_detection=(
                 "Microsoft Windows 11 "
                 "24H2 - 25H2"
             )
-
         )
-
 
         self.assertFalse(
             result
         )
-
 
     # ======================================
     # OLD WINDOWS RPC FALSE POSITIVE TEST
@@ -564,66 +413,41 @@ class TestCVEEngine(unittest.TestCase):
     def test_old_windows_rpc_cve_rejected(self):
 
         cve = {
-
             "cve_id": "CVE-2003-TEST",
-
             "description": (
                 "A vulnerability affecting "
                 "Microsoft Windows XP and "
                 "Windows 2000 RPC services."
             ),
-
             "cvss_score": 7.5,
-
             "severity": "HIGH",
-
             "affected_products": [
-
                 {
-
                     "part": "o",
-
                     "vendor": "microsoft",
-
                     "product": "windows xp",
-
                     "version": None,
-
                     "version_start_including": None,
-
                     "version_start_excluding": None,
-
                     "version_end_including": None,
-
                     "version_end_excluding": None
-
                 }
-
             ]
-
         }
 
-
         result = evaluate_cve_applicability(
-
             cve=cve,
-
             product="Microsoft Windows RPC",
-
             version=None,
-
             os_detection=(
                 "Microsoft Windows 11 "
                 "24H2 - 25H2"
             )
-
         )
-
 
         self.assertFalse(
             result["accepted"]
         )
-
 
     # ======================================
     # VALID PRODUCT + VERSION TEST
@@ -632,79 +456,51 @@ class TestCVEEngine(unittest.TestCase):
     def test_valid_product_version_candidate(self):
 
         cve = {
-
             "cve_id": "CVE-TEST-0001",
-
             "description": (
                 "Test vulnerability for Werkzeug."
             ),
-
             "cvss_score": 7.5,
-
             "severity": "HIGH",
-
             "affected_products": [
-
                 {
-
                     "part": "a",
-
                     "vendor": "palletsprojects",
-
                     "product": "werkzeug",
-
                     "version": None,
-
                     "version_start_including": "3.0.0",
-
                     "version_start_excluding": None,
-
                     "version_end_including": "3.1.8",
-
                     "version_end_excluding": None
-
                 }
-
             ]
-
         }
 
-
         result = evaluate_cve_applicability(
-
             cve=cve,
-
             product="Werkzeug httpd",
-
             version="3.1.8",
-
             os_detection=(
                 "Microsoft Windows 11"
             )
-
         )
-
 
         self.assertTrue(
             result["accepted"]
         )
 
-
         self.assertTrue(
             result["product_match"]
         )
-
 
         self.assertTrue(
             result["version_match"]
         )
 
-
         self.assertEqual(
             result["confidence"],
             "HIGH"
         )
-
 
     # ======================================
     # VERSION OUTSIDE RANGE REJECTION
@@ -713,68 +509,42 @@ class TestCVEEngine(unittest.TestCase):
     def test_candidate_rejected_when_version_is_fixed(self):
 
         cve = {
-
             "cve_id": "CVE-TEST-0002",
-
             "description": (
                 "Example Werkzeug vulnerability."
             ),
-
             "cvss_score": 8.0,
-
             "severity": "HIGH",
-
             "affected_products": [
-
                 {
-
                     "part": "a",
-
                     "vendor": "palletsprojects",
-
                     "product": "werkzeug",
-
                     "version": None,
-
                     "version_start_including": None,
-
                     "version_start_excluding": None,
-
                     "version_end_including": None,
-
                     "version_end_excluding": "3.0.0"
-
                 }
-
             ]
-
         }
 
-
         result = evaluate_cve_applicability(
-
             cve=cve,
-
             product="Werkzeug httpd",
-
             version="3.1.8",
-
             os_detection=(
                 "Microsoft Windows 11"
             )
-
         )
-
 
         self.assertFalse(
             result["accepted"]
         )
 
-
         self.assertFalse(
             result["version_match"]
         )
-
 
     # ======================================
     # PRODUCT ONLY REJECTION
@@ -783,74 +553,374 @@ class TestCVEEngine(unittest.TestCase):
     def test_product_only_candidate_not_accepted(self):
 
         cve = {
-
             "cve_id": "CVE-TEST-0003",
-
             "description": (
                 "VMware Authentication Daemon "
                 "vulnerability."
             ),
-
             "cvss_score": 5.0,
-
             "severity": "MEDIUM",
-
             "affected_products": [
-
                 {
-
                     "part": "a",
-
                     "vendor": "vmware",
-
                     "product": (
                         "vmware authentication daemon"
                     ),
-
                     "version": None,
-
                     "version_start_including": None,
-
                     "version_start_excluding": None,
-
                     "version_end_including": None,
-
                     "version_end_excluding": None
-
                 }
-
             ]
-
         }
 
-
         result = evaluate_cve_applicability(
-
             cve=cve,
-
             product=(
                 "VMware Authentication Daemon"
             ),
-
             version=None,
-
             os_detection=(
                 "Microsoft Windows 11"
             )
-
         )
-
 
         self.assertFalse(
             result["accepted"]
         )
-
 
         self.assertEqual(
             result["confidence"],
             "LOW"
         )
 
+    # ======================================
+    # UNRESTRICTED CPE + DETECTED VERSION
+    # ======================================
+
+    def test_unrestricted_product_cpe_with_detected_version_is_potential(self):
+
+        cve = {
+            "cve_id": "CVE-TEST-1001",
+            "description": (
+                "Example vulnerability affecting "
+                "the vsftpd FTP server."
+            ),
+            "cvss_score": 7.5,
+            "severity": "HIGH",
+            "affected_products": [
+                {
+                    "part": "a",
+                    "vendor": "beasts",
+                    "product": "vsftpd",
+                    "version": None,
+                    "version_start_including": None,
+                    "version_start_excluding": None,
+                    "version_end_including": None,
+                    "version_end_excluding": None
+                }
+            ]
+        }
+
+        result = evaluate_cve_applicability(
+            cve=cve,
+            product="vsftpd",
+            version="2.3.4",
+            os_detection="Linux"
+        )
+
+        self.assertTrue(
+            result["accepted"]
+        )
+
+        self.assertTrue(
+            result["product_match"]
+        )
+
+        self.assertIsNone(
+            result["version_match"]
+        )
+
+        self.assertEqual(
+            result["confidence"],
+            "MEDIUM"
+        )
+
+        self.assertEqual(
+            result["match_type"],
+            "product_cpe_unrestricted_version"
+        )
+
+    # ======================================
+    # UNRESTRICTED CPE WITHOUT VERSION
+    # ======================================
+
+    def test_unrestricted_product_cpe_without_detected_version_is_rejected(self):
+
+        cve = {
+            "cve_id": "CVE-TEST-1002",
+            "description": (
+                "Example vulnerability affecting vsftpd."
+            ),
+            "cvss_score": 7.5,
+            "severity": "HIGH",
+            "affected_products": [
+                {
+                    "part": "a",
+                    "vendor": "beasts",
+                    "product": "vsftpd",
+                    "version": None,
+                    "version_start_including": None,
+                    "version_start_excluding": None,
+                    "version_end_including": None,
+                    "version_end_excluding": None
+                }
+            ]
+        }
+
+        result = evaluate_cve_applicability(
+            cve=cve,
+            product="vsftpd",
+            version=None,
+            os_detection="Linux"
+        )
+
+        self.assertFalse(
+            result["accepted"]
+        )
+
+        self.assertTrue(
+            result["product_match"]
+        )
+
+        self.assertIsNone(
+            result["version_match"]
+        )
+
+        self.assertEqual(
+            result["confidence"],
+            "LOW"
+        )
+
+    # ======================================
+    # MULTIPLE CPE RANGES
+    # ======================================
+
+    def test_second_matching_cpe_range_can_accept_candidate(self):
+
+        cve = {
+            "cve_id": "CVE-TEST-1003",
+            "description": (
+                "Example vulnerability with multiple "
+                "affected version ranges."
+            ),
+            "cvss_score": 8.0,
+            "severity": "HIGH",
+            "affected_products": [
+
+                # First range does NOT match.
+                {
+                    "part": "a",
+                    "vendor": "example",
+                    "product": "exampleproduct",
+                    "version": None,
+                    "version_start_including": "1.0",
+                    "version_start_excluding": None,
+                    "version_end_including": None,
+                    "version_end_excluding": "2.0"
+                },
+
+                # Second range DOES match.
+                {
+                    "part": "a",
+                    "vendor": "example",
+                    "product": "exampleproduct",
+                    "version": None,
+                    "version_start_including": "3.0",
+                    "version_start_excluding": None,
+                    "version_end_including": "4.0",
+                    "version_end_excluding": None
+                }
+            ]
+        }
+
+        result = evaluate_cve_applicability(
+            cve=cve,
+            product="exampleproduct",
+            version="3.5",
+            os_detection="Linux"
+        )
+
+        self.assertTrue(
+            result["accepted"]
+        )
+
+        self.assertTrue(
+            result["product_match"]
+        )
+
+        self.assertTrue(
+            result["version_match"]
+        )
+
+        self.assertEqual(
+            result["confidence"],
+            "HIGH"
+        )
+
+    # ======================================
+    # ALL CPE RANGES REJECT VERSION
+    # ======================================
+
+    def test_all_matching_cpe_ranges_reject_version(self):
+
+        cve = {
+            "cve_id": "CVE-TEST-1004",
+            "description": (
+                "Example vulnerability with multiple "
+                "non-matching version ranges."
+            ),
+            "cvss_score": 8.0,
+            "severity": "HIGH",
+            "affected_products": [
+                {
+                    "part": "a",
+                    "vendor": "example",
+                    "product": "exampleproduct",
+                    "version": None,
+                    "version_start_including": "1.0",
+                    "version_start_excluding": None,
+                    "version_end_including": None,
+                    "version_end_excluding": "2.0"
+                },
+                {
+                    "part": "a",
+                    "vendor": "example",
+                    "product": "exampleproduct",
+                    "version": None,
+                    "version_start_including": "3.0",
+                    "version_start_excluding": None,
+                    "version_end_including": "4.0",
+                    "version_end_excluding": None
+                }
+            ]
+        }
+
+        result = evaluate_cve_applicability(
+            cve=cve,
+            product="exampleproduct",
+            version="5.0",
+            os_detection="Linux"
+        )
+
+        self.assertFalse(
+            result["accepted"]
+        )
+
+        self.assertTrue(
+            result["product_match"]
+        )
+
+        self.assertFalse(
+            result["version_match"]
+        )
+
+    # ======================================
+    # WRONG PRODUCT FALSE POSITIVE
+    # ======================================
+
+    def test_wrong_product_candidate_is_rejected(self):
+
+        cve = {
+            "cve_id": "CVE-TEST-1005",
+            "description": (
+                "Example Apache Tomcat vulnerability."
+            ),
+            "cvss_score": 9.8,
+            "severity": "CRITICAL",
+            "affected_products": [
+                {
+                    "part": "a",
+                    "vendor": "apache",
+                    "product": "tomcat",
+                    "version": None,
+                    "version_start_including": "8.0",
+                    "version_start_excluding": None,
+                    "version_end_including": "9.0",
+                    "version_end_excluding": None
+                }
+            ]
+        }
+
+        result = evaluate_cve_applicability(
+            cve=cve,
+            product="vsftpd",
+            version="2.3.4",
+            os_detection="Linux"
+        )
+
+        self.assertFalse(
+            result["accepted"]
+        )
+
+        self.assertFalse(
+            result["product_match"]
+        )
+
+    # ======================================
+    # EXPLICIT EXACT VERSION
+    # ======================================
+
+    def test_exact_cpe_version_match_is_high_confidence(self):
+
+        cve = {
+            "cve_id": "CVE-TEST-1006",
+            "description": (
+                "Example vulnerability affecting an "
+                "exact software version."
+            ),
+            "cvss_score": 9.0,
+            "severity": "CRITICAL",
+            "affected_products": [
+                {
+                    "part": "a",
+                    "vendor": "example",
+                    "product": "exampleproduct",
+                    "version": "2.3.4",
+                    "version_start_including": None,
+                    "version_start_excluding": None,
+                    "version_end_including": None,
+                    "version_end_excluding": None
+                }
+            ]
+        }
+
+        result = evaluate_cve_applicability(
+            cve=cve,
+            product="exampleproduct",
+            version="2.3.4",
+            os_detection="Linux"
+        )
+
+        self.assertTrue(
+            result["accepted"]
+        )
+
+        self.assertTrue(
+            result["version_match"]
+        )
+
+        self.assertEqual(
+            result["confidence"],
+            "HIGH"
+        )
+
+        self.assertEqual(
+            result["match_type"],
+            "product_version_cpe"
+        )
 
     # ======================================
     # SEVERITY SORTING
@@ -859,69 +929,40 @@ class TestCVEEngine(unittest.TestCase):
     def test_findings_sorted_by_severity(self):
 
         findings = [
-
             {
-
                 "severity": "LOW",
-
                 "cvss_score": 3.0,
-
                 "confidence": "HIGH"
-
             },
-
             {
-
                 "severity": "CRITICAL",
-
                 "cvss_score": 9.8,
-
                 "confidence": "HIGH"
-
             },
-
             {
-
                 "severity": "HIGH",
-
                 "cvss_score": 8.0,
-
                 "confidence": "MEDIUM"
-
             }
-
         ]
-
 
         result = sort_findings_by_severity(
             findings
         )
 
-
         self.assertEqual(
-
             result[0]["severity"],
-
             "CRITICAL"
-
         )
 
-
         self.assertEqual(
-
             result[1]["severity"],
-
             "HIGH"
-
         )
 
-
         self.assertEqual(
-
             result[2]["severity"],
-
             "LOW"
-
         )
 
 
@@ -931,5 +972,4 @@ class TestCVEEngine(unittest.TestCase):
 
 
 if __name__ == "__main__":
-
     unittest.main()
