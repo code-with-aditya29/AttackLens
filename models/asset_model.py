@@ -24,6 +24,22 @@ def create_asset_document(
     A scan is historical.
     An asset is the latest representation
     of the target.
+
+    Security information is intentionally
+    separated into:
+
+        vulnerabilities
+            Existing CVE-based findings.
+
+        security_findings
+            Additional observable application,
+            network/service, host/OS and web
+            security findings.
+
+    This preserves compatibility with the
+    existing AttackLens CVE pipeline while
+    allowing the broader security-analysis
+    architecture to evolve independently.
     """
 
     current_time = datetime.now(
@@ -70,12 +86,44 @@ def create_asset_document(
 
 
         # ==================================
-        # SECURITY INFORMATION
+        # CVE VULNERABILITY INFORMATION
+        # ==================================
+        #
+        # Existing field retained for full
+        # backward compatibility.
         # ==================================
 
         "vulnerabilities": [],
 
         "vulnerability_count": 0,
+
+
+        # ==================================
+        # ADDITIONAL SECURITY FINDINGS
+        # ==================================
+        #
+        # These findings complement CVEs.
+        #
+        # Examples:
+        #
+        # - Network/service exposure
+        # - Application/software conditions
+        # - Host/OS security observations
+        # - Web application surfaces
+        #
+        # Active web vulnerability checks
+        # such as bounded SQLi/XSS/CSRF/IDOR
+        # can later use the same structure.
+        # ==================================
+
+        "security_findings": [],
+
+        "security_finding_count": 0,
+
+
+        # ==================================
+        # RISK INFORMATION
+        # ==================================
 
         "highest_severity": None,
 
@@ -90,8 +138,9 @@ def create_asset_document(
         # ASSET CONTEXT
         # ==================================
         #
-        # These fields will become important
-        # when we build the Attack Path Engine.
+        # These fields are user-controlled
+        # context and must not be overwritten
+        # by scan synchronization.
         #
         # criticality:
         # LOW / NORMAL / HIGH / CRITICAL

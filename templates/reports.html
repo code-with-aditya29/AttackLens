@@ -1,38 +1,31 @@
 {% extends "base.html" %}
 
-
 {% block title %}
 AttackLens | Reports
 {% endblock %}
-
 
 {% block page_title %}
 Reports
 {% endblock %}
 
-
 {% block page_subtitle %}
 Generate a dedicated security assessment for a completed scan
 {% endblock %}
 
-
 {% block content %}
-
 
 {# =========================================================
    SAFE REPORT DATA
-   ========================================================= #}
+========================================================= #}
 
 {% set statistics = report_data.get("statistics", {}) if report_data else {} %}
-
 {% set sections = report_data.get("sections", {}) if report_data else {} %}
-
 {% set readiness = report_data.get("readiness", {}) if report_data else {} %}
-
+{% set security_finding_summary = report_data.get("security_finding_summary", {}) if report_data else {} %}
 
 {# =========================================================
    REPORT SECTIONS
-   ========================================================= #}
+========================================================= #}
 
 {% set assets = sections.get("assets", []) %}
 
@@ -71,10 +64,9 @@ Generate a dedicated security assessment for a completed scan
     )
 %}
 
-
 {# =========================================================
    SUMMARY VALUES
-   ========================================================= #}
+========================================================= #}
 
 {% set total_assets =
     statistics.get(
@@ -83,6 +75,12 @@ Generate a dedicated security assessment for a completed scan
     )
 %}
 
+{% set security_findings =
+    security_finding_summary.get(
+        "security_finding_count",
+        0
+    )
+%}
 
 {% set attack_paths =
     statistics.get(
@@ -101,7 +99,6 @@ Generate a dedicated security assessment for a completed scan
     )
 %}
 
-
 {% set defense_findings =
     statistics.get(
         "defense_findings",
@@ -118,7 +115,6 @@ Generate a dedicated security assessment for a completed scan
         )
     )
 %}
-
 
 {% set recommendations =
     statistics.get(
@@ -140,7 +136,6 @@ Generate a dedicated security assessment for a completed scan
     )
 %}
 
-
 {% set risk_statistics =
     risk_comparison.get(
         "statistics",
@@ -149,7 +144,6 @@ Generate a dedicated security assessment for a completed scan
     if risk_comparison
     else {}
 %}
-
 
 {% set projected_reduction =
     statistics.get(
@@ -161,20 +155,17 @@ Generate a dedicated security assessment for a completed scan
     )
 %}
 
-
 {# =========================================================
    READINESS FLAGS
-   ========================================================= #}
+========================================================= #}
 
 {% set has_assets =
     total_assets|int > 0
 %}
 
-
 {% set has_risk_assessment =
     has_assets
 %}
-
 
 {% set has_attack_analysis =
     attack_path_analysis
@@ -182,20 +173,17 @@ Generate a dedicated security assessment for a completed scan
     attack_path_analysis is mapping
 %}
 
-
 {% set has_defense_analysis =
     defense_analysis
     and
     defense_analysis is mapping
 %}
 
-
 {% set has_mitigation_analysis =
     mitigation_analysis
     and
     mitigation_analysis is mapping
 %}
-
 
 {% set has_risk_comparison =
     risk_comparison
@@ -204,9 +192,7 @@ Generate a dedicated security assessment for a completed scan
 %}
 
 
-
 <section class="dashboard-overview reports-page">
-
 
     <!-- ==========================================
          REPORT INTRODUCTION
@@ -230,7 +216,6 @@ Generate a dedicated security assessment for a completed scan
                 </p>
 
             </div>
-
 
             <div class="reports-header-icon">
                 ▤
@@ -262,13 +247,11 @@ Generate a dedicated security assessment for a completed scan
 
             </div>
 
-
             <div class="reports-header-icon">
                 ◎
             </div>
 
         </div>
-
 
         {% if completed_scans %}
 
@@ -277,12 +260,18 @@ Generate a dedicated security assessment for a completed scan
                 action="{{ url_for('report.reports') }}"
             >
 
+                <input
+                    type="hidden"
+                    id="report-selection-timezone"
+                    name="timezone_name"
+                    value="{{ timezone_name|default('UTC') }}"
+                >
+
                 <div class="form-group">
 
                     <label for="scan_id">
                         Completed Scan
                     </label>
-
 
                     <select
                         id="scan_id"
@@ -315,7 +304,6 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <button
                     type="submit"
                     class="secondary-button"
@@ -325,7 +313,6 @@ Generate a dedicated security assessment for a completed scan
 
             </form>
 
-
             {% if selected_scan %}
 
                 <div class="reports-generation-note">
@@ -333,7 +320,6 @@ Generate a dedicated security assessment for a completed scan
                     <span>
                         ✓
                     </span>
-
 
                     <p>
                         <strong>Selected target:</strong>
@@ -356,7 +342,6 @@ Generate a dedicated security assessment for a completed scan
 
             {% endif %}
 
-
         {% else %}
 
             <div class="empty-state reports-empty-state">
@@ -365,17 +350,14 @@ Generate a dedicated security assessment for a completed scan
                     ◎
                 </div>
 
-
                 <h4>
                     No Completed Scans
                 </h4>
-
 
                 <p>
                     Complete an authorized security scan before
                     generating an assessment report.
                 </p>
-
 
                 <a
                     href="{{ url_for('scan.scan_target') }}"
@@ -397,7 +379,6 @@ Generate a dedicated security assessment for a completed scan
 
     <section class="reports-summary-grid">
 
-
         <!-- ASSETS -->
 
         <div class="dashboard-card reports-summary-card">
@@ -406,31 +387,22 @@ Generate a dedicated security assessment for a completed scan
                 ◇
             </div>
 
-
             <div class="reports-summary-content">
 
                 <span class="reports-summary-label">
                     Assets
                 </span>
 
-
                 <strong class="reports-summary-value">
-
                     {{ total_assets|default(0) }}
-
                 </strong>
-
 
                 <span class="reports-summary-description">
 
                     {% if total_assets|int > 0 %}
-
                         Asset in selected scan
-
                     {% else %}
-
                         No selected scan data available
-
                     {% endif %}
 
                 </span>
@@ -448,35 +420,24 @@ Generate a dedicated security assessment for a completed scan
                 ⚠
             </div>
 
-
             <div class="reports-summary-content">
 
                 <span class="reports-summary-label">
                     Attack Paths
                 </span>
 
-
                 <strong class="reports-summary-value">
-
                     {{ attack_paths|default(0) }}
-
                 </strong>
-
 
                 <span class="reports-summary-description">
 
                     {% if attack_paths|int > 0 %}
-
                         Potential attacker progression paths
-
                     {% elif has_assets %}
-
                         No attack paths identified
-
                     {% else %}
-
                         Attack-path analysis unavailable
-
                     {% endif %}
 
                 </span>
@@ -494,35 +455,24 @@ Generate a dedicated security assessment for a completed scan
                 ✓
             </div>
 
-
             <div class="reports-summary-content">
 
                 <span class="reports-summary-label">
                     Recommendations
                 </span>
 
-
                 <strong class="reports-summary-value">
-
                     {{ recommendations|default(0) }}
-
                 </strong>
-
 
                 <span class="reports-summary-description">
 
                     {% if recommendations|int > 0 %}
-
                         Evidence-based defensive actions
-
                     {% elif has_assets %}
-
                         No recommendations currently identified
-
                     {% else %}
-
                         Mitigation analysis unavailable
-
                     {% endif %}
 
                 </span>
@@ -540,35 +490,24 @@ Generate a dedicated security assessment for a completed scan
                 ↓
             </div>
 
-
             <div class="reports-summary-content">
 
                 <span class="reports-summary-label">
                     Projected Reduction
                 </span>
 
-
                 <strong class="reports-summary-value">
-
                     {{ projected_reduction|round(2) }}%
-
                 </strong>
-
 
                 <span class="reports-summary-description">
 
                     {% if projected_reduction|float > 0 %}
-
                         Estimated post-mitigation improvement
-
                     {% elif has_assets %}
-
                         No projected reduction identified
-
                     {% else %}
-
                         Risk comparison unavailable
-
                     {% endif %}
 
                 </span>
@@ -576,7 +515,6 @@ Generate a dedicated security assessment for a completed scan
             </div>
 
         </div>
-
 
     </section>
 
@@ -604,9 +542,7 @@ Generate a dedicated security assessment for a completed scan
 
         </div>
 
-
         <div class="reports-readiness-grid">
-
 
             <!-- ASSET INVENTORY -->
 
@@ -631,13 +567,11 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <div>
 
                     <strong>
                         Asset Inventory
                     </strong>
-
 
                     <span>
 
@@ -684,24 +618,18 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <div>
 
                     <strong>
                         Risk Assessment
                     </strong>
 
-
                     <span>
 
                         {% if has_risk_assessment %}
-
                             Selected scan risk data available
-
                         {% else %}
-
                             No selected scan risk data available
-
                         {% endif %}
 
                     </span>
@@ -734,13 +662,11 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <div>
 
                     <strong>
                         Attack Path Analysis
                     </strong>
-
 
                     <span>
 
@@ -795,13 +721,11 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <div>
 
                     <strong>
                         Defense Analysis
                     </strong>
-
 
                     <span>
 
@@ -856,13 +780,11 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <div>
 
                     <strong>
                         Mitigation Recommendations
                     </strong>
-
 
                     <span>
 
@@ -917,24 +839,18 @@ Generate a dedicated security assessment for a completed scan
 
                 </div>
 
-
                 <div>
 
                     <strong>
                         Risk Comparison
                     </strong>
 
-
                     <span>
 
                         {% if has_risk_comparison %}
-
                             Projected risk comparison available
-
                         {% else %}
-
                             No projected risk comparison available
-
                         {% endif %}
 
                     </span>
@@ -942,7 +858,6 @@ Generate a dedicated security assessment for a completed scan
                 </div>
 
             </div>
-
 
         </div>
 
@@ -972,9 +887,7 @@ Generate a dedicated security assessment for a completed scan
 
         </div>
 
-
         <div class="reports-sections-grid">
-
 
             <!-- 01 -->
 
@@ -983,7 +896,6 @@ Generate a dedicated security assessment for a completed scan
                 <span class="reports-section-number">
                     01
                 </span>
-
 
                 <div>
 
@@ -1009,7 +921,6 @@ Generate a dedicated security assessment for a completed scan
                     02
                 </span>
 
-
                 <div>
 
                     <strong>
@@ -1033,7 +944,6 @@ Generate a dedicated security assessment for a completed scan
                 <span class="reports-section-number">
                     03
                 </span>
-
 
                 <div>
 
@@ -1059,6 +969,30 @@ Generate a dedicated security assessment for a completed scan
                     04
                 </span>
 
+                <div>
+
+                    <strong>
+                        Security Findings
+                    </strong>
+
+                    <p>
+                        Non-CVE security findings identified across
+                        web applications, applications, hosts,
+                        operating systems, and configuration analysis.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- 05 -->
+
+            <div class="reports-section-item">
+
+                <span class="reports-section-number">
+                    05
+                </span>
 
                 <div>
 
@@ -1076,14 +1010,13 @@ Generate a dedicated security assessment for a completed scan
             </div>
 
 
-            <!-- 05 -->
+            <!-- 06 -->
 
             <div class="reports-section-item">
 
                 <span class="reports-section-number">
-                    05
+                    06
                 </span>
-
 
                 <div>
 
@@ -1101,14 +1034,13 @@ Generate a dedicated security assessment for a completed scan
             </div>
 
 
-            <!-- 06 -->
+            <!-- 07 -->
 
             <div class="reports-section-item">
 
                 <span class="reports-section-number">
-                    06
+                    07
                 </span>
-
 
                 <div>
 
@@ -1126,14 +1058,13 @@ Generate a dedicated security assessment for a completed scan
             </div>
 
 
-            <!-- 07 -->
+            <!-- 08 -->
 
             <div class="reports-section-item">
 
                 <span class="reports-section-number">
-                    07
+                    08
                 </span>
-
 
                 <div>
 
@@ -1151,14 +1082,13 @@ Generate a dedicated security assessment for a completed scan
             </div>
 
 
-            <!-- 08 -->
+            <!-- 09 -->
 
             <div class="reports-section-item">
 
                 <span class="reports-section-number">
-                    08
+                    09
                 </span>
-
 
                 <div>
 
@@ -1174,7 +1104,6 @@ Generate a dedicated security assessment for a completed scan
                 </div>
 
             </div>
-
 
         </div>
 
@@ -1204,7 +1133,6 @@ Generate a dedicated security assessment for a completed scan
 
         </div>
 
-
         <div class="reports-generation-content">
 
             <div class="reports-generation-info">
@@ -1213,13 +1141,11 @@ Generate a dedicated security assessment for a completed scan
                     ⇩
                 </div>
 
-
                 <div>
 
                     <h4>
                         AttackLens Security Assessment
                     </h4>
-
 
                     <p>
                         The generated PDF will contain security
@@ -1251,6 +1177,12 @@ Generate a dedicated security assessment for a completed scan
 
                 {% endif %}
 
+                <input
+                    type="hidden"
+                    id="report-generation-timezone"
+                    name="timezone_name"
+                    value="{{ timezone_name|default('UTC') }}"
+                >
 
                 <button
                     type="submit"
@@ -1276,7 +1208,6 @@ Generate a dedicated security assessment for a completed scan
             <span>
                 ℹ
             </span>
-
 
             <p>
 
@@ -1325,13 +1256,11 @@ Generate a dedicated security assessment for a completed scan
 
         </div>
 
-
         <div class="empty-state reports-empty-state">
 
             <div class="empty-icon">
                 ▤
             </div>
-
 
             {% if report_generation_available and selected_scan %}
 
@@ -1339,14 +1268,12 @@ Generate a dedicated security assessment for a completed scan
                     Report Ready for Generation
                 </h4>
 
-
                 <p>
                     The selected scan for {{ selected_scan.target }}
                     is ready. Use the Generate PDF for Selected Scan
                     button above to create and download its dedicated
                     AttackLens security assessment.
                 </p>
-
 
                 <a
                     href="{{ url_for('report.reports') }}"
@@ -1361,13 +1288,11 @@ Generate a dedicated security assessment for a completed scan
                     No Reports Available
                 </h4>
 
-
                 <p>
                     Complete an authorized security analysis and
                     generate your first AttackLens security
                     assessment report.
                 </p>
-
 
                 <a
                     href="{{ url_for('scan.scan_target') }}"
@@ -1395,13 +1320,11 @@ Generate a dedicated security assessment for a completed scan
                 ▤
             </div>
 
-
             <div>
 
                 <h4>
                     About AttackLens Reports
                 </h4>
-
 
                 <p>
                     AttackLens reports summarize evidence collected
@@ -1419,7 +1342,45 @@ Generate a dedicated security assessment for a completed scan
 
     </section>
 
-
 </section>
+
+
+<!-- =========================================================
+     BROWSER TIMEZONE DETECTION
+========================================================= -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let browserTimezone = "UTC";
+
+    try {
+        const detectedTimezone =
+            Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        if (detectedTimezone) {
+            browserTimezone = detectedTimezone;
+        }
+    } catch (error) {
+        console.warn(
+            "AttackLens could not detect the browser timezone.",
+            error
+        );
+    }
+
+    const selectionTimezone =
+        document.getElementById("report-selection-timezone");
+
+    const generationTimezone =
+        document.getElementById("report-generation-timezone");
+
+    if (selectionTimezone) {
+        selectionTimezone.value = browserTimezone;
+    }
+
+    if (generationTimezone) {
+        generationTimezone.value = browserTimezone;
+    }
+});
+</script>
 
 {% endblock %}

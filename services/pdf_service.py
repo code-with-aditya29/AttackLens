@@ -165,6 +165,14 @@ def generate_report_pdf(report_data, authorized_by=None):
 
     story.append(PageBreak())
 
+    build_security_findings_section(
+        story,
+        report_data,
+        styles
+    )
+
+    story.append(PageBreak())
+
     build_attack_path_section(
         story,
         report_data,
@@ -658,11 +666,7 @@ def build_cover_page(
         )
     )
 
-    generated_at = format_datetime(
-        report_data.get(
-            "generated_at"
-        )
-    )
+    generated_at = get_report_generated_display(report_data)
 
     report_id = safe_text(
         report_data.get(
@@ -798,11 +802,7 @@ def build_report_information(
 
         [
             "Generated",
-            format_datetime(
-                report_data.get(
-                    "generated_at"
-                )
-            ),
+            get_report_generated_display(report_data),
         ],
     ]
 
@@ -1174,6 +1174,98 @@ def build_vulnerability_section(
 
 
 # ============================================================
+# SECURITY FINDINGS
+# ============================================================
+
+def build_security_findings_section(story, report_data, styles):
+    """Render non-CVE security findings separately from CVE vulnerabilities."""
+
+    append_section_heading(story, "4. Security Findings", styles)
+
+    summary = get_dictionary(report_data, "security_finding_summary")
+    findings = summary.get("findings")
+    if not isinstance(findings, list):
+        findings = []
+
+    count = safe_integer(summary.get("security_finding_count", len(findings)))
+    affected_assets = safe_integer(summary.get("affected_assets", 0))
+
+    story.append(Paragraph(
+        f"AttackLens recorded <b>{count}</b> non-CVE security finding"
+        f"{'s' if count != 1 else ''} across <b>{affected_assets}</b> affected "
+        f"asset{'s' if affected_assets != 1 else ''}. These findings are kept "
+        "separate from CVE vulnerability records and may include observed, "
+        "potential, or validated security weaknesses.",
+        styles["body"]
+    ))
+
+    if not findings:
+        story.append(build_status_table(
+            headers=["Target", "Type", "Finding", "Severity", "Status"],
+            message="No non-CVE security findings are currently present in the analyzed scan data.",
+            styles=styles,
+            col_widths=[30 * mm, 28 * mm, 64 * mm, 28 * mm, 28 * mm]
+        ))
+        return
+
+    rows = [[
+        paragraph("Target", styles["table_header"]),
+        paragraph("Type", styles["table_header"]),
+        paragraph("Finding", styles["table_header"]),
+        paragraph("Severity", styles["table_header"]),
+        paragraph("Status", styles["table_header"]),
+    ]]
+
+    for record in findings:
+        if not isinstance(record, dict):
+            continue
+        finding = record.get("finding")
+        if not isinstance(finding, dict):
+            finding = {}
+
+        finding_type = safe_text(
+            finding.get("finding_type", finding.get("type")),
+            default="Unknown"
+        )
+        title = safe_text(
+            finding.get("title", finding.get("category")),
+            default="Security finding"
+        )
+        severity = safe_text(finding.get("severity"), default="Unknown")
+        status = safe_text(finding.get("status"), default="Unknown")
+
+        context = []
+        port = finding.get("port")
+        endpoint = safe_text(finding.get("endpoint"), default="")
+        parameter = safe_text(finding.get("parameter"), default="")
+        if port not in (None, ""):
+            context.append(f"Port {safe_text(port)}")
+        if endpoint:
+            context.append(endpoint)
+        if parameter:
+            context.append(f"Parameter: {parameter}")
+        if context:
+            title = f"{title} ({'; '.join(context)})"
+
+        rows.append([
+            paragraph(safe_text(record.get("target"), default="-"), styles["table_body"]),
+            paragraph(humanize_label(finding_type), styles["table_body"]),
+            paragraph(title, styles["table_body"]),
+            paragraph(severity.upper(), styles["table_body"]),
+            paragraph(humanize_label(status), styles["table_body"]),
+        ])
+
+    table = Table(
+        rows,
+        colWidths=[30 * mm, 28 * mm, 64 * mm, 28 * mm, 28 * mm],
+        repeatRows=1,
+    )
+    apply_standard_table_style(table)
+    story.append(table)
+    story.append(Spacer(1, 3 * mm))
+
+
+# ============================================================
 # ATTACK PATH ANALYSIS
 # ============================================================
 
@@ -1215,7 +1307,7 @@ def build_attack_path_section(
         )
 
     heading = Paragraph(
-        escape_text("4. Attack Path Analysis"),
+        escape_text("5. Attack Path Analysis"),
         styles["section_title"]
     )
     summary = Paragraph(summary_text, styles["body"])
@@ -1288,7 +1380,7 @@ def build_defense_section(
 
     append_section_heading(
         story,
-        "5. Defense Analysis",
+        "6. Defense Analysis",
         styles
     )
 
@@ -1415,7 +1507,7 @@ def build_mitigation_section(
 
     append_section_heading(
         story,
-        "6. Mitigation Recommendations",
+        "7. Mitigation Recommendations",
         styles
     )
 
@@ -1551,7 +1643,7 @@ def build_risk_comparison_section(
 
     append_section_heading(
         story,
-        "7. Before vs After Risk Comparison",
+        "8. Before vs After Risk Comparison",
         styles
     )
 
@@ -1849,7 +1941,7 @@ def build_methodology_section(
     # permits. ReportLab will move it naturally when the page is full.
     append_section_heading(
         story,
-        "8. Methodology & Disclaimer",
+        "9. Methodology & Disclaimer",
         styles
     )
 
@@ -1953,11 +2045,7 @@ def build_methodology_section(
             ),
             Paragraph(
                 escape_text(
-                    format_datetime(
-                        report_data.get(
-                            "generated_at"
-                        )
-                    )
+                    get_report_generated_display(report_data)
                 ),
                 styles["authorization_value"]
             ),
@@ -2954,11 +3042,39 @@ def safe_number(
 # DATETIME HELPERS
 # ============================================================
 
+def get_report_generated_display(report_data):
+    """Return the report-service local timestamp, with legacy fallback."""
+
+    if not isinstance(report_data, dict):
+        return "Not available"
+
+    display_value = safe_text(
+        report_data.get("generated_at_display"),
+        default=""
+    )
+    if display_value:
+        return display_value
+
+    local_value = report_data.get("generated_at_local")
+    if isinstance(local_value, str) and local_value.strip():
+        try:
+            parsed = datetime.fromisoformat(local_value.replace("Z", "+00:00"))
+            timezone_label = parsed.tzname() or safe_text(
+                report_data.get("timezone"),
+                default="Local"
+            )
+            return f"{parsed.strftime('%d %B %Y, %H:%M')} {timezone_label}"
+        except (ValueError, TypeError):
+            pass
+
+    return format_datetime(report_data.get("generated_at"))
+
+
 def format_datetime(
     value
 ):
     """
-    Convert datetime into readable UTC timestamp.
+    Convert legacy datetime values into a readable UTC timestamp.
     """
 
     if isinstance(

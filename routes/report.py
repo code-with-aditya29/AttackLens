@@ -15,6 +15,7 @@ existing AttackLens service layer.
 """
 
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import (
     Blueprint,
@@ -33,11 +34,14 @@ from routes.auth import login_required
 from services.report_service import (
     build_report_asset_from_scan,
     generate_report_data,
+    normalize_timezone_name,
 )
+
 from services.scan_service import (
     get_scan_by_id,
     get_scan_history,
 )
+
 from services.pdf_service import generate_report_pdf
 
 
@@ -49,6 +53,89 @@ report_bp = Blueprint(
     "report",
     __name__
 )
+
+
+# ============================================================
+# TIMEZONE CONFIGURATION
+# ============================================================
+
+DEFAULT_REPORT_TIMEZONE = "UTC"
+TIMEZONE_SESSION_KEY = "report_timezone"
+
+
+def get_client_timezone():
+    """
+    Resolve the user's report timezone.
+
+    Priority:
+    1. Submitted form timezone
+    2. Query-string timezone
+    3. Browser timezone cookie
+    4. Previously validated session timezone
+    5. UTC fallback
+
+    The timezone must be an IANA timezone such as:
+        Asia/Kolkata
+        America/New_York
+        America/Toronto
+        Asia/Tokyo
+
+    The route never infers timezone from the scan target or
+    from an IP address.
+    """
+
+    candidates = [
+        request.form.get("timezone_name"),
+        request.args.get("timezone_name"),
+        request.cookies.get("attacklens_timezone"),
+        session.get(TIMEZONE_SESSION_KEY),
+    ]
+
+    for candidate in candidates:
+        if candidate is None:
+            continue
+
+        candidate = str(candidate).strip()
+
+        if not candidate:
+            continue
+
+        if is_valid_timezone(candidate):
+            normalized = normalize_timezone_name(candidate)
+            session[TIMEZONE_SESSION_KEY] = normalized
+            return normalized
+
+    return DEFAULT_REPORT_TIMEZONE
+
+
+def is_valid_timezone(timezone_name):
+    """Return True only when the supplied IANA timezone is valid."""
+
+    if timezone_name is None:
+        return False
+
+    timezone_name = str(timezone_name).strip()
+
+    if not timezone_name:
+        return False
+
+    try:
+        ZoneInfo(timezone_name)
+        return True
+    except (ZoneInfoNotFoundError, ValueError, TypeError):
+        return False
+
+
+def get_timezone_object(timezone_name):
+    """Return a safe ZoneInfo object for filename generation."""
+
+    if not is_valid_timezone(timezone_name):
+        return timezone.utc
+
+    try:
+        return ZoneInfo(timezone_name)
+    except (ZoneInfoNotFoundError, ValueError, TypeError):
+        return timezone.utc
 
 
 # ============================================================
@@ -71,12 +158,10 @@ def reports():
     selected automatically.
     """
 
-    db = current_app.config.get(
-        "MONGO_DB"
-    )
+    db = current_app.config.get("MONGO_DB")
+    timezone_name = get_client_timezone()
 
     if db is None:
-
         flash(
             "Database connection is unavailable.",
             "danger"
@@ -85,18 +170,18 @@ def reports():
         return render_template(
             "reports.html",
             current_page="reports",
-            report_data=create_empty_report_context(),
+            report_data=create_empty_report_context(
+                timezone_name=timezone_name
+            ),
             report_generation_available=False,
             completed_scans=[],
             selected_scan=None,
+            timezone_name=timezone_name,
         )
 
-    current_user_id = session.get(
-        "admin_id"
-    )
+    current_user_id = session.get("admin_id")
 
     if not current_user_id:
-
         flash(
             "Unable to identify the current user.",
             "danger"
@@ -105,14 +190,16 @@ def reports():
         return render_template(
             "reports.html",
             current_page="reports",
-            report_data=create_empty_report_context(),
+            report_data=create_empty_report_context(
+                timezone_name=timezone_name
+            ),
             report_generation_available=False,
             completed_scans=[],
             selected_scan=None,
+            timezone_name=timezone_name,
         )
 
     try:
-
         scan_history = get_scan_history(
             db=db,
             created_by=current_user_id,
@@ -123,10 +210,7 @@ def reports():
             scan
             for scan in scan_history
             if str(
-                scan.get(
-                    "status",
-                    ""
-                )
+                scan.get("status", "")
             ).strip().lower() == "completed"
         ]
 
@@ -140,7 +224,6 @@ def reports():
         ).strip()
 
         if requested_scan_id:
-
             selected_scan = get_scan_by_id(
                 db=db,
                 scan_id=requested_scan_id,
@@ -148,7 +231,6 @@ def reports():
             )
 
             if not selected_scan:
-
                 flash(
                     "The selected scan could not be found or is not accessible.",
                     "warning"
@@ -160,7 +242,6 @@ def reports():
                     ""
                 )
             ).strip().lower() != "completed":
-
                 selected_scan = None
 
                 flash(
@@ -169,18 +250,19 @@ def reports():
                 )
 
         elif completed_scans:
-
             selected_scan = completed_scans[0]
 
         if not selected_scan:
-
             return render_template(
                 "reports.html",
                 current_page="reports",
-                report_data=create_empty_report_context(),
+                report_data=create_empty_report_context(
+                    timezone_name=timezone_name
+                ),
                 report_generation_available=False,
                 completed_scans=completed_scans,
                 selected_scan=None,
+                timezone_name=timezone_name,
             )
 
         report_asset = build_report_asset_for_scan(
@@ -190,14 +272,16 @@ def reports():
         )
 
         if not report_asset:
-
             return render_template(
                 "reports.html",
                 current_page="reports",
-                report_data=create_empty_report_context(),
+                report_data=create_empty_report_context(
+                    timezone_name=timezone_name
+                ),
                 report_generation_available=False,
                 completed_scans=completed_scans,
                 selected_scan=selected_scan,
+                timezone_name=timezone_name,
             )
 
         report_data = generate_report_data(
@@ -205,6 +289,7 @@ def reports():
                 report_asset
             ],
             created_by=current_user_id,
+            timezone_name=timezone_name,
         )
 
         report_generation_available = (
@@ -220,10 +305,10 @@ def reports():
             report_generation_available=report_generation_available,
             completed_scans=completed_scans,
             selected_scan=selected_scan,
+            timezone_name=timezone_name,
         )
 
     except Exception as error:
-
         current_app.logger.exception(
             "Failed to build report data: %s",
             error
@@ -237,10 +322,13 @@ def reports():
         return render_template(
             "reports.html",
             current_page="reports",
-            report_data=create_empty_report_context(),
+            report_data=create_empty_report_context(
+                timezone_name=timezone_name
+            ),
             report_generation_available=False,
             completed_scans=[],
             selected_scan=None,
+            timezone_name=timezone_name,
         )
 
 
@@ -260,14 +348,16 @@ def generate_report():
 
     The selected scan_id is validated against the current user
     before report generation.
+
+    The browser-supplied timezone is validated and passed to the
+    report service so presentation timestamps use the user's
+    local timezone.
     """
 
-    db = current_app.config.get(
-        "MONGO_DB"
-    )
+    db = current_app.config.get("MONGO_DB")
+    timezone_name = get_client_timezone()
 
     if db is None:
-
         flash(
             "Database connection is unavailable.",
             "danger"
@@ -279,12 +369,9 @@ def generate_report():
             )
         )
 
-    current_user_id = session.get(
-        "admin_id"
-    )
+    current_user_id = session.get("admin_id")
 
     if not current_user_id:
-
         flash(
             "Unable to identify the current user.",
             "danger"
@@ -304,7 +391,6 @@ def generate_report():
     ).strip()
 
     if not scan_id:
-
         flash(
             "Please select a completed scan before generating a report.",
             "warning"
@@ -317,7 +403,6 @@ def generate_report():
         )
 
     try:
-
         scan = get_scan_by_id(
             db=db,
             scan_id=scan_id,
@@ -325,7 +410,6 @@ def generate_report():
         )
 
         if not scan:
-
             flash(
                 "The selected scan could not be found or is not accessible.",
                 "danger"
@@ -343,7 +427,6 @@ def generate_report():
                 ""
             )
         ).strip().lower() != "completed":
-
             flash(
                 "A PDF report can only be generated from a completed scan.",
                 "warning"
@@ -363,7 +446,6 @@ def generate_report():
         )
 
         if not report_asset:
-
             flash(
                 "Unable to prepare the selected scan for reporting.",
                 "danger"
@@ -381,12 +463,12 @@ def generate_report():
                 report_asset
             ],
             created_by=current_user_id,
+            timezone_name=timezone_name,
         )
 
         if not get_report_generation_status(
             report_data
         ):
-
             flash(
                 (
                     "The report is not ready for PDF generation. "
@@ -411,7 +493,8 @@ def generate_report():
         )
 
         filename = create_report_filename(
-            scan
+            scan=scan,
+            timezone_name=timezone_name
         )
 
         return send_file(
@@ -422,7 +505,6 @@ def generate_report():
         )
 
     except Exception as error:
-
         current_app.logger.exception(
             "Failed to generate PDF report: %s",
             error
@@ -458,11 +540,7 @@ def build_report_asset_for_scan(
     fields such as criticality and exposure.
     """
 
-    if not isinstance(
-        scan,
-        dict
-    ):
-
+    if not isinstance(scan, dict):
         return None
 
     target = str(
@@ -473,7 +551,6 @@ def build_report_asset_for_scan(
     ).strip()
 
     if not target:
-
         return None
 
     asset_context = db.assets.find_one(
@@ -511,7 +588,6 @@ def get_report_generation_status(
         report_data,
         dict
     ):
-
         return False
 
     readiness = report_data.get(
@@ -522,7 +598,6 @@ def get_report_generation_status(
         readiness,
         dict
     ):
-
         return False
 
     return bool(
@@ -537,16 +612,44 @@ def get_report_generation_status(
 # EMPTY REPORT CONTEXT
 # ============================================================
 
-def create_empty_report_context():
+def create_empty_report_context(
+    timezone_name=None
+):
     """
     Return a safe zero-state report context.
 
     This allows reports.html to render even if database
     access or report aggregation fails.
+
+    Presentation timestamps use the validated user timezone.
     """
 
-    now = datetime.now(
+    timezone_name = (
+        normalize_timezone_name(
+            timezone_name
+        )
+    )
+
+    report_timezone = get_timezone_object(
+        timezone_name
+    )
+
+    now_utc = datetime.now(
         timezone.utc
+    )
+
+    now_local = now_utc.astimezone(
+        report_timezone
+    )
+
+    timezone_label = (
+        now_local.tzname()
+        or timezone_name
+    )
+
+    generated_at_display = (
+        f"{now_local.strftime('%d %B %Y, %H:%M')} "
+        f"{timezone_label}"
     )
 
     return {
@@ -556,6 +659,11 @@ def create_empty_report_context():
         "title": "AttackLens Security Assessment",
         "created_by": None,
         "status": "not_ready",
+
+        "timezone": timezone_name,
+        "generated_at_utc": now_utc.isoformat(),
+        "generated_at_local": now_local.isoformat(),
+        "generated_at_display": generated_at_display,
 
         "scope": {
             "asset_count": 0,
@@ -648,6 +756,21 @@ def create_empty_report_context():
             },
         },
 
+        "security_finding_summary": {
+            "security_finding_count": 0,
+            "affected_assets": 0,
+            "affected_targets": [],
+            "type_counts": {},
+            "severity_counts": {
+                "CRITICAL": 0,
+                "HIGH": 0,
+                "MEDIUM": 0,
+                "LOW": 0,
+                "UNKNOWN": 0,
+            },
+            "findings": [],
+        },
+
         "readiness": {
             "asset_inventory": False,
             "risk_assessment": False,
@@ -674,7 +797,8 @@ def create_empty_report_context():
             "risk_reduction_percentage": 0.0,
         },
 
-        "generated_at": now,
+        # Retained for backward compatibility with existing templates/tests.
+        "generated_at": now_local,
     }
 
 
@@ -683,25 +807,34 @@ def create_empty_report_context():
 # ============================================================
 
 def create_report_filename(
-    scan=None
+    scan=None,
+    timezone_name=None
 ):
     """
     Create a safe timestamped scan-specific PDF filename.
+
+    The timestamp uses the user's validated local timezone.
     """
+
+    timezone_name = normalize_timezone_name(
+        timezone_name
+    )
+
+    report_timezone = get_timezone_object(
+        timezone_name
+    )
 
     timestamp = datetime.now(
         timezone.utc
+    ).astimezone(
+        report_timezone
     ).strftime(
         "%Y%m%d_%H%M%S"
     )
 
     target = "scan"
 
-    if isinstance(
-        scan,
-        dict
-    ):
-
+    if isinstance(scan, dict):
         target = str(
             scan.get(
                 "target",

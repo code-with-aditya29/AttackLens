@@ -25,6 +25,9 @@ This module does not perform PDF rendering. PDF generation is
 handled separately by services/pdf_service.py.
 """
 
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from models.report_model import (
     create_report_document,
     create_report_scope,
@@ -33,31 +36,160 @@ from models.report_model import (
     create_report_statistics
 )
 
-from services.attack_path_service import (
-    generate_attack_graph
-)
+from services.attack_path_service import generate_attack_graph
+from services.defense_analysis_service import generate_defense_analysis
+from services.mitigation_service import generate_mitigation_recommendations
+from services.risk_comparison_service import generate_risk_comparison
 
-from services.defense_analysis_service import (
-    generate_defense_analysis
-)
 
-from services.mitigation_service import (
-    generate_mitigation_recommendations
-)
+# ============================================================
+# REPORT TIMEZONE
+# ============================================================
 
-from services.risk_comparison_service import (
-    generate_risk_comparison
-)
+DEFAULT_REPORT_TIMEZONE = "UTC"
+
+
+def normalize_timezone_name(timezone_name):
+    """
+    Validate an IANA timezone name.
+
+    Examples:
+        Asia/Kolkata
+        America/New_York
+        America/Toronto
+        Asia/Tokyo
+
+    The browser/client should supply the user's timezone.
+    AttackLens must not infer report timezone from the scan target.
+    """
+
+    if timezone_name is None:
+        return DEFAULT_REPORT_TIMEZONE
+
+    timezone_name = str(timezone_name).strip()
+
+    if not timezone_name:
+        return DEFAULT_REPORT_TIMEZONE
+
+    try:
+        ZoneInfo(timezone_name)
+        return timezone_name
+    except (ZoneInfoNotFoundError, ValueError, TypeError):
+        return DEFAULT_REPORT_TIMEZONE
+
+
+def get_report_timezone(timezone_name=None):
+    """Return a validated ZoneInfo object."""
+
+    normalized = normalize_timezone_name(timezone_name)
+
+    try:
+        return ZoneInfo(normalized)
+    except (ZoneInfoNotFoundError, ValueError, TypeError):
+        return timezone.utc
+
+
+def get_local_report_datetime(timezone_name=None, value=None):
+    """
+    Convert a datetime to the selected report timezone.
+
+    If no datetime is supplied, the current UTC time is used first
+    and then converted to the user's timezone.
+    """
+
+    report_timezone = get_report_timezone(timezone_name)
+
+    if value is None:
+        value = datetime.now(timezone.utc)
+
+    elif isinstance(value, str):
+        value = parse_datetime(value)
+
+    if not isinstance(value, datetime):
+        value = datetime.now(timezone.utc)
+
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+
+    return value.astimezone(report_timezone)
+
+
+def parse_datetime(value):
+    """Safely parse common ISO-8601 datetime strings."""
+
+    if not isinstance(value, str):
+        return None
+
+    value = value.strip()
+
+    if not value:
+        return None
+
+    if value.endswith("Z"):
+        value = value[:-1] + "+00:00"
+
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def build_report_time_metadata(timezone_name=None):
+    """
+    Build timezone-aware report-generation metadata.
+
+    UTC is retained internally for audit consistency while local time
+    is provided for presentation.
+    """
+
+    normalized_timezone = normalize_timezone_name(timezone_name)
+    generated_utc = datetime.now(timezone.utc)
+    generated_local = get_local_report_datetime(
+        timezone_name=normalized_timezone,
+        value=generated_utc
+    )
+
+    return {
+        "timezone": normalized_timezone,
+        "generated_at_utc": generated_utc.isoformat(),
+        "generated_at_local": generated_local.isoformat(),
+        "generated_at_display": format_report_datetime(
+            generated_local,
+            normalized_timezone
+        )
+    }
+
+
+def format_report_datetime(value, timezone_name=None):
+    """
+    Produce a human-readable local report timestamp.
+
+    Example:
+        05 October 2026, 20:55 IST
+    """
+
+    if not isinstance(value, datetime):
+        value = get_local_report_datetime(
+            timezone_name=timezone_name,
+            value=value
+        )
+
+    timezone_label = value.tzname()
+
+    if not timezone_label:
+        timezone_label = normalize_timezone_name(timezone_name)
+
+    return (
+        f"{value.strftime('%d %B %Y, %H:%M')} "
+        f"{timezone_label}"
+    )
 
 
 # ============================================================
 # SCAN-SPECIFIC REPORT ASSET
 # ============================================================
 
-def build_report_asset_from_scan(
-    scan,
-    asset_context=None
-):
+def build_report_asset_from_scan(scan, asset_context=None):
     """
     Convert one completed scan document into the asset-shaped
     snapshot expected by the existing AttackLens report pipeline.
@@ -67,72 +199,39 @@ def build_report_asset_from_scan(
     such as criticality and exposure.
     """
 
-    if not isinstance(
-        scan,
-        dict
-    ):
+    if not isinstance(scan, dict):
         return None
 
-    target = str(
-        scan.get(
-            "target",
-            ""
-        )
-    ).strip()
+    target = str(scan.get("target", "")).strip()
 
     if not target:
         return None
 
-    if not isinstance(
-        asset_context,
-        dict
-    ):
+    if not isinstance(asset_context, dict):
         asset_context = {}
 
-    ports = scan.get(
-        "ports",
-        []
-    )
+    ports = scan.get("ports", [])
+    services = scan.get("services", [])
+    vulnerabilities = scan.get("vulnerabilities", [])
+    security_findings = scan.get("security_findings", [])
 
-    services = scan.get(
-        "services",
-        []
-    )
-
-    vulnerabilities = scan.get(
-        "vulnerabilities",
-        []
-    )
-
-    if not isinstance(
-        ports,
-        list
-    ):
+    if not isinstance(ports, list):
         ports = []
 
-    if not isinstance(
-        services,
-        list
-    ):
+    if not isinstance(services, list):
         services = []
 
-    if not isinstance(
-        vulnerabilities,
-        list
-    ):
+    if not isinstance(vulnerabilities, list):
         vulnerabilities = []
 
-    scan_id = scan.get(
-        "_id"
-    )
+    if not isinstance(security_findings, list):
+        security_findings = []
+
+    scan_id = scan.get("_id")
 
     scan_timestamp = (
-        scan.get(
-            "completed_at"
-        )
-        or scan.get(
-            "created_at"
-        )
+        scan.get("completed_at")
+        or scan.get("created_at")
     )
 
     return {
@@ -161,6 +260,8 @@ def build_report_asset_from_scan(
         "os_accuracy": scan.get("os_accuracy"),
         "vulnerabilities": vulnerabilities,
         "vulnerability_count": len(vulnerabilities),
+        "security_findings": security_findings,
+        "security_finding_count": len(security_findings),
         "highest_severity": scan.get("highest_severity"),
         "risk_score": scan.get("risk_score"),
         "risk_level": scan.get("risk_level"),
@@ -180,7 +281,8 @@ def generate_report_data(
     defense_analysis=None,
     mitigation_analysis=None,
     risk_comparison=None,
-    created_by=None
+    created_by=None,
+    timezone_name=None
 ):
     """
     Generate the complete normalized AttackLens report data.
@@ -190,81 +292,61 @@ def generate_report_data(
     If they are not supplied, this service invokes the existing
     AttackLens analysis pipeline in the correct order.
 
-    The returned document is suitable for:
+    timezone_name should be the user's IANA timezone supplied by
+    the client/browser, for example Asia/Kolkata.
 
+    The returned document is suitable for:
     - Reports page
     - PDF generation
     - Future report-history storage
     """
 
-    assets = normalize_assets(
-        assets
-    )
+    assets = normalize_assets(assets)
 
     # --------------------------------------------------------
     # ATTACK PATH ANALYSIS
     # --------------------------------------------------------
 
-    if not isinstance(
-        attack_graph,
-        dict
-    ):
+    if not isinstance(attack_graph, dict):
         attack_graph = generate_attack_graph(
             assets=assets,
             created_by=created_by
         )
 
-    attack_graph = normalize_document(
-        attack_graph
-    )
+    attack_graph = normalize_document(attack_graph)
 
     # --------------------------------------------------------
     # DEFENSE ANALYSIS
     # --------------------------------------------------------
 
-    if not isinstance(
-        defense_analysis,
-        dict
-    ):
+    if not isinstance(defense_analysis, dict):
         defense_analysis = generate_defense_analysis(
             assets=assets,
             attack_graph=attack_graph,
             created_by=created_by
         )
 
-    defense_analysis = normalize_document(
-        defense_analysis
-    )
+    defense_analysis = normalize_document(defense_analysis)
 
     # --------------------------------------------------------
     # MITIGATION ANALYSIS
     # --------------------------------------------------------
 
-    if not isinstance(
-        mitigation_analysis,
-        dict
-    ):
-        mitigation_analysis = (
-            generate_mitigation_recommendations(
-                assets=assets,
-                attack_graph=attack_graph,
-                defense_analysis=defense_analysis,
-                created_by=created_by
-            )
+    if not isinstance(mitigation_analysis, dict):
+        mitigation_analysis = generate_mitigation_recommendations(
+            assets=assets,
+            attack_graph=attack_graph,
+            defense_analysis=defense_analysis,
+            created_by=created_by
         )
 
-    mitigation_analysis = normalize_document(
-        mitigation_analysis
-    )
+    mitigation_analysis = normalize_document(mitigation_analysis)
 
     # --------------------------------------------------------
     # RISK COMPARISON
     # --------------------------------------------------------
 
-    if not isinstance(
-        risk_comparison,
-        dict
-    ):
+    if not isinstance(risk_comparison, dict):
         risk_comparison = generate_risk_comparison(
             assets=assets,
             attack_graph=attack_graph,
@@ -273,17 +355,12 @@ def generate_report_data(
             created_by=created_by
         )
 
-    risk_comparison = normalize_document(
-        risk_comparison
-    )
+    risk_comparison = normalize_document(risk_comparison)
 
     # --------------------------------------------------------
     # HUMAN-READABLE ASSET REFERENCES
     # --------------------------------------------------------
-    #
-    # Keep presentation-only metadata out of the analysis
-    # pipeline. Attach it only after all analysis modules have
-    # consumed the original normalized attack graph.
+
     attack_graph = attach_asset_reference_map(
         attack_graph=attack_graph,
         assets=assets
@@ -293,9 +370,8 @@ def generate_report_data(
     # REPORT COMPONENTS
     # --------------------------------------------------------
 
-    vulnerability_summary = build_vulnerability_summary(
-        assets
-    )
+    vulnerability_summary = build_vulnerability_summary(assets)
+    security_finding_summary = build_security_finding_summary(assets)
 
     readiness = build_report_readiness(
         assets=assets,
@@ -313,19 +389,15 @@ def generate_report_data(
         risk_comparison=risk_comparison
     )
 
-    executive_summary = build_executive_summary(
-        statistics
-    )
-
-    scope = build_report_scope(
-        assets
-    )
+    executive_summary = build_executive_summary(statistics)
+    scope = build_report_scope(assets)
+    time_metadata = build_report_time_metadata(timezone_name)
 
     # --------------------------------------------------------
     # FINAL REPORT
     # --------------------------------------------------------
 
-    return create_report_document(
+    report = create_report_document(
         created_by=created_by,
         title="AttackLens Security Assessment",
         scope=scope,
@@ -340,43 +412,38 @@ def generate_report_data(
         statistics=statistics
     )
 
+    # Keep timezone/presentation metadata outside the security
+    # calculations so it cannot affect analysis results.
+    if isinstance(report, dict):
+        report["timezone"] = time_metadata["timezone"]
+        report["generated_at_utc"] = time_metadata["generated_at_utc"]
+        report["generated_at_local"] = time_metadata["generated_at_local"]
+        report["generated_at_display"] = time_metadata["generated_at_display"]
+        report["security_finding_summary"] = security_finding_summary
+
+    return report
+
 
 # ============================================================
 # REPORT PRESENTATION NORMALIZATION
 # ============================================================
 
-def attach_asset_reference_map(
-    attack_graph,
-    assets
-):
+def attach_asset_reference_map(attack_graph, assets):
     """
     Attach presentation-only mappings from internal asset IDs
     to human-readable targets/hostnames without changing graph
     nodes, edges, paths, scores, or security conclusions.
     """
 
-    attack_graph = normalize_document(
-        attack_graph
-    )
-
-    assets = normalize_assets(
-        assets
-    )
-
+    attack_graph = normalize_document(attack_graph)
+    assets = normalize_assets(assets)
     asset_references = {}
 
     for asset in assets:
-
-        target = get_asset_target(
-            asset
-        )
+        target = get_asset_target(asset)
 
         hostname = str(
-            asset.get(
-                "hostname"
-            )
-            or
-            ""
+            asset.get("hostname") or ""
         ).strip()
 
         if (
@@ -396,17 +463,12 @@ def attach_asset_reference_map(
             "scan_id",
             "latest_scan_id"
         ):
-
-            value = asset.get(
-                key
-            )
+            value = asset.get(key)
 
             if value is None:
                 continue
 
-            normalized = str(
-                value
-            ).strip()
+            normalized = str(value).strip()
 
             if normalized:
                 asset_references.setdefault(
@@ -414,21 +476,13 @@ def attach_asset_reference_map(
                     reference
                 )
 
-    normalized_graph = dict(
-        attack_graph
-    )
-
-    normalized_graph[
-        "asset_references"
-    ] = asset_references
+    normalized_graph = dict(attack_graph)
+    normalized_graph["asset_references"] = asset_references
 
     return normalized_graph
 
 
-def extract_open_port_numbers(
-    ports=None,
-    services=None
-):
+def extract_open_port_numbers(ports=None, services=None):
     """
     Normalize unique observed open port numbers from the
     selected scan snapshot. No unobserved port is inferred.
@@ -443,57 +497,32 @@ def extract_open_port_numbers(
     )
 
     for source_name, records in collections:
-
-        if not isinstance(
-            records,
-            list
-        ):
+        if not isinstance(records, list):
             continue
 
         for record in records:
-
-            if not isinstance(
-                record,
-                dict
-            ):
+            if not isinstance(record, dict):
                 continue
 
             state = str(
-                record.get(
-                    "state",
-                    ""
-                )
+                record.get("state", "")
             ).strip().lower()
 
             if source_name == "ports":
-
                 if state != "open":
                     continue
-
             elif state and state != "open":
-
                 continue
 
             port = (
-                record.get(
-                    "port"
-                )
-                if record.get(
-                    "port"
-                ) is not None
-                else record.get(
-                    "port_number"
-                )
+                record.get("port")
+                if record.get("port") is not None
+                else record.get("port_number")
             )
 
             try:
-                port = int(
-                    port
-                )
-            except (
-                TypeError,
-                ValueError
-            ):
+                port = int(port)
+            except (TypeError, ValueError):
                 continue
 
             if not 1 <= port <= 65535:
@@ -502,13 +531,8 @@ def extract_open_port_numbers(
             if port in seen:
                 continue
 
-            seen.add(
-                port
-            )
-
-            open_ports.append(
-                port
-            )
+            seen.add(port)
+            open_ports.append(port)
 
     return open_ports
 
@@ -517,34 +541,20 @@ def extract_open_port_numbers(
 # REPORT SCOPE
 # ============================================================
 
-def build_report_scope(
-    assets
-):
-    """
-    Build the authorized environment scope represented
-    by the report.
-    """
+def build_report_scope(assets):
+    """Build the authorized environment scope represented by the report."""
 
     targets = []
 
     for asset in assets:
-
-        target = get_asset_target(
-            asset
-        )
+        target = get_asset_target(asset)
 
         if target and target not in targets:
-            targets.append(
-                target
-            )
+            targets.append(target)
 
     return create_report_scope(
-        asset_count=len(
-            assets
-        ),
-        target_count=len(
-            targets
-        ),
+        asset_count=len(assets),
+        target_count=len(targets),
         targets=targets,
         analysis_source="AttackLens Analysis"
     )
@@ -554,72 +564,44 @@ def build_report_scope(
 # EXECUTIVE SUMMARY
 # ============================================================
 
-def build_executive_summary(
-    statistics
-):
-    """
-    Build a compact executive summary from normalized
-    report statistics.
-    """
+def build_executive_summary(statistics):
+    """Build a compact executive summary from normalized report statistics."""
 
-    statistics = normalize_document(
-        statistics
-    )
+    statistics = normalize_document(statistics)
 
     return create_executive_summary(
         overall_risk_score=statistics.get(
-            "current_risk_score",
-            0
+            "current_risk_score", 0
         ),
-
         overall_risk_level=statistics.get(
-            "current_risk_level",
-            "LOW"
+            "current_risk_level", "LOW"
         ),
-
         asset_count=statistics.get(
-            "total_assets",
-            0
+            "total_assets", 0
         ),
-
         vulnerability_count=statistics.get(
-            "total_vulnerabilities",
-            0
+            "total_vulnerabilities", 0
         ),
-
         attack_path_count=statistics.get(
-            "attack_paths",
-            0
+            "attack_paths", 0
         ),
-
         defense_finding_count=statistics.get(
-            "defense_findings",
-            0
+            "defense_findings", 0
         ),
-
         recommendation_count=statistics.get(
-            "recommendations",
-            0
+            "recommendations", 0
         ),
-
         projected_risk_score=statistics.get(
-            "projected_risk_score",
-            0
+            "projected_risk_score", 0
         ),
-
         projected_risk_level=statistics.get(
-            "projected_risk_level",
-            "LOW"
+            "projected_risk_level", "LOW"
         ),
-
         projected_reduction=statistics.get(
-            "risk_reduction",
-            0
+            "risk_reduction", 0
         ),
-
         projected_reduction_percentage=statistics.get(
-            "risk_reduction_percentage",
-            0
+            "risk_reduction_percentage", 0
         )
     )
 
@@ -638,48 +620,32 @@ def build_report_readiness(
     """
     Determine which report sections are available.
 
-    Important:
-
     A valid analysis containing zero attack paths or zero
     vulnerabilities is still considered completed analysis.
 
     Report generation requires at least one authorized asset.
     """
 
-    has_assets = bool(
-        assets
-    )
+    has_assets = bool(assets)
 
     attack_path_ready = (
         has_assets
-        and isinstance(
-            attack_graph,
-            dict
-        )
+        and isinstance(attack_graph, dict)
     )
 
     defense_ready = (
         has_assets
-        and isinstance(
-            defense_analysis,
-            dict
-        )
+        and isinstance(defense_analysis, dict)
     )
 
     mitigation_ready = (
         has_assets
-        and isinstance(
-            mitigation_analysis,
-            dict
-        )
+        and isinstance(mitigation_analysis, dict)
     )
 
     comparison_ready = (
         has_assets
-        and isinstance(
-            risk_comparison,
-            dict
-        )
+        and isinstance(risk_comparison, dict)
     )
 
     return create_report_readiness(
@@ -689,15 +655,6 @@ def build_report_readiness(
         defense_analysis=defense_ready,
         mitigation_recommendations=mitigation_ready,
         risk_comparison=comparison_ready,
-
-        # A report may legitimately contain:
-        # 0 vulnerabilities
-        # 0 attack paths
-        # 0 recommendations
-        #
-        # Therefore generation depends on the presence of
-        # authorized asset analysis rather than positive
-        # finding counts.
         report_generation_available=has_assets
     )
 
@@ -714,7 +671,7 @@ def build_report_statistics(
     risk_comparison
 ):
     """
-    Build the summary statistics displayed on the Reports page
+    Build summary statistics displayed on the Reports page
     and used by the PDF executive summary.
     """
 
@@ -741,9 +698,7 @@ def build_report_statistics(
     total_assets = safe_integer(
         current_state.get(
             "total_assets",
-            len(
-                assets
-            )
+            len(assets)
         )
     )
 
@@ -764,18 +719,14 @@ def build_report_statistics(
     open_ports = safe_integer(
         current_state.get(
             "open_ports",
-            count_open_ports(
-                assets
-            )
+            count_open_ports(assets)
         )
     )
 
     attack_paths = safe_integer(
         current_state.get(
             "attack_paths",
-            count_attack_paths(
-                attack_graph
-            )
+            count_attack_paths(attack_graph)
         )
     )
 
@@ -861,80 +812,118 @@ def build_report_statistics(
 
 
 # ============================================================
-# VULNERABILITY SUMMARY
+# CVE VULNERABILITY SUMMARY
 # ============================================================
 
-def build_vulnerability_summary(
-    assets
-):
+def build_vulnerability_summary(assets):
     """
-    Build a vulnerability summary from the asset inventory.
+    Build the traditional CVE vulnerability summary.
 
-    The function remains conservative and does not fabricate
-    vulnerability information.
-
-    It only reports findings actually present on assets.
+    This section remains separate from non-CVE security findings.
     """
 
     vulnerability_count = 0
-
     vulnerable_assets = 0
-
     affected_targets = []
-
     findings = []
 
     for asset in assets:
-
-        asset_findings = get_asset_vulnerabilities(
-            asset
-        )
+        asset_findings = get_asset_vulnerabilities(asset)
 
         if asset_findings:
             vulnerable_assets += 1
+            target = get_asset_target(asset)
 
-            target = get_asset_target(
-                asset
-            )
+            if target and target not in affected_targets:
+                affected_targets.append(target)
 
-            if (
-                target
-                and target not in affected_targets
-            ):
-                affected_targets.append(
-                    target
-                )
-
-        vulnerability_count += len(
-            asset_findings
-        )
+        vulnerability_count += len(asset_findings)
 
         for finding in asset_findings:
-
-            findings.append(
-                {
-                    "target":
-                        get_asset_target(
-                            asset
-                        ),
-
-                    "finding":
-                        finding
-                }
-            )
+            findings.append({
+                "target": get_asset_target(asset),
+                "finding": finding
+            })
 
     return {
-        "vulnerability_count":
-            vulnerability_count,
+        "vulnerability_count": vulnerability_count,
+        "vulnerable_assets": vulnerable_assets,
+        "affected_targets": affected_targets,
+        "findings": findings
+    }
 
-        "vulnerable_assets":
-            vulnerable_assets,
 
-        "affected_targets":
-            affected_targets,
+# ============================================================
+# NON-CVE SECURITY FINDING SUMMARY
+# ============================================================
 
-        "findings":
-            findings
+def build_security_finding_summary(assets):
+    """
+    Build a separate summary for AttackLens unified non-CVE
+    security findings.
+
+    Findings are not converted into CVEs and are not mixed into
+    the traditional CVE vulnerability table.
+    """
+
+    finding_count = 0
+    affected_assets = 0
+    affected_targets = []
+    findings = []
+    type_counts = {}
+    severity_counts = {
+        "CRITICAL": 0,
+        "HIGH": 0,
+        "MEDIUM": 0,
+        "LOW": 0,
+        "UNKNOWN": 0
+    }
+
+    for asset in assets:
+        asset_findings = get_asset_security_findings(asset)
+
+        if asset_findings:
+            affected_assets += 1
+            target = get_asset_target(asset)
+
+            if target and target not in affected_targets:
+                affected_targets.append(target)
+
+        finding_count += len(asset_findings)
+
+        for finding in asset_findings:
+            finding_type = str(
+                finding.get(
+                    "finding_type",
+                    finding.get("type", "UNKNOWN")
+                )
+            ).strip().upper() or "UNKNOWN"
+
+            severity = str(
+                finding.get("severity", "UNKNOWN")
+            ).strip().upper()
+
+            if severity not in severity_counts:
+                severity = "UNKNOWN"
+
+            type_counts[finding_type] = (
+                type_counts.get(finding_type, 0) + 1
+            )
+
+            severity_counts[severity] += 1
+
+            findings.append({
+                "target": get_asset_target(asset),
+                "finding": finding
+            })
+
+    return {
+        "security_finding_count": finding_count,
+        "affected_assets": affected_assets,
+        "affected_targets": affected_targets,
+        "type_counts": type_counts,
+        "severity_counts": severity_counts,
+        "findings": findings
     }
 
 
@@ -942,17 +931,10 @@ def build_vulnerability_summary(
 # ASSET HELPERS
 # ============================================================
 
-def get_asset_target(
-    asset
-):
-    """
-    Extract the primary target identifier from an asset.
-    """
+def get_asset_target(asset):
+    """Extract the primary target identifier from an asset."""
 
-    if not isinstance(
-        asset,
-        dict
-    ):
+    if not isinstance(asset, dict):
         return None
 
     possible_keys = (
@@ -963,17 +945,12 @@ def get_asset_target(
     )
 
     for key in possible_keys:
-
-        value = asset.get(
-            key
-        )
+        value = asset.get(key)
 
         if value is None:
             continue
 
-        normalized = str(
-            value
-        ).strip()
+        normalized = str(value).strip()
 
         if normalized:
             return normalized
@@ -981,54 +958,57 @@ def get_asset_target(
     return None
 
 
-def get_asset_vulnerabilities(
-    asset
-):
+def get_asset_vulnerabilities(asset):
     """
-    Return vulnerability records explicitly present
-    on an asset.
+    Return CVE vulnerability records explicitly present on an asset.
 
-    Multiple historically used field names are supported,
-    but nothing is inferred when no vulnerability data exists.
+    Multiple historically used field names remain supported for
+    backward compatibility.
     """
 
-    if not isinstance(
-        asset,
-        dict
-    ):
+    if not isinstance(asset, dict):
         return []
 
     possible_keys = (
         "vulnerabilities",
-        "cves",
-        "findings"
+        "cves"
     )
 
     for key in possible_keys:
+        value = asset.get(key)
 
-        value = asset.get(
-            key
-        )
-
-        if isinstance(
-            value,
-            list
-        ):
+        if isinstance(value, list):
             return [
                 item
                 for item in value
-                if isinstance(
-                    item,
-                    dict
-                )
+                if isinstance(item, dict)
             ]
 
     return []
 
 
-def count_open_ports(
-    assets
-):
+def get_asset_security_findings(asset):
+    """Return unified non-CVE security findings present on an asset."""
+
+    if not isinstance(asset, dict):
+        return []
+
+    findings = asset.get(
+        "security_findings",
+        []
+    )
+
+    if not isinstance(findings, list):
+        return []
+
+    return [
+        finding
+        for finding in findings
+        if isinstance(finding, dict)
+    ]
+
+
+def count_open_ports(assets):
     """
     Count open ports across assets.
 
@@ -1039,31 +1019,18 @@ def count_open_ports(
     total = 0
 
     for asset in assets:
-
-        if not isinstance(
-            asset,
-            dict
-        ):
+        if not isinstance(asset, dict):
             continue
 
-        ports = asset.get(
-            "ports"
-        )
+        ports = asset.get("ports")
 
-        if not isinstance(
-            ports,
-            list
-        ):
+        if not isinstance(ports, list):
             continue
 
         open_ports = set()
 
         for port_data in ports:
-
-            if not isinstance(
-                port_data,
-                dict
-            ):
+            if not isinstance(port_data, dict):
                 continue
 
             state = str(
@@ -1076,29 +1043,17 @@ def count_open_ports(
             if state != "open":
                 continue
 
-            port = port_data.get(
-                "port"
-            )
+            port = port_data.get("port")
 
             try:
-                port = int(
-                    port
-                )
-
-            except (
-                TypeError,
-                ValueError
-            ):
+                port = int(port)
+            except (TypeError, ValueError):
                 continue
 
             if 1 <= port <= 65535:
-                open_ports.add(
-                    port
-                )
+                open_ports.add(port)
 
-        total += len(
-            open_ports
-        )
+        total += len(open_ports)
 
     return total
 
@@ -1107,33 +1062,23 @@ def count_open_ports(
 # ATTACK PATH HELPERS
 # ============================================================
 
-def count_attack_paths(
-    attack_graph
-):
-    """
-    Count attack paths contained in an attack graph.
-    """
+def count_attack_paths(attack_graph):
+    """Count attack paths contained in an attack graph."""
 
     paths = get_list(
         attack_graph,
         "paths"
     )
 
-    return len(
-        paths
-    )
+    return len(paths)
 
 
 # ============================================================
 # DEFENSE ANALYSIS HELPERS
 # ============================================================
 
-def count_defense_findings(
-    defense_analysis
-):
-    """
-    Count defense-analysis findings.
-    """
+def count_defense_findings(defense_analysis):
+    """Count defense-analysis findings."""
 
     findings = get_list(
         defense_analysis,
@@ -1141,9 +1086,7 @@ def count_defense_findings(
     )
 
     if findings:
-        return len(
-            findings
-        )
+        return len(findings)
 
     statistics = get_dictionary(
         defense_analysis,
@@ -1165,12 +1108,8 @@ def count_defense_findings(
 # MITIGATION HELPERS
 # ============================================================
 
-def count_recommendations(
-    mitigation_analysis
-):
-    """
-    Count mitigation recommendations.
-    """
+def count_recommendations(mitigation_analysis):
+    """Count mitigation recommendations."""
 
     recommendations = get_list(
         mitigation_analysis,
@@ -1178,9 +1117,7 @@ def count_recommendations(
     )
 
     if recommendations:
-        return len(
-            recommendations
-        )
+        return len(recommendations)
 
     statistics = get_dictionary(
         mitigation_analysis,
@@ -1202,48 +1139,30 @@ def count_recommendations(
 # COLLECTION NORMALIZATION
 # ============================================================
 
-def normalize_assets(
-    assets
-):
+def normalize_assets(assets):
     """
     Safely normalize the asset collection without modifying
     existing working asset documents.
     """
 
-    if not isinstance(
-        assets,
-        list
-    ):
+    if not isinstance(assets, list):
         return []
 
     normalized = []
 
     for asset in assets:
-
-        if not isinstance(
-            asset,
-            dict
-        ):
+        if not isinstance(asset, dict):
             continue
 
-        normalized.append(
-            asset
-        )
+        normalized.append(asset)
 
     return normalized
 
 
-def normalize_document(
-    document
-):
-    """
-    Ensure an analysis result is represented as a dictionary.
-    """
+def normalize_document(document):
+    """Ensure an analysis result is represented as a dictionary."""
 
-    if isinstance(
-        document,
-        dict
-    ):
+    if isinstance(document, dict):
         return document
 
     return {}
@@ -1253,55 +1172,29 @@ def normalize_document(
 # DICTIONARY HELPERS
 # ============================================================
 
-def get_dictionary(
-    document,
-    key
-):
-    """
-    Safely retrieve a nested dictionary.
-    """
+def get_dictionary(document, key):
+    """Safely retrieve a nested dictionary."""
 
-    if not isinstance(
-        document,
-        dict
-    ):
+    if not isinstance(document, dict):
         return {}
 
-    value = document.get(
-        key
-    )
+    value = document.get(key)
 
-    if not isinstance(
-        value,
-        dict
-    ):
+    if not isinstance(value, dict):
         return {}
 
     return value
 
 
-def get_list(
-    document,
-    key
-):
-    """
-    Safely retrieve a nested list.
-    """
+def get_list(document, key):
+    """Safely retrieve a nested list."""
 
-    if not isinstance(
-        document,
-        dict
-    ):
+    if not isinstance(document, dict):
         return []
 
-    value = document.get(
-        key
-    )
+    value = document.get(key)
 
-    if not isinstance(
-        value,
-        list
-    ):
+    if not isinstance(value, list):
         return []
 
     return value
@@ -1311,46 +1204,23 @@ def get_list(
 # NUMBER HELPERS
 # ============================================================
 
-def safe_integer(
-    value
-):
-    """
-    Convert a value to a non-negative integer.
-    """
+def safe_integer(value):
+    """Convert a value to a non-negative integer."""
 
     try:
-        normalized = int(
-            value
-        )
-
-    except (
-        TypeError,
-        ValueError
-    ):
+        normalized = int(value)
+    except (TypeError, ValueError):
         return 0
 
-    return max(
-        0,
-        normalized
-    )
+    return max(0, normalized)
 
 
-def safe_number(
-    value
-):
-    """
-    Convert a value to a non-negative floating-point number.
-    """
+def safe_number(value):
+    """Convert a value to a non-negative floating-point number."""
 
     try:
-        normalized = float(
-            value
-        )
-
-    except (
-        TypeError,
-        ValueError
-    ):
+        normalized = float(value)
+    except (TypeError, ValueError):
         return 0.0
 
     normalized = max(
@@ -1368,12 +1238,8 @@ def safe_number(
 # RISK LEVEL HELPER
 # ============================================================
 
-def safe_risk_level(
-    value
-):
-    """
-    Normalize an AttackLens risk level.
-    """
+def safe_risk_level(value):
+    """Normalize an AttackLens risk level."""
 
     normalized = str(
         value or "LOW"

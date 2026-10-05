@@ -243,6 +243,33 @@ CONFIDENCE_WEIGHTS = {
 }
 
 
+# Security Finding categories that provide context/assessment quality only.
+# They are stored and reported, but they must not create or strengthen an
+# attack path by themselves.
+CONTEXT_ONLY_SECURITY_CATEGORIES = {
+    "WEB_APPLICATION_SURFACE",
+    "LIMITED_VERSION_EVIDENCE",
+    "LOW_CONFIDENCE_OS_DETECTION",
+    "LARGE_ATTACK_SURFACE"
+}
+
+# NETWORK/SERVICE findings produced by the current scanner primarily describe
+# exposed services already represented by open/sensitive-port evidence.
+# Excluding them here prevents the same exposure from being counted twice.
+ATTACK_EVIDENCE_FINDING_TYPES = {
+    "WEB",
+    "APPLICATION",
+    "HOST",
+    "OS",
+    "CONFIGURATION"
+}
+
+INACTIVE_SECURITY_STATUSES = {
+    "resolved",
+    "rejected"
+}
+
+
 
 
 
@@ -1820,9 +1847,11 @@ def generate_single_asset_attack_edges(
 
         sensitive_ports = get_sensitive_open_ports(asset)
         vulnerability_count = get_vulnerability_count(asset)
+        security_finding_count = get_attack_security_finding_count(asset)
+        attack_evidence_count = vulnerability_count + security_finding_count
         risk_level = normalize_risk_level(asset.get("risk_level"))
 
-        has_vulnerability_evidence = vulnerability_count > 0
+        has_vulnerability_evidence = attack_evidence_count > 0
         has_supporting_context = (
             bool(sensitive_ports)
             or risk_level in ("HIGH", "CRITICAL")
@@ -1837,8 +1866,8 @@ def generate_single_asset_attack_edges(
         evidence = [
             "Asset exposes one or more open network services.",
             (
-                f"Asset currently contains {vulnerability_count} "
-                "active security finding(s)."
+                f"Asset currently contains {attack_evidence_count} "
+                "active attack-relevant security finding(s)."
             ),
         ]
 
@@ -2088,36 +2117,14 @@ def extract_entry_evidence(
 
 
 
-    vulnerability_count = (
+    vulnerability_count = get_vulnerability_count(asset)
+    security_finding_count = get_attack_security_finding_count(asset)
+    attack_evidence_count = vulnerability_count + security_finding_count
 
-        get_vulnerability_count(
-
-            asset
-
-        )
-
-    )
-
-
-
-
-
-    if vulnerability_count > 0:
-
-
-
+    if attack_evidence_count > 0:
         evidence.append(
-
-
-
-            f"Asset currently contains "
-
-            f"{vulnerability_count} "
-
-            f"security finding(s)."
-
-
-
+            f"Asset currently contains {attack_evidence_count} "
+            "active attack-relevant security finding(s)."
         )
 
 
@@ -2281,13 +2288,8 @@ def calculate_entry_confidence(
 
 
     vulnerabilities = (
-
-        get_vulnerability_count(
-
-            asset
-
-        )
-
+        get_vulnerability_count(asset)
+        + get_attack_security_finding_count(asset)
     )
 
 
@@ -2818,12 +2820,14 @@ def evaluate_asset_relationship(
 
     target_sensitive_ports = get_sensitive_open_ports(target)
     vulnerability_count = get_vulnerability_count(target)
+    security_finding_count = get_attack_security_finding_count(target)
+    attack_evidence_count = vulnerability_count + security_finding_count
     target_risk_score = normalize_score(target.get("risk_score"))
     target_risk_level = normalize_risk_level(target.get("risk_level"))
 
     meaningful_target_evidence = (
         bool(target_sensitive_ports)
-        or vulnerability_count > 0
+        or attack_evidence_count > 0
         or target_risk_level in ("HIGH", "CRITICAL")
     )
 
@@ -2843,10 +2847,10 @@ def evaluate_asset_relationship(
             + "."
         )
 
-    if vulnerability_count > 0:
+    if attack_evidence_count > 0:
         evidence.append(
-            f"Target currently contains {vulnerability_count} "
-            "active security finding(s)."
+            f"Target currently contains {attack_evidence_count} "
+            "active attack-relevant security finding(s)."
         )
 
     if target_risk_score > 0:
@@ -2860,7 +2864,7 @@ def evaluate_asset_relationship(
         "or exploitation has not been verified."
     )
 
-    if vulnerability_count > 0 and target_sensitive_ports:
+    if attack_evidence_count > 0 and target_sensitive_ports:
         confidence = "MEDIUM"
     else:
         confidence = "LOW"
@@ -3151,241 +3155,58 @@ def calculate_asset_attack_score(
 
 
 
-def calculate_vulnerability_contribution(
-
-    asset
-
-):
-
+def calculate_vulnerability_contribution(asset):
     """
-
-    Calculate vulnerability contribution
-
-    toward an attack score.
-
-
-
-    Maximum:
-
-        20 points
-
+    Calculate attack-score contribution from active CVEs and eligible non-CVE
+    security findings. Context-only observations and duplicated network/service
+    exposure findings are excluded. Maximum contribution: 20 points.
     """
+    findings = []
 
+    for vulnerability in normalize_list(asset.get("vulnerabilities")):
+        if isinstance(vulnerability, dict):
+            findings.append(vulnerability)
 
+    for finding in get_attack_security_findings(asset):
+        findings.append(finding)
 
-    vulnerabilities = normalize_list(
-
-        asset.get(
-
-            "vulnerabilities"
-
-        )
-
-    )
-
-
-
-
-
-    if not vulnerabilities:
-
-
-
+    if not findings:
         return 0
-
-
-
-
 
     contribution = 0.0
 
+    for finding in findings:
+        status = str(finding.get("status", "potential")).strip().lower()
 
-
-
-
-    for vulnerability in vulnerabilities:
-
-
-
-        if not isinstance(
-
-            vulnerability,
-
-            dict
-
-        ):
-
-
-
+        if status in INACTIVE_SECURITY_STATUSES:
             continue
 
-
-
-
-
-        status = str(
-
-            vulnerability.get(
-
-                "status",
-
-                "potential"
-
-            )
-
-        ).strip().lower()
-
-
-
-
-
-        if status in (
-
-            "resolved",
-
-            "rejected"
-
-        ):
-
-
-
-            continue
-
-
-
-
-
-        severity = normalize_risk_level(
-
-            vulnerability.get(
-
-                "severity"
-
-            )
-
-        )
-
-
-
-
-
-        confidence = normalize_confidence(
-
-            vulnerability.get(
-
-                "confidence"
-
-            )
-
-        )
-
-
-
-
+        severity = normalize_risk_level(finding.get("severity"))
+        confidence = normalize_confidence(finding.get("confidence"))
 
         if severity == "CRITICAL":
-
-
-
             base = 5
-
-
-
         elif severity == "HIGH":
-
-
-
             base = 4
-
-
-
         elif severity == "MEDIUM":
-
-
-
             base = 2
-
-
-
         elif severity == "LOW":
-
-
-
             base = 1
-
-
-
         else:
-
-
-
             base = 0.5
 
-
-
-
-
         if confidence == "HIGH":
-
-
-
             multiplier = 1.0
-
-
-
         elif confidence == "MEDIUM":
-
-
-
             multiplier = 0.7
-
-
-
         elif confidence == "LOW":
-
-
-
             multiplier = 0.3
-
-
-
         else:
-
-
-
             multiplier = 0.1
 
+        contribution += base * multiplier
 
-
-
-
-        contribution += (
-
-            base
-
-            *
-
-            multiplier
-
-        )
-
-
-
-
-
-    return min(
-
-        round(
-
-            contribution,
-
-            2
-
-        ),
-
-        20
-
-    )
+    return min(round(contribution, 2), 20)
 
 
 
@@ -5840,6 +5661,69 @@ def get_sensitive_open_ports(
 
 
 # ==========================================
+# GET ATTACK-RELEVANT SECURITY FINDINGS
+# ==========================================
+
+def get_attack_security_findings(asset):
+    """
+    Return active non-CVE findings that are suitable as attack-path evidence.
+
+    Context-only observations are excluded. NETWORK/SERVICE exposure findings
+    are also excluded because open and sensitive ports already represent that
+    evidence in this engine.
+    """
+    if not isinstance(asset, dict):
+        return []
+
+    eligible = []
+    seen = set()
+
+    for finding in normalize_list(asset.get("security_findings")):
+        if not isinstance(finding, dict):
+            continue
+
+        finding_type = str(
+            finding.get("finding_type", finding.get("type", ""))
+        ).strip().upper()
+
+        category = str(finding.get("category", "")).strip().upper()
+        status = str(finding.get("status", "potential")).strip().lower()
+
+        if finding_type not in ATTACK_EVIDENCE_FINDING_TYPES:
+            continue
+
+        if category in CONTEXT_ONLY_SECURITY_CATEGORIES:
+            continue
+
+        if status in INACTIVE_SECURITY_STATUSES:
+            continue
+
+        key = (
+            str(finding.get("finding_id", "")).strip().lower(),
+            finding_type,
+            category,
+            str(finding.get("target", "")).strip().lower(),
+            normalize_port_number(finding.get("port")),
+            str(finding.get("endpoint", "")).strip().lower(),
+            str(finding.get("parameter", "")).strip().lower(),
+            str(finding.get("title", "")).strip().lower()
+        )
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        eligible.append(finding)
+
+    return eligible
+
+
+def get_attack_security_finding_count(asset):
+    """Return the number of active attack-relevant non-CVE findings."""
+    return len(get_attack_security_findings(asset))
+
+
+# ==========================================
 
 # GET VULNERABILITY COUNT
 
@@ -6260,9 +6144,5 @@ def normalize_list(
 
 
         return value
-
-
-
-
 
     return []
