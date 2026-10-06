@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from models.security_finding_model import (
     create_security_finding,
@@ -26,7 +27,6 @@ class TestSecurityFindingModel(unittest.TestCase):
     # ======================================
 
     def test_create_security_finding(self):
-
         finding = create_security_finding(
             finding_type="SERVICE",
             category="INSECURE_PROTOCOL",
@@ -73,13 +73,11 @@ class TestSecurityFindingModel(unittest.TestCase):
             finding["finding_id"]
         )
 
-
     # ======================================
     # NORMALIZATION
     # ======================================
 
     def test_normalization(self):
-
         self.assertEqual(
             normalize_severity("high"),
             "HIGH"
@@ -105,13 +103,11 @@ class TestSecurityFindingModel(unittest.TestCase):
             9.8
         )
 
-
     # ======================================
     # INVALID PORT
     # ======================================
 
     def test_invalid_port(self):
-
         self.assertIsNone(
             normalize_port(70000)
         )
@@ -120,13 +116,11 @@ class TestSecurityFindingModel(unittest.TestCase):
             normalize_port("invalid")
         )
 
-
     # ======================================
     # CVE COMPATIBILITY
     # ======================================
 
     def test_cve_compatibility(self):
-
         finding = create_security_finding(
             finding_type="CVE",
             category="KNOWN_CVE",
@@ -169,14 +163,12 @@ class TestSecurityFindingModel(unittest.TestCase):
 class TestSecurityScanner(unittest.TestCase):
 
     def setUp(self):
-
         # Simulated Nmap evidence matching the
         # structure produced by AttackLens.
 
         self.target = "192.168.56.101"
 
         self.ports = [
-
             {
                 "port": 21,
                 "protocol": "tcp",
@@ -185,7 +177,6 @@ class TestSecurityScanner(unittest.TestCase):
                 "product": "vsftpd",
                 "version": "2.3.4"
             },
-
             {
                 "port": 23,
                 "protocol": "tcp",
@@ -194,7 +185,6 @@ class TestSecurityScanner(unittest.TestCase):
                 "product": "Linux telnetd",
                 "version": None
             },
-
             {
                 "port": 80,
                 "protocol": "tcp",
@@ -203,7 +193,6 @@ class TestSecurityScanner(unittest.TestCase):
                 "product": "Apache httpd",
                 "version": "2.2.8"
             },
-
             {
                 "port": 3306,
                 "protocol": "tcp",
@@ -215,28 +204,24 @@ class TestSecurityScanner(unittest.TestCase):
         ]
 
         self.services = [
-
             {
                 "port": 21,
                 "name": "ftp",
                 "product": "vsftpd",
                 "version": "2.3.4"
             },
-
             {
                 "port": 23,
                 "name": "telnet",
                 "product": "Linux telnetd",
                 "version": None
             },
-
             {
                 "port": 80,
                 "name": "http",
                 "product": "Apache httpd",
                 "version": "2.2.8"
             },
-
             {
                 "port": 3306,
                 "name": "mysql",
@@ -245,13 +230,11 @@ class TestSecurityScanner(unittest.TestCase):
             }
         ]
 
-
     # ======================================
     # TELNET DETECTION
     # ======================================
 
     def test_telnet_detection(self):
-
         findings = analyze_network_services(
             target=self.target,
             ports=self.ports,
@@ -284,13 +267,11 @@ class TestSecurityScanner(unittest.TestCase):
             "OBSERVED"
         )
 
-
     # ======================================
     # FTP DETECTION
     # ======================================
 
     def test_ftp_detection(self):
-
         findings = analyze_network_services(
             target=self.target,
             ports=self.ports,
@@ -313,13 +294,11 @@ class TestSecurityScanner(unittest.TestCase):
             "FTP_EXPOSURE"
         )
 
-
     # ======================================
     # DATABASE EXPOSURE
     # ======================================
 
     def test_database_exposure(self):
-
         findings = analyze_network_services(
             target=self.target,
             ports=self.ports,
@@ -347,12 +326,27 @@ class TestSecurityScanner(unittest.TestCase):
             "HIGH"
         )
 
-
     # ======================================
     # WEB SURFACE DETECTION
     # ======================================
 
-    def test_web_surface_detection(self):
+    @patch(
+        "services.security_scanner_service."
+        "run_bounded_web_checks",
+        return_value=[]
+    )
+    def test_web_surface_detection(
+        self,
+        mock_web_checks
+    ):
+        """
+        Verify that a discovered HTTP service creates
+        exactly one WEB_APPLICATION_SURFACE observation.
+
+        Active HTTP security checks are mocked here
+        because this is a unit test for service-surface
+        classification, not a live web assessment.
+        """
 
         findings = analyze_web_services(
             target=self.target,
@@ -363,7 +357,12 @@ class TestSecurityScanner(unittest.TestCase):
         web = [
             finding
             for finding in findings
-            if finding.get("port") == 80
+            if (
+                finding.get("port") == 80
+                and
+                finding.get("category")
+                == "WEB_APPLICATION_SURFACE"
+            )
         ]
 
         self.assertEqual(
@@ -381,13 +380,13 @@ class TestSecurityScanner(unittest.TestCase):
             "Apache httpd"
         )
 
+        mock_web_checks.assert_called_once()
 
     # ======================================
     # APPLICATION VERSION EVIDENCE
     # ======================================
 
     def test_missing_application_version(self):
-
         findings = analyze_application_services(
             target=self.target,
             services=self.services
@@ -409,22 +408,18 @@ class TestSecurityScanner(unittest.TestCase):
             "LIMITED_VERSION_EVIDENCE"
         )
 
-
     # ======================================
     # HOST ATTACK SURFACE
     # ======================================
 
     def test_large_host_attack_surface(self):
-
         ports = []
-
         services = []
 
         for port in range(
             1000,
             1011
         ):
-
             ports.append({
                 "port": port,
                 "protocol": "tcp",
@@ -458,13 +453,11 @@ class TestSecurityScanner(unittest.TestCase):
             "OBSERVED"
         )
 
-
     # ======================================
     # LOW OS CONFIDENCE
     # ======================================
 
     def test_low_os_detection_confidence(self):
-
         findings = analyze_host_security(
             target=self.target,
             ports=[],
@@ -486,13 +479,11 @@ class TestSecurityScanner(unittest.TestCase):
             1
         )
 
-
     # ======================================
     # DEDUPLICATION
     # ======================================
 
     def test_deduplication(self):
-
         finding = create_security_finding(
             finding_type="SERVICE",
             category="INSECURE_PROTOCOL",
@@ -515,12 +506,24 @@ class TestSecurityScanner(unittest.TestCase):
             1
         )
 
-
     # ======================================
     # COMPLETE SCANNER
     # ======================================
 
-    def test_complete_security_scanner(self):
+    @patch(
+        "services.security_scanner_service."
+        "run_bounded_web_checks",
+        return_value=[]
+    )
+    def test_complete_security_scanner(
+        self,
+        mock_web_checks
+    ):
+        """
+        Verify orchestration of the complete security
+        scanner without performing external HTTP
+        requests during the unit test.
+        """
 
         findings = analyze_security_findings(
             target=self.target,
@@ -560,7 +563,8 @@ class TestSecurityScanner(unittest.TestCase):
             categories
         )
 
+        mock_web_checks.assert_called_once()
+
 
 if __name__ == "__main__":
-
     unittest.main()

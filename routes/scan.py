@@ -1,22 +1,46 @@
 from flask import (
 
+
+
     Blueprint,
+
+
 
     render_template,
 
+
+
     request,
+
+
 
     redirect,
 
+
+
     url_for,
+
+
 
     flash,
 
+
+
     current_app,
+
+
 
     session
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -24,9 +48,19 @@ from flask import (
 
 from routes.auth import (
 
+
+
     login_required
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -34,9 +68,19 @@ from routes.auth import (
 
 from services.scan_validator import (
 
+
+
     validate_target
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -44,23 +88,47 @@ from services.scan_validator import (
 
 from services.scan_service import (
 
+
+
     create_scan,
+
+
 
     start_scan,
 
+
+
     save_scan_results,
+
+
 
     fail_scan,
 
+
+
     get_scan_by_id,
+
+
 
     get_scan_history,
 
+
+
     delete_scan,
+
+
 
     bulk_delete_scans
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -68,11 +136,23 @@ from services.scan_service import (
 
 from services.nmap_service import (
 
+
+
     check_nmap_installed,
+
+
 
     run_nmap_scan
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -80,9 +160,19 @@ from services.nmap_service import (
 
 from services.vulnerability_service import (
 
+
+
     analyze_services_for_vulnerabilities
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -90,9 +180,19 @@ from services.vulnerability_service import (
 
 from services.security_scanner_service import (
 
+
+
     analyze_security_findings
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -100,9 +200,19 @@ from services.security_scanner_service import (
 
 from services.risk_service import (
 
+
+
     calculate_risk_score
 
+
+
 )
+
+
+
+
+
+
 
 
 
@@ -110,7 +220,11 @@ from services.risk_service import (
 
 from services.asset_service import (
 
+
+
     upsert_asset_from_scan
+
+
 
 )
 
@@ -118,19 +232,39 @@ from services.asset_service import (
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # SCAN BLUEPRINT
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 scan_bp = Blueprint(
 
+
+
     "scan",
 
+
+
     __name__
+
+
 
 )
 
@@ -138,39 +272,81 @@ scan_bp = Blueprint(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # SCAN TARGET PAGE
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 @scan_bp.route(
 
+
+
     "/scan",
+
+
 
     methods=[
 
+
+
         "GET",
+
+
 
         "POST"
 
+
+
     ]
+
+
 
 )
 
+
+
 @login_required
+
+
 
 def scan_target():
 
 
 
+
+
+
+
     # ======================================
+
+
 
     # CREATE NEW SCAN
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -178,19 +354,37 @@ def scan_target():
 
 
 
+
+
+
+
         # ==================================
+
+
 
         # GET FORM DATA
 
+
+
         # ==================================
+
+
+
+
 
 
 
         target = request.form.get(
 
+
+
             "target",
 
+
+
             ""
+
+
 
         ).strip()
 
@@ -198,11 +392,23 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         scan_profile = request.form.get(
+
+
 
             "scan_profile",
 
+
+
             "standard"
+
+
 
         ).strip().lower()
 
@@ -210,19 +416,43 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # VALIDATE TARGET
 
+
+
         # ==================================
+
+
+
+
 
 
 
         is_valid, message = validate_target(
 
+
+
             target
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -232,13 +462,29 @@ def scan_target():
 
 
 
+
+
+
+
             flash(
+
+
 
                 message,
 
+
+
                 "error"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -246,11 +492,19 @@ def scan_target():
 
             return redirect(
 
+
+
                 url_for(
+
+
 
                     "scan.scan_target"
 
+
+
                 )
+
+
 
             )
 
@@ -258,23 +512,51 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # VALIDATE SCAN PROFILE
 
+
+
         # ==================================
+
+
+
+
 
 
 
         allowed_profiles = [
 
+
+
             "quick",
+
+
 
             "standard",
 
+
+
             "detailed"
 
+
+
         ]
+
+
+
+
+
+
 
 
 
@@ -284,13 +566,29 @@ def scan_target():
 
 
 
+
+
+
+
             flash(
+
+
 
                 "Invalid scan profile selected.",
 
+
+
                 "error"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -298,11 +596,19 @@ def scan_target():
 
             return redirect(
 
+
+
                 url_for(
+
+
 
                     "scan.scan_target"
 
+
+
                 )
+
+
 
             )
 
@@ -310,11 +616,25 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # CHECK NMAP INSTALLATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -322,15 +642,33 @@ def scan_target():
 
 
 
+
+
+
+
             flash(
+
+
 
                 "Nmap is not installed or cannot "
 
+
+
                 "be found in the system PATH.",
+
+
 
                 "error"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -338,11 +676,19 @@ def scan_target():
 
             return redirect(
 
+
+
                 url_for(
+
+
 
                     "scan.scan_target"
 
+
+
                 )
+
+
 
             )
 
@@ -350,17 +696,35 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # GET DATABASE
 
+
+
         # ==================================
+
+
+
+
 
 
 
         db = current_app.config[
 
+
+
             "MONGO_DB"
+
+
 
         ]
 
@@ -368,25 +732,55 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # CREATE SCAN RECORD
 
+
+
         # ==================================
+
+
+
+
 
 
 
         scan = create_scan(
 
+
+
             db=db,
+
+
 
             target=target,
 
+
+
             scan_profile=scan_profile,
+
+
 
             created_by=session_user_id()
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -394,7 +788,11 @@ def scan_target():
 
         scan_id = str(
 
+
+
             scan["_id"]
+
+
 
         )
 
@@ -402,19 +800,39 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # MARK SCAN AS RUNNING
 
+
+
         # ==================================
+
+
+
+
 
 
 
         start_scan(
 
+
+
             db,
 
+
+
             scan_id
+
+
 
         )
 
@@ -422,11 +840,25 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # RUN NMAP SCAN
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -434,13 +866,29 @@ def scan_target():
 
 
 
+
+
+
+
             results = run_nmap_scan(
+
+
 
                 target=target,
 
+
+
                 scan_profile=scan_profile
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -450,11 +898,25 @@ def scan_target():
 
 
 
+
+
+
+
             error_message = (
+
+
 
                 f"Unexpected scan error: {error}"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -462,13 +924,27 @@ def scan_target():
 
             fail_scan(
 
+
+
                 db,
+
+
 
                 scan_id,
 
+
+
                 error_message
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -476,11 +952,23 @@ def scan_target():
 
             flash(
 
+
+
                 error_message,
+
+
 
                 "error"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -488,13 +976,23 @@ def scan_target():
 
             return redirect(
 
+
+
                 url_for(
+
+
 
                     "scan.scan_results",
 
+
+
                     scan_id=scan_id
 
+
+
                 )
+
+
 
             )
 
@@ -502,29 +1000,63 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # HANDLE SCAN FAILURE
 
+
+
         # ==================================
+
+
+
+
 
 
 
         if not results.get(
 
+
+
             "success"
+
+
 
         ):
 
 
 
+
+
+
+
             error_message = results.get(
+
+
 
                 "message",
 
+
+
                 "Scan failed."
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -532,13 +1064,27 @@ def scan_target():
 
             fail_scan(
 
+
+
                 db,
+
+
 
                 scan_id,
 
+
+
                 error_message
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -546,11 +1092,23 @@ def scan_target():
 
             flash(
 
+
+
                 error_message,
+
+
 
                 "error"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -558,13 +1116,23 @@ def scan_target():
 
             return redirect(
 
+
+
                 url_for(
+
+
 
                     "scan.scan_results",
 
+
+
                     scan_id=scan_id
 
+
+
                 )
+
+
 
             )
 
@@ -572,19 +1140,41 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # VULNERABILITY ANALYSIS
 
+
+
         # ==================================
+
+
 
         #
 
+
+
         # Existing CVE analysis remains
+
+
 
         # unchanged.
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -592,13 +1182,29 @@ def scan_target():
 
 
 
+
+
+
+
             services = results.get(
+
+
 
                 "services",
 
+
+
                 []
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -606,9 +1212,19 @@ def scan_target():
 
             os_detection = results.get(
 
+
+
                 "os_detection"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -616,15 +1232,27 @@ def scan_target():
 
             vulnerabilities = (
 
+
+
                 analyze_services_for_vulnerabilities(
+
+
 
                     services=services,
 
+
+
                     results_per_service=10,
+
+
 
                     os_detection=os_detection
 
+
+
                 )
+
+
 
             )
 
@@ -632,9 +1260,19 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
 
+
+
                 "vulnerabilities"
+
+
 
             ] = vulnerabilities
 
@@ -642,17 +1280,39 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             current_app.logger.info(
+
+
 
                 "Vulnerability analysis completed. "
 
+
+
                 "%s applicable potential "
+
+
 
                 "finding(s) identified.",
 
+
+
                 len(vulnerabilities)
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -662,21 +1322,41 @@ def scan_target():
 
 
 
+
+
+
+
             # ==================================
+
+
 
             # CVE analysis failure must NOT
 
+
+
             # cause successful Nmap scan to fail.
 
+
+
             # ==================================
+
+
+
+
 
 
 
             current_app.logger.warning(
 
+
+
                 "Vulnerability analysis failed: %s",
 
+
+
                 error
+
+
 
             )
 
@@ -684,9 +1364,19 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
 
+
+
                 "vulnerabilities"
+
+
 
             ] = []
 
@@ -694,43 +1384,89 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # SECURITY FINDINGS ANALYSIS
 
+
+
         # ==================================
 
+
+
         #
+
+
 
         # Complements the existing CVE engine.
 
+
+
         #
+
+
 
         # Current analysis covers observable:
 
+
+
         #
+
+
 
         # - Application/software conditions
 
+
+
         # - Network/service exposure
+
+
 
         # - Host/OS security context
 
+
+
         # - Web application surfaces
 
+
+
         #
+
+
 
         # These findings remain separate from
 
+
+
         # CVE vulnerabilities at this stage.
+
+
 
         #
 
+
+
         # Failure here must NOT cause a
+
+
 
         # successful Nmap scan to fail.
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -738,43 +1474,85 @@ def scan_target():
 
 
 
+
+
+
+
             security_findings = (
+
+
 
                 analyze_security_findings(
 
+
+
                     target=target,
+
+
 
                     ports=results.get(
 
+
+
                         "ports",
+
+
 
                         []
 
+
+
                     ),
+
+
 
                     services=results.get(
 
+
+
                         "services",
+
+
 
                         []
 
+
+
                     ),
+
+
 
                     os_detection=results.get(
 
+
+
                         "os_detection"
 
+
+
                     ),
+
+
 
                     os_accuracy=results.get(
 
+
+
                         "os_accuracy"
+
+
 
                     ),
 
+
+
                     created_by=session_user_id()
 
+
+
                 )
+
+
 
             )
 
@@ -782,9 +1560,19 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
 
+
+
                 "security_findings"
+
+
 
             ] = security_findings
 
@@ -792,15 +1580,35 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
+
+
 
                 "security_finding_count"
 
+
+
             ] = len(
+
+
 
                 security_findings
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -808,19 +1616,39 @@ def scan_target():
 
             current_app.logger.info(
 
+
+
                 "Security findings analysis "
+
+
 
                 "completed. %s additional "
 
+
+
                 "finding(s) identified.",
+
+
 
                 len(
 
+
+
                     security_findings
+
+
 
                 )
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -830,25 +1658,49 @@ def scan_target():
 
 
 
+
+
+
+
             # ==================================
+
+
 
             # Additional security analysis
 
+
+
             # failure must NOT cause a
+
+
 
             # successful scan to fail.
 
+
+
             # ==================================
+
+
+
+
 
 
 
             current_app.logger.warning(
 
+
+
                 "Security findings analysis "
+
+
 
                 "failed: %s",
 
+
+
                 error
+
+
 
             )
 
@@ -856,9 +1708,19 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
 
+
+
                 "security_findings"
+
+
 
             ] = []
 
@@ -866,9 +1728,19 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
 
+
+
                 "security_finding_count"
+
+
 
             ] = 0
 
@@ -876,31 +1748,65 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # RISK ANALYSIS
 
+
+
         # ==================================
 
+
+
         #
+
+
 
         # IMPORTANT:
 
+
+
         #
+
+
 
         # Existing risk behavior is deliberately
 
+
+
         # preserved at this stage.
+
+
 
         #
 
+
+
         # New security_findings will be connected
+
+
 
         # after risk_service.py is updated to
 
+
+
         # understand the new finding semantics.
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -908,25 +1814,53 @@ def scan_target():
 
 
 
+
+
+
+
             risk_result = calculate_risk_score(
+
                 vulnerabilities=results.get("vulnerabilities", []),
+
                 ports=results.get("ports", []),
+
                 security_findings=results.get("security_findings", [])
+
             )
 
 
 
 
 
+
+
+
+
+
+
             results[
+
+
 
                 "risk_score"
 
+
+
             ] = risk_result.get(
+
+
 
                 "risk_score"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -934,13 +1868,27 @@ def scan_target():
 
             results[
 
+
+
                 "risk_level"
+
+
 
             ] = risk_result.get(
 
+
+
                 "risk_level"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -948,13 +1896,27 @@ def scan_target():
 
             results[
 
+
+
                 "risk_breakdown"
+
+
 
             ] = risk_result.get(
 
+
+
                 "risk_breakdown"
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -962,23 +1924,47 @@ def scan_target():
 
             current_app.logger.info(
 
+
+
                 "Risk analysis completed. "
+
+
 
                 "Score: %s | Level: %s",
 
+
+
                 results.get(
+
+
 
                     "risk_score"
 
+
+
                 ),
+
+
 
                 results.get(
 
+
+
                     "risk_level"
+
+
 
                 )
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -988,21 +1974,41 @@ def scan_target():
 
 
 
+
+
+
+
             # ==================================
+
+
 
             # Risk analysis failure must NOT
 
+
+
             # cause successful Nmap scan to fail.
 
+
+
             # ==================================
+
+
+
+
 
 
 
             current_app.logger.warning(
 
+
+
                 "Risk analysis failed: %s",
 
+
+
                 error
+
+
 
             )
 
@@ -1010,21 +2016,47 @@ def scan_target():
 
 
 
+
+
+
+
+
+
             results[
+
+
 
                 "risk_score"
 
+
+
             ] = None
 
 
 
 
 
+
+
+
+
+
+
             results[
+
+
 
                 "risk_level"
 
+
+
             ] = None
+
+
+
+
+
+
 
 
 
@@ -1032,7 +2064,11 @@ def scan_target():
 
             results[
 
+
+
                 "risk_breakdown"
+
+
 
             ] = None
 
@@ -1040,21 +2076,43 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # SAVE SCAN RESULTS
 
+
+
         # ==================================
+
+
+
+
 
 
 
         save_scan_results(
 
+
+
             db,
+
+
 
             scan_id,
 
+
+
             results
+
+
 
         )
 
@@ -1062,25 +2120,53 @@ def scan_target():
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # UPDATE ASSET INVENTORY
 
+
+
         # ==================================
 
+
+
         #
+
+
 
         # The completed scan is now used to
 
+
+
         # create or update the current Asset.
+
+
 
         #
 
+
+
         # Asset synchronization failure must
+
+
 
         # NOT cause a successful scan to fail.
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -1088,15 +2174,33 @@ def scan_target():
 
 
 
+
+
+
+
             completed_scan = get_scan_by_id(
+
+
 
                 db=db,
 
+
+
                 scan_id=scan_id,
+
+
 
                 created_by=session_user_id()
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -1106,13 +2210,29 @@ def scan_target():
 
 
 
+
+
+
+
                 upsert_asset_from_scan(
+
+
 
                     db=db,
 
+
+
                     scan=completed_scan
 
+
+
                 )
+
+
+
+
+
+
 
 
 
@@ -1120,13 +2240,27 @@ def scan_target():
 
                 current_app.logger.info(
 
+
+
                     "Asset inventory updated "
+
+
 
                     "for target: %s",
 
+
+
                     target
 
+
+
                 )
+
+
+
+
+
+
 
 
 
@@ -1136,13 +2270,29 @@ def scan_target():
 
 
 
+
+
+
+
             current_app.logger.warning(
+
+
 
                 "Asset inventory update failed: %s",
 
+
+
                 error
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -1150,11 +2300,23 @@ def scan_target():
 
         flash(
 
+
+
             "Security scan completed successfully.",
+
+
 
             "success"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1162,13 +2324,23 @@ def scan_target():
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_results",
 
+
+
                 scan_id=scan_id
 
+
+
             )
+
+
 
         )
 
@@ -1176,19 +2348,39 @@ def scan_target():
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # LOAD SCAN PAGE
 
+
+
     # ======================================
+
+
+
+
 
 
 
     return render_template(
 
+
+
         "scan.html",
 
+
+
         current_page="scan"
+
+
 
     )
 
@@ -1196,33 +2388,67 @@ def scan_target():
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # SCAN RESULTS PAGE
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 @scan_bp.route(
 
+
+
     "/scan/results/<scan_id>"
+
+
 
 )
 
+
+
 @login_required
+
+
 
 def scan_results(
 
+
+
     scan_id
+
+
 
 ):
 
 
 
+
+
+
+
     db = current_app.config[
 
+
+
         "MONGO_DB"
+
+
 
     ]
 
@@ -1230,23 +2456,51 @@ def scan_results(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # GET SCAN WITH OWNERSHIP PROTECTION
 
+
+
     # ======================================
+
+
+
+
 
 
 
     scan = get_scan_by_id(
 
+
+
         db=db,
+
+
 
         scan_id=scan_id,
 
+
+
         created_by=get_scan_owner_filter()
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1256,15 +2510,33 @@ def scan_results(
 
 
 
+
+
+
+
         flash(
+
+
 
             "Scan not found or you do not "
 
+
+
             "have permission to view it.",
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1272,11 +2544,19 @@ def scan_results(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_history"
 
+
+
             )
+
+
 
         )
 
@@ -1284,13 +2564,27 @@ def scan_results(
 
 
 
+
+
+
+
+
+
     return render_template(
+
+
 
         "scan_results.html",
 
+
+
         scan=scan,
 
+
+
         current_page="scan"
+
+
 
     )
 
@@ -1298,29 +2592,59 @@ def scan_results(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # SCAN HISTORY PAGE
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 @scan_bp.route(
 
+
+
     "/scan/history"
+
+
 
 )
 
+
+
 @login_required
+
+
 
 def scan_history():
 
 
 
+
+
+
+
     db = current_app.config[
 
+
+
         "MONGO_DB"
+
+
 
     ]
 
@@ -1328,23 +2652,51 @@ def scan_history():
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # LOAD SCAN HISTORY
 
+
+
     # ======================================
+
+
+
+
 
 
 
     scans = get_scan_history(
 
+
+
         db=db,
+
+
 
         created_by=get_scan_owner_filter(),
 
+
+
         limit=100
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1352,11 +2704,19 @@ def scan_history():
 
     return render_template(
 
+
+
         "scan_history.html",
+
+
 
         scans=scans,
 
+
+
         current_page="scan_history"
+
+
 
     )
 
@@ -1364,39 +2724,79 @@ def scan_history():
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # RESCAN TARGET
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 @scan_bp.route(
 
+
+
     "/scan/rescan/<scan_id>",
+
+
 
     methods=[
 
+
+
         "POST"
+
+
 
     ]
 
+
+
 )
+
+
 
 @login_required
 
+
+
 def rescan_target(
 
+
+
     scan_id
+
+
 
 ):
 
 
 
+
+
+
+
     db = current_app.config[
 
+
+
         "MONGO_DB"
+
+
 
     ]
 
@@ -1404,23 +2804,51 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # GET ORIGINAL SCAN
 
+
+
     # ======================================
+
+
+
+
 
 
 
     original_scan = get_scan_by_id(
 
+
+
         db=db,
+
+
 
         scan_id=scan_id,
 
+
+
         created_by=get_scan_owner_filter()
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1430,15 +2858,33 @@ def rescan_target(
 
 
 
+
+
+
+
         flash(
+
+
 
             "Scan not found or you do not "
 
+
+
             "have permission to rescan it.",
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1446,11 +2892,19 @@ def rescan_target(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_history"
 
+
+
             )
+
+
 
         )
 
@@ -1458,25 +2912,51 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # GET ORIGINAL TARGET INFORMATION
 
+
+
     # ======================================
+
+
+
+
 
 
 
     target = (
 
+
+
         original_scan.get(
+
+
 
             "target",
 
+
+
             ""
+
+
 
         )
 
+
+
         or ""
+
+
 
     ).strip()
 
@@ -1484,17 +2964,35 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     scan_profile = (
+
+
 
         original_scan.get(
 
+
+
             "scan_profile",
+
+
 
             "standard"
 
+
+
         )
 
+
+
         or "standard"
+
+
 
     ).strip().lower()
 
@@ -1502,19 +3000,43 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # VALIDATE TARGET
 
+
+
     # ======================================
+
+
+
+
 
 
 
     is_valid, message = validate_target(
 
+
+
         target
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1524,13 +3046,29 @@ def rescan_target(
 
 
 
+
+
+
+
         flash(
+
+
 
             message,
 
+
+
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1538,13 +3076,23 @@ def rescan_target(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_results",
 
+
+
                 scan_id=scan_id
 
+
+
             )
+
+
 
         )
 
@@ -1552,23 +3100,51 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # VALIDATE SCAN PROFILE
 
+
+
     # ======================================
+
+
+
+
 
 
 
     allowed_profiles = [
 
+
+
         "quick",
+
+
 
         "standard",
 
+
+
         "detailed"
 
+
+
     ]
+
+
+
+
+
+
 
 
 
@@ -1578,15 +3154,33 @@ def rescan_target(
 
 
 
+
+
+
+
         flash(
+
+
 
             "The original scan contains an "
 
+
+
             "invalid scan profile.",
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1594,13 +3188,23 @@ def rescan_target(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_results",
 
+
+
                 scan_id=scan_id
 
+
+
             )
+
+
 
         )
 
@@ -1608,11 +3212,25 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # CHECK NMAP INSTALLATION
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1620,15 +3238,33 @@ def rescan_target(
 
 
 
+
+
+
+
         flash(
+
+
 
             "Nmap is not installed or cannot "
 
+
+
             "be found in the system PATH.",
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1636,13 +3272,23 @@ def rescan_target(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_results",
 
+
+
                 scan_id=scan_id
 
+
+
             )
+
+
 
         )
 
@@ -1650,35 +3296,75 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # CREATE NEW SCAN RECORD
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # IMPORTANT:
+
+
 
     # The original scan is NOT overwritten.
 
+
+
     # A new database record is created.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     new_scan = create_scan(
 
+
+
         db=db,
+
+
 
         target=target,
 
+
+
         scan_profile=scan_profile,
+
+
 
         created_by=session_user_id()
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1686,7 +3372,11 @@ def rescan_target(
 
     new_scan_id = str(
 
+
+
         new_scan["_id"]
+
+
 
     )
 
@@ -1694,19 +3384,39 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # MARK NEW SCAN AS RUNNING
 
+
+
     # ======================================
+
+
+
+
 
 
 
     start_scan(
 
+
+
         db,
 
+
+
         new_scan_id
+
+
 
     )
 
@@ -1714,11 +3424,25 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # RUN NMAP SCAN
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1726,13 +3450,29 @@ def rescan_target(
 
 
 
+
+
+
+
         results = run_nmap_scan(
+
+
 
             target=target,
 
+
+
             scan_profile=scan_profile
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1742,11 +3482,25 @@ def rescan_target(
 
 
 
+
+
+
+
         error_message = (
+
+
 
             f"Unexpected rescan error: {error}"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1754,13 +3508,27 @@ def rescan_target(
 
         fail_scan(
 
+
+
             db,
+
+
 
             new_scan_id,
 
+
+
             error_message
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1768,11 +3536,23 @@ def rescan_target(
 
         flash(
 
+
+
             error_message,
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1780,13 +3560,23 @@ def rescan_target(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_results",
 
+
+
                 scan_id=new_scan_id
 
+
+
             )
+
+
 
         )
 
@@ -1794,29 +3584,63 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # HANDLE RESCAN FAILURE
 
+
+
     # ======================================
+
+
+
+
 
 
 
     if not results.get(
 
+
+
         "success"
+
+
 
     ):
 
 
 
+
+
+
+
         error_message = results.get(
+
+
 
             "message",
 
+
+
             "Rescan failed."
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1824,13 +3648,27 @@ def rescan_target(
 
         fail_scan(
 
+
+
             db,
+
+
 
             new_scan_id,
 
+
+
             error_message
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1838,11 +3676,23 @@ def rescan_target(
 
         flash(
 
+
+
             error_message,
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1850,13 +3700,23 @@ def rescan_target(
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_results",
 
+
+
                 scan_id=new_scan_id
 
+
+
             )
+
+
 
         )
 
@@ -1864,19 +3724,41 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # VULNERABILITY ANALYSIS
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # Existing CVE analysis remains
+
+
 
     # unchanged.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1884,13 +3766,29 @@ def rescan_target(
 
 
 
+
+
+
+
         services = results.get(
+
+
 
             "services",
 
+
+
             []
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1898,9 +3796,19 @@ def rescan_target(
 
         os_detection = results.get(
 
+
+
             "os_detection"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1908,15 +3816,27 @@ def rescan_target(
 
         vulnerabilities = (
 
+
+
             analyze_services_for_vulnerabilities(
+
+
 
                 services=services,
 
+
+
                 results_per_service=10,
+
+
 
                 os_detection=os_detection
 
+
+
             )
+
+
 
         )
 
@@ -1924,9 +3844,19 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
 
+
+
             "vulnerabilities"
+
+
 
         ] = vulnerabilities
 
@@ -1934,17 +3864,39 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         current_app.logger.info(
+
+
 
             "Rescan vulnerability analysis "
 
+
+
             "completed. %s applicable potential "
+
+
 
             "finding(s) identified.",
 
+
+
             len(vulnerabilities)
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1954,13 +3906,25 @@ def rescan_target(
 
 
 
+
+
+
+
         current_app.logger.warning(
+
+
 
             "Rescan vulnerability analysis "
 
+
+
             "failed: %s",
 
+
+
             error
+
+
 
         )
 
@@ -1968,9 +3932,19 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
 
+
+
             "vulnerabilities"
+
+
 
         ] = []
 
@@ -1978,29 +3952,61 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # SECURITY FINDINGS ANALYSIS
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # The same additional security analysis
 
+
+
     # is executed for rescans so normal scans
+
+
 
     # and rescans produce compatible result
 
+
+
     # structures.
+
+
 
     #
 
+
+
     # Failure here must NOT cause a
+
+
 
     # successful rescan to fail.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2008,43 +4014,85 @@ def rescan_target(
 
 
 
+
+
+
+
         security_findings = (
+
+
 
             analyze_security_findings(
 
+
+
                 target=target,
+
+
 
                 ports=results.get(
 
+
+
                     "ports",
+
+
 
                     []
 
+
+
                 ),
+
+
 
                 services=results.get(
 
+
+
                     "services",
+
+
 
                     []
 
+
+
                 ),
+
+
 
                 os_detection=results.get(
 
+
+
                     "os_detection"
 
+
+
                 ),
+
+
 
                 os_accuracy=results.get(
 
+
+
                     "os_accuracy"
+
+
 
                 ),
 
+
+
                 created_by=session_user_id()
 
+
+
             )
+
+
 
         )
 
@@ -2052,9 +4100,19 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
 
+
+
             "security_findings"
+
+
 
         ] = security_findings
 
@@ -2062,15 +4120,35 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
+
+
 
             "security_finding_count"
 
+
+
         ] = len(
+
+
 
             security_findings
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2078,19 +4156,39 @@ def rescan_target(
 
         current_app.logger.info(
 
+
+
             "Rescan security findings analysis "
+
+
 
             "completed. %s additional "
 
+
+
             "finding(s) identified.",
+
+
 
             len(
 
+
+
                 security_findings
+
+
 
             )
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2100,13 +4198,25 @@ def rescan_target(
 
 
 
+
+
+
+
         current_app.logger.warning(
+
+
 
             "Rescan security findings analysis "
 
+
+
             "failed: %s",
 
+
+
             error
+
+
 
         )
 
@@ -2114,9 +4224,19 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
 
+
+
             "security_findings"
+
+
 
         ] = []
 
@@ -2124,9 +4244,19 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
 
+
+
             "security_finding_count"
+
+
 
         ] = 0
 
@@ -2134,21 +4264,45 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # RISK ANALYSIS
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # Existing risk behavior is deliberately
+
+
 
     # preserved until risk_service.py is
 
+
+
     # updated for unified findings.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2156,25 +4310,53 @@ def rescan_target(
 
 
 
+
+
+
+
         risk_result = calculate_risk_score(
+
             vulnerabilities=results.get("vulnerabilities", []),
+
             ports=results.get("ports", []),
+
             security_findings=results.get("security_findings", [])
+
         )
 
 
 
 
 
+
+
+
+
+
+
         results[
+
+
 
             "risk_score"
 
+
+
         ] = risk_result.get(
+
+
 
             "risk_score"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2182,13 +4364,27 @@ def rescan_target(
 
         results[
 
+
+
             "risk_level"
+
+
 
         ] = risk_result.get(
 
+
+
             "risk_level"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2196,13 +4392,27 @@ def rescan_target(
 
         results[
 
+
+
             "risk_breakdown"
+
+
 
         ] = risk_result.get(
 
+
+
             "risk_breakdown"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2210,23 +4420,47 @@ def rescan_target(
 
         current_app.logger.info(
 
+
+
             "Rescan risk analysis completed. "
+
+
 
             "Score: %s | Level: %s",
 
+
+
             results.get(
+
+
 
                 "risk_score"
 
+
+
             ),
+
+
 
             results.get(
 
+
+
                 "risk_level"
+
+
 
             )
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2236,11 +4470,21 @@ def rescan_target(
 
 
 
+
+
+
+
         current_app.logger.warning(
+
+
 
             "Rescan risk analysis failed: %s",
 
+
+
             error
+
+
 
         )
 
@@ -2248,21 +4492,47 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
         results[
+
+
 
             "risk_score"
 
+
+
         ] = None
 
 
 
 
 
+
+
+
+
+
+
         results[
+
+
 
             "risk_level"
 
+
+
         ] = None
+
+
+
+
+
+
 
 
 
@@ -2270,7 +4540,11 @@ def rescan_target(
 
         results[
 
+
+
             "risk_breakdown"
+
+
 
         ] = None
 
@@ -2278,21 +4552,43 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # SAVE NEW SCAN RESULTS
 
+
+
     # ======================================
+
+
+
+
 
 
 
     save_scan_results(
 
+
+
         db,
+
+
 
         new_scan_id,
 
+
+
         results
+
+
 
     )
 
@@ -2300,27 +4596,57 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # UPDATE ASSET INVENTORY
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # The newly completed rescan becomes the
 
+
+
     # current Asset state when it is newer
+
+
 
     # than the existing Asset snapshot.
 
+
+
     #
+
+
 
     # Asset synchronization failure must
 
+
+
     # NOT cause a successful rescan to fail.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2328,15 +4654,33 @@ def rescan_target(
 
 
 
+
+
+
+
         completed_scan = get_scan_by_id(
+
+
 
             db=db,
 
+
+
             scan_id=new_scan_id,
+
+
 
             created_by=session_user_id()
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2346,13 +4690,29 @@ def rescan_target(
 
 
 
+
+
+
+
             upsert_asset_from_scan(
+
+
 
                 db=db,
 
+
+
                 scan=completed_scan
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -2360,13 +4720,27 @@ def rescan_target(
 
             current_app.logger.info(
 
+
+
                 "Asset inventory updated "
+
+
 
                 "after rescan for target: %s",
 
+
+
                 target
 
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -2376,15 +4750,33 @@ def rescan_target(
 
 
 
+
+
+
+
         current_app.logger.warning(
+
+
 
             "Asset inventory update after "
 
+
+
             "rescan failed: %s",
+
+
 
             error
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2392,11 +4784,23 @@ def rescan_target(
 
     flash(
 
+
+
         "Rescan completed successfully.",
+
+
 
         "success"
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -2404,13 +4808,23 @@ def rescan_target(
 
     return redirect(
 
+
+
         url_for(
+
+
 
             "scan.scan_results",
 
+
+
             scan_id=new_scan_id
 
+
+
         )
+
+
 
     )
 
@@ -2418,39 +4832,79 @@ def rescan_target(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # DELETE SINGLE SCAN
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 @scan_bp.route(
 
+
+
     "/scan/delete/<scan_id>",
+
+
 
     methods=[
 
+
+
         "POST"
+
+
 
     ]
 
+
+
 )
+
+
 
 @login_required
 
+
+
 def delete_scan_record(
 
+
+
     scan_id
+
+
 
 ):
 
 
 
+
+
+
+
     db = current_app.config[
 
+
+
         "MONGO_DB"
+
+
 
     ]
 
@@ -2458,61 +4912,127 @@ def delete_scan_record(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # DELETE SCAN + RECONCILE ASSET
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # delete_scan() performs the complete
 
+
+
     # deletion workflow:
 
+
+
     #
+
+
 
     # 1. Delete the selected scan.
 
+
+
     #
+
+
 
     # 2. Check whether another completed scan
 
+
+
     #    exists for the same owner + target.
 
+
+
     #
+
+
 
     # 3. If another scan exists, rebuild the
 
+
+
     #    Asset from the newest remaining scan.
 
+
+
     #
+
+
 
     # 4. If no completed scan remains, remove
 
+
+
     #    the related Asset.
+
+
 
     #
 
+
+
     # Downstream analysis pages derive their
+
+
 
     # current information from the remaining
 
+
+
     # Asset Inventory.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     deleted = delete_scan(
 
+
+
         db=db,
+
+
 
         scan_id=scan_id,
 
+
+
         created_by=get_scan_owner_filter()
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -2522,17 +5042,37 @@ def delete_scan_record(
 
 
 
+
+
+
+
         flash(
+
+
 
             "Scan deleted successfully. "
 
+
+
             "Related asset and analysis data "
+
+
 
             "have been synchronized.",
 
+
+
             "success"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2542,15 +5082,33 @@ def delete_scan_record(
 
 
 
+
+
+
+
         flash(
+
+
 
             "Scan could not be deleted or "
 
+
+
             "you do not have permission.",
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2558,11 +5116,19 @@ def delete_scan_record(
 
     return redirect(
 
+
+
         url_for(
+
+
 
             "scan.scan_history"
 
+
+
         )
+
+
 
     )
 
@@ -2570,45 +5136,95 @@ def delete_scan_record(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # BULK DELETE SCANS
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 @scan_bp.route(
 
+
+
     "/scan/delete-selected",
+
+
 
     methods=[
 
+
+
         "POST"
+
+
 
     ]
 
+
+
 )
 
+
+
 @login_required
+
+
 
 def delete_selected_scans():
 
 
 
+
+
+
+
     # ======================================
+
+
 
     # GET SELECTED SCAN IDS
 
+
+
     # ======================================
+
+
+
+
 
 
 
     scan_ids = request.form.getlist(
 
+
+
         "scan_ids"
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -2618,15 +5234,33 @@ def delete_selected_scans():
 
 
 
+
+
+
+
         flash(
+
+
 
             "Please select at least one scan "
 
+
+
             "to delete.",
+
+
 
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2634,11 +5268,19 @@ def delete_selected_scans():
 
         return redirect(
 
+
+
             url_for(
+
+
 
                 "scan.scan_history"
 
+
+
             )
+
+
 
         )
 
@@ -2646,9 +5288,19 @@ def delete_selected_scans():
 
 
 
+
+
+
+
+
+
     db = current_app.config[
 
+
+
         "MONGO_DB"
+
+
 
     ]
 
@@ -2656,43 +5308,91 @@ def delete_selected_scans():
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # BULK DELETE + ASSET RECONCILIATION
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # bulk_delete_scans() deletes all valid
 
+
+
     # selected scan records and reconciles
+
+
 
     # each affected owner + target only once.
 
+
+
     #
+
+
 
     # If older completed scans remain, their
 
+
+
     # latest state becomes the current Asset.
+
+
 
     #
 
+
+
     # If none remain, the Asset is removed.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     deleted_count = bulk_delete_scans(
 
+
+
         db=db,
+
+
 
         scan_ids=scan_ids,
 
+
+
         created_by=get_scan_owner_filter()
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -2702,17 +5402,37 @@ def delete_selected_scans():
 
 
 
+
+
+
+
         flash(
+
+
 
             f"{deleted_count} scan(s) deleted "
 
+
+
             "successfully. Related assets and "
+
+
 
             "analysis data have been synchronized.",
 
+
+
             "success"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2722,13 +5442,29 @@ def delete_selected_scans():
 
 
 
+
+
+
+
         flash(
+
+
 
             "No scans were deleted.",
 
+
+
             "error"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2736,11 +5472,19 @@ def delete_selected_scans():
 
     return redirect(
 
+
+
         url_for(
+
+
 
             "scan.scan_history"
 
+
+
         )
+
+
 
     )
 
@@ -2748,11 +5492,25 @@ def delete_selected_scans():
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # GET CURRENT USER ID
 
+
+
 # ==========================================
+
+
+
+
 
 
 
@@ -2760,9 +5518,17 @@ def session_user_id():
 
 
 
+
+
+
+
     return session.get(
 
+
+
         "admin_id"
+
+
 
     )
 
@@ -2770,11 +5536,25 @@ def session_user_id():
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # GET SCAN OWNER FILTER
 
+
+
 # ==========================================
+
+
+
+
 
 
 
@@ -2782,27 +5562,55 @@ def get_scan_owner_filter():
 
 
 
+
+
+
+
     # ======================================
+
+
 
     # SUPER ADMIN
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # Super Admin is allowed to view and
+
+
 
     # manage all scan records.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     if session.get(
 
+
+
         "role"
 
+
+
     ) == "super_admin":
+
+
+
+
 
 
 
@@ -2812,19 +5620,41 @@ def get_scan_owner_filter():
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # NORMAL ADMIN
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # Normal administrators can only view
+
+
 
     # or delete scans created by themselves.
 
+
+
     # ======================================
+
+
+
+
 
 
 
