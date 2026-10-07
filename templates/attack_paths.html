@@ -1,18 +1,15 @@
 {% extends "base.html" %}
 
-
 {% block title %}
 AttackLens | Attack Paths
 {% endblock %}
-
 
 {% block page_title %}
 Attack Paths
 {% endblock %}
 
-
 {% block page_subtitle %}
-Visualize potential attack paths across discovered assets and services
+Visualize evidence-supported potential attack paths across discovered assets and services
 {% endblock %}
 
 
@@ -34,13 +31,188 @@ Visualize potential attack paths across discovered assets and services
             </h3>
 
             <p>
-                Analyze how discovered assets and exposed services
-                could form potential attack paths.
+                Analyze how discovered assets, exposed services,
+                vulnerabilities, and security findings could form
+                potential attacker progression paths.
             </p>
 
         </div>
 
     </div>
+
+
+    <!-- ==========================================
+         HOST / IP SELECTION
+    =========================================== -->
+
+    <section class="dashboard-card attack-path-host-selection-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Select Host for Attack Path Analysis
+                </h3>
+
+                <p>
+                    Choose an authorized discovered asset to analyze its
+                    evidence-supported potential attack paths.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if available_assets|default([])|length > 0 %}
+
+            <form
+                method="get"
+                action=""
+                class="attack-path-host-selection-form"
+            >
+
+                <div class="attack-path-host-selector-wrapper">
+
+                    <label
+                        for="attack-path-host-selector"
+                        class="attack-path-host-selector-label"
+                    >
+                        Host / IP Address
+                    </label>
+
+
+                    <select
+                        id="attack-path-host-selector"
+                        name="asset_id"
+                        class="attack-path-host-selector"
+                        required
+                    >
+
+                        <option value="">
+                            Select a host or IP address
+                        </option>
+
+
+                        {% for asset in available_assets %}
+
+                            {% set current_asset_id = asset._id|string %}
+
+                            <option
+                                value="{{ current_asset_id }}"
+                                {% if selected_asset_id and selected_asset_id|string == current_asset_id %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ asset.target|default("Unknown Host", true) }}
+
+                                {% if asset.hostname
+                                      and asset.hostname != asset.target %}
+                                    — {{ asset.hostname }}
+                                {% endif %}
+
+                                {% if asset.risk_level %}
+                                    — {{ asset.risk_level }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="attack-path-host-selection-action">
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Analyze Attack Paths
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            {% if selected_asset %}
+
+                <div class="attack-path-selected-host-summary">
+
+                    <div class="attack-path-selected-host-info">
+
+                        <span class="attack-path-selected-host-label">
+                            Currently Analyzing
+                        </span>
+
+                        <strong class="attack-path-selected-host-value">
+
+                            {{ selected_asset.target|default("Unknown Host", true) }}
+
+                            {% if selected_asset.hostname
+                                  and selected_asset.hostname != selected_asset.target %}
+                                — {{ selected_asset.hostname }}
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="attack-path-selected-host-meta">
+
+                        {% if selected_asset.risk_level %}
+
+                            <span class="risk-badge risk-{{ selected_asset.risk_level|lower }}">
+                                {{ selected_asset.risk_level }}
+                            </span>
+
+                        {% endif %}
+
+
+                        {% if selected_asset.exposure %}
+
+                            <span class="confidence-badge">
+                                {{ selected_asset.exposure }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◈
+                </div>
+
+                <h4>
+                    No Hosts Available
+                </h4>
+
+                <p>
+                    Complete an authorized security scan first.
+                    Discovered assets will then become available
+                    for attack-path analysis.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
 
 
     <!-- ==========================================
@@ -67,9 +239,7 @@ Visualize potential attack paths across discovered assets and services
             </div>
 
             <div class="stat-value">
-
                 {{ graph_statistics.total_assets|default(0) }}
-
             </div>
 
             <p class="stat-description">
@@ -96,9 +266,7 @@ Visualize potential attack paths across discovered assets and services
             </div>
 
             <div class="stat-value">
-
                 {{ graph_statistics.total_nodes|default(0) }}
-
             </div>
 
             <p class="stat-description">
@@ -125,13 +293,11 @@ Visualize potential attack paths across discovered assets and services
             </div>
 
             <div class="stat-value">
-
                 {{ graph_statistics.total_edges|default(0) }}
-
             </div>
 
             <p class="stat-description">
-                Potential attack relationships identified
+                Evidence-supported potential relationships
             </p>
 
         </article>
@@ -154,17 +320,14 @@ Visualize potential attack paths across discovered assets and services
             </div>
 
             <div class="stat-value">
-
                 {{ graph_statistics.total_paths|default(0) }}
-
             </div>
 
             <p class="stat-description">
-                Potential attacker progression paths
+                Ranked potential attacker progression paths
             </p>
 
         </article>
-
 
     </div>
 
@@ -185,7 +348,7 @@ Visualize potential attack paths across discovered assets and services
 
                 <p>
                     Potential relationships generated from
-                    current Asset Inventory data
+                    current Asset Inventory evidence
                 </p>
 
             </div>
@@ -199,15 +362,24 @@ Visualize potential attack paths across discovered assets and services
 
                 <div class="attack-graph-toolbar-group">
 
-                    <button type="button" id="graph-fit-button" class="secondary-button attack-graph-control">
+                    <button
+                        type="button"
+                        id="graph-fit-button"
+                        class="secondary-button attack-graph-control"
+                    >
                         Fit Graph
                     </button>
 
-                    <button type="button" id="graph-reset-button" class="secondary-button attack-graph-control">
+                    <button
+                        type="button"
+                        id="graph-reset-button"
+                        class="secondary-button attack-graph-control"
+                    >
                         Reset View
                     </button>
 
                 </div>
+
 
                 <div class="attack-graph-toolbar-group attack-path-selector-group">
 
@@ -215,17 +387,33 @@ Visualize potential attack paths across discovered assets and services
                         Highlight Path
                     </label>
 
-                    <select id="attack-path-selector" class="attack-path-selector" {% if attack_paths|default([])|length == 0 %}disabled{% endif %}>
+                    <select
+                        id="attack-path-selector"
+                        class="attack-path-selector"
+                        {% if attack_paths|default([])|length == 0 %}
+                            disabled
+                        {% endif %}
+                    >
+
                         <option value="">
+
                             {% if attack_paths|default([])|length > 0 %}
                                 Select a path
                             {% else %}
                                 No attack paths available
                             {% endif %}
+
                         </option>
+
                     </select>
 
-                    <button type="button" id="graph-clear-button" class="secondary-button attack-graph-control" disabled>
+
+                    <button
+                        type="button"
+                        id="graph-clear-button"
+                        class="secondary-button attack-graph-control"
+                        disabled
+                    >
                         Clear Selection
                     </button>
 
@@ -238,16 +426,29 @@ Visualize potential attack paths across discovered assets and services
 
                 <div class="attack-graph-canvas-wrapper">
 
-                    <div id="attack-path-graph" class="attack-path-graph-canvas" role="img" aria-label="Interactive AttackLens attack path graph"></div>
+                    <div
+                        id="attack-path-graph"
+                        class="attack-path-graph-canvas"
+                        role="img"
+                        aria-label="Interactive AttackLens attack path graph"
+                    ></div>
 
-                    <div id="attack-graph-loading" class="attack-graph-loading" aria-live="polite">
+                    <div
+                        id="attack-graph-loading"
+                        class="attack-graph-loading"
+                        aria-live="polite"
+                    >
                         Preparing attack graph...
                     </div>
 
                 </div>
 
 
-                <aside id="attack-path-details" class="attack-path-details-panel" aria-live="polite">
+                <aside
+                    id="attack-path-details"
+                    class="attack-path-details-panel"
+                    aria-live="polite"
+                >
 
                     <div class="attack-path-details-header">
 
@@ -265,11 +466,15 @@ Visualize potential attack paths across discovered assets and services
 
                     </div>
 
-                    <div id="attack-path-details-content" class="attack-path-details-content">
+
+                    <div
+                        id="attack-path-details-content"
+                        class="attack-path-details-content"
+                    >
 
                         <p class="attack-path-details-empty">
-                            Click an asset, attacker node, or relationship in the graph
-                            to inspect its security context.
+                            Click an asset, attacker node, or relationship
+                            in the graph to inspect its security context.
                         </p>
 
                     </div>
@@ -282,31 +487,51 @@ Visualize potential attack paths across discovered assets and services
             <div class="attack-graph-legend">
 
                 <span class="attack-graph-legend-item">
+
                     <span class="attack-graph-legend-dot attacker"></span>
+
                     External Attacker
+
                 </span>
 
+
                 <span class="attack-graph-legend-item">
+
                     <span class="attack-graph-legend-dot low"></span>
+
                     Low
+
                 </span>
 
+
                 <span class="attack-graph-legend-item">
+
                     <span class="attack-graph-legend-dot medium"></span>
+
                     Medium
+
                 </span>
 
+
                 <span class="attack-graph-legend-item">
+
                     <span class="attack-graph-legend-dot high"></span>
+
                     High
+
                 </span>
 
+
                 <span class="attack-graph-legend-item">
+
                     <span class="attack-graph-legend-dot critical"></span>
+
                     Critical
+
                 </span>
 
             </div>
+
 
         {% else %}
 
@@ -317,13 +542,24 @@ Visualize potential attack paths across discovered assets and services
                 </div>
 
                 <h4>
-                    No Assets Available
+                    No Asset Selected for Analysis
                 </h4>
 
                 <p>
-                    Complete an authorized security scan
-                    to generate Asset Inventory data for
-                    attack path analysis.
+
+                    {% if available_assets|default([])|length > 0 %}
+
+                        Select a host or IP address above to generate
+                        its potential attack-path analysis.
+
+                    {% else %}
+
+                        Complete an authorized security scan
+                        to generate Asset Inventory data for
+                        attack-path analysis.
+
+                    {% endif %}
+
                 </p>
 
             </div>
@@ -349,7 +585,7 @@ Visualize potential attack paths across discovered assets and services
 
                 <p>
                     Assets and logical attacker entry points
-                    included in the analysis
+                    included in the selected analysis
                 </p>
 
             </div>
@@ -413,13 +649,9 @@ Visualize potential attack paths across discovered assets and services
                                 <td>
 
                                     {% if node.node_type == "attacker" %}
-
                                         Attacker
-
                                     {% else %}
-
                                         Asset
-
                                     {% endif %}
 
                                 </td>
@@ -428,22 +660,16 @@ Visualize potential attack paths across discovered assets and services
                                 <td>
 
                                     {% if node.target %}
-
                                         {{ node.target }}
-
                                     {% else %}
-
                                         External Entry
-
                                     {% endif %}
 
                                 </td>
 
 
                                 <td>
-
                                     {{ node.hostname|default("Unknown", true) }}
-
                                 </td>
 
 
@@ -463,30 +689,22 @@ Visualize potential attack paths across discovered assets and services
 
 
                                 <td>
-
                                     {{ node.criticality|default("--", true) }}
-
                                 </td>
 
 
                                 <td>
-
                                     {{ node.exposure|default("--", true) }}
-
                                 </td>
 
 
                                 <td>
-
                                     {{ node.open_ports|default([])|length }}
-
                                 </td>
 
 
                                 <td>
-
                                     {{ node.vulnerability_count|default(0) }}
-
                                 </td>
 
                             </tr>
@@ -498,6 +716,7 @@ Visualize potential attack paths across discovered assets and services
                 </table>
 
             </div>
+
 
         {% else %}
 
@@ -512,7 +731,8 @@ Visualize potential attack paths across discovered assets and services
                 </h4>
 
                 <p>
-                    No current assets are available for attack-path analysis.
+                    Select an available host to generate
+                    graph nodes for attack-path analysis.
                 </p>
 
             </div>
@@ -635,6 +855,7 @@ Visualize potential attack paths across discovered assets and services
 
             </div>
 
+
         {% else %}
 
             <div class="empty-state">
@@ -648,9 +869,9 @@ Visualize potential attack paths across discovered assets and services
                 </h4>
 
                 <p>
-                    AttackLens did not identify sufficient evidence
-                    to create a potential relationship between the
-                    current assets.
+                    AttackLens did not identify sufficient
+                    evidence to create a potential relationship
+                    between the selected assets.
                 </p>
 
             </div>
@@ -661,10 +882,10 @@ Visualize potential attack paths across discovered assets and services
 
 
     <!-- ==========================================
-         ATTACK PATHS
+         POTENTIAL ATTACK PATHS
     =========================================== -->
 
-    <section class="dashboard-card">
+    <section class="dashboard-card attack-path-results-card">
 
         <div class="card-header">
 
@@ -675,97 +896,564 @@ Visualize potential attack paths across discovered assets and services
                 </h3>
 
                 <p>
-                    Ordered attacker progression paths generated
-                    from supported graph relationships
+                    Ranked evidence-supported routes showing
+                    how an attacker could potentially enter
+                    or progress through the selected host
                 </p>
 
             </div>
+
+
+            {% if attack_paths|default([])|length > 0 %}
+
+                <span class="attack-path-count-badge">
+                    {{ attack_paths|length }} identified
+                </span>
+
+            {% endif %}
 
         </div>
 
 
         {% if attack_paths|default([])|length > 0 %}
 
-            <div class="table-container">
-
-                <table class="data-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Path
-                            </th>
-
-                            <th>
-                                Risk
-                            </th>
-
-                            <th>
-                                Score
-                            </th>
-
-                            <th>
-                                Confidence
-                            </th>
-
-                            <th>
-                                Steps
-                            </th>
-
-                        </tr>
-
-                    </thead>
+            <div class="attack-path-list">
 
 
-                    <tbody>
+                {% for path in attack_paths %}
 
-                        {% for path in attack_paths %}
+                    <article class="attack-path-result-card">
 
-                            <tr>
 
-                                <td>
+                        <!-- ==================================
+                             PATH HEADER
+                        =================================== -->
 
-                                    {{ path.nodes|join(" → ") }}
+                        <div class="attack-path-result-header">
 
-                                </td>
+                            <div class="attack-path-result-heading">
 
-                                <td>
+                                <span class="attack-path-rank">
+                                    Path {{ loop.index }}
+                                </span>
 
-                                    {{ path.risk_level }}
 
-                                </td>
+                                <h4>
 
-                                <td>
+                                    {% if path.title %}
 
-                                    {{ path.score }} / 100
+                                        {{ path.title }}
 
-                                </td>
+                                    {% elif path.entry_point %}
 
-                                <td>
+                                        Potential Entry via
+                                        {{ path.entry_point }}
 
-                                    {{ path.confidence }}
+                                    {% else %}
 
-                                </td>
+                                        Potential Attack Path
 
-                                <td>
+                                    {% endif %}
 
-                                    {{ path.edges|default([])|length }}
+                                </h4>
 
-                                </td>
 
-                            </tr>
+                                <p class="attack-path-type">
 
-                        {% endfor %}
+                                    {% if path.path_type == "potential_service_entry" %}
 
-                    </tbody>
+                                        Service / Application Entry Path
 
-                </table>
+                                    {% else %}
+
+                                        Evidence-Supported Progression Path
+
+                                    {% endif %}
+
+                                </p>
+
+                            </div>
+
+
+                            <div class="attack-path-result-badges">
+
+                                <span class="risk-badge risk-{{ path.risk_level|default('UNKNOWN')|lower }}">
+                                    {{ path.risk_level|default("UNKNOWN") }}
+                                </span>
+
+                                <span class="confidence-badge">
+                                    {{ path.confidence|default("UNKNOWN") }}
+                                    Confidence
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==================================
+                             PATH SUMMARY
+                        =================================== -->
+
+                        <div class="attack-path-summary-grid">
+
+
+                            <div class="attack-path-summary-item">
+
+                                <span class="attack-path-summary-label">
+                                    Risk Score
+                                </span>
+
+                                <strong>
+                                    {{ path.score|default(0) }} / 100
+                                </strong>
+
+                            </div>
+
+
+                            <div class="attack-path-summary-item">
+
+                                <span class="attack-path-summary-label">
+                                    Entry Point
+                                </span>
+
+                                <strong>
+                                    {{ path.entry_point|default("Not specified", true) }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="attack-path-summary-item">
+
+                                <span class="attack-path-summary-label">
+                                    Status
+                                </span>
+
+                                <strong>
+                                    {{ path.analysis_status|default("POTENTIAL", true) }}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="attack-path-summary-item">
+
+                                <span class="attack-path-summary-label">
+                                    Exploitation
+                                </span>
+
+                                <strong>
+
+                                    {% if path.exploitation_verified|default(false) %}
+
+                                        Verified
+
+                                    {% else %}
+
+                                        Not Verified
+
+                                    {% endif %}
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==================================
+                             POTENTIAL PROGRESSION
+                        =================================== -->
+
+                        <div class="attack-path-section">
+
+                            <h5>
+                                Potential Attack Progression
+                            </h5>
+
+
+                            {% if path.progression|default([])|length > 0 %}
+
+                                <div class="attack-path-progression">
+
+                                    {% for step in path.progression %}
+
+                                        <div class="attack-path-step">
+
+                                            <div class="attack-path-step-number">
+                                                {{ loop.index }}
+                                            </div>
+
+                                            <div class="attack-path-step-content">
+                                                {{ step }}
+                                            </div>
+
+                                        </div>
+
+
+                                        {% if not loop.last %}
+
+                                            <div class="attack-path-step-arrow">
+                                                ↓
+                                            </div>
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                </div>
+
+
+                            {% elif path.nodes|default([])|length > 0 %}
+
+                                <div class="attack-path-progression">
+
+                                    {% for node in path.nodes %}
+
+                                        <div class="attack-path-step">
+
+                                            <div class="attack-path-step-number">
+                                                {{ loop.index }}
+                                            </div>
+
+                                            <div class="attack-path-step-content">
+                                                {{ node }}
+                                            </div>
+
+                                        </div>
+
+
+                                        {% if not loop.last %}
+
+                                            <div class="attack-path-step-arrow">
+                                                ↓
+                                            </div>
+
+                                        {% endif %}
+
+                                    {% endfor %}
+
+                                </div>
+
+
+                            {% else %}
+
+                                <p class="attack-path-muted">
+                                    No additional progression steps
+                                    are supported by the currently
+                                    available evidence.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ==================================
+                             ASSOCIATED FINDINGS
+                        =================================== -->
+
+                        <div class="attack-path-section">
+
+                            <h5>
+                                Supporting Security Findings
+                            </h5>
+
+
+                            {% if path.associated_findings|default([])|length > 0 %}
+
+                                <div class="attack-path-findings">
+
+
+                                    {% for finding in path.associated_findings %}
+
+                                        <div class="attack-path-finding">
+
+
+                                            {% if finding is mapping %}
+
+                                                <div class="attack-path-finding-header">
+
+                                                    <strong>
+
+                                                        {% if finding.cve_id %}
+
+                                                            {{ finding.cve_id }}
+
+                                                        {% elif finding.title %}
+
+                                                            {{ finding.title }}
+
+                                                        {% elif finding.summary %}
+
+                                                            {{ finding.summary }}
+
+                                                        {% elif finding.name %}
+
+                                                            {{ finding.name }}
+
+                                                        {% elif finding.category %}
+
+                                                            {{ finding.category }}
+
+                                                        {% elif finding.finding_id %}
+
+                                                            {{ finding.finding_id }}
+
+                                                        {% else %}
+
+                                                            Security Finding
+
+                                                        {% endif %}
+
+                                                    </strong>
+
+
+                                                    {% if finding.severity %}
+
+                                                        <span class="finding-severity severity-{{ finding.severity|lower }}">
+                                                            {{ finding.severity }}
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </div>
+
+
+                                                {% if finding.summary %}
+
+                                                    <p>
+                                                        {{ finding.summary }}
+                                                    </p>
+
+                                                {% elif finding.description %}
+
+                                                    <p>
+                                                        {{ finding.description }}
+                                                    </p>
+
+                                                {% endif %}
+
+
+                                                <div class="attack-path-finding-meta">
+
+                                                    {% if finding.port %}
+
+                                                        <span>
+                                                            Port {{ finding.port }}
+                                                        </span>
+
+                                                    {% endif %}
+
+
+                                                    {% if finding.service %}
+
+                                                        <span>
+                                                            {{ finding.service }}
+                                                        </span>
+
+                                                    {% endif %}
+
+
+                                                    {% if finding.confidence %}
+
+                                                        <span>
+                                                            {{ finding.confidence }}
+                                                            confidence
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </div>
+
+
+                                            {% else %}
+
+                                                <p>
+                                                    {{ finding }}
+                                                </p>
+
+                                            {% endif %}
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+
+                            {% elif path.evidence|default([])|length > 0 %}
+
+                                <ul class="attack-path-evidence-list">
+
+                                    {% for evidence in path.evidence %}
+
+                                        <li>
+                                            {{ evidence }}
+                                        </li>
+
+                                    {% endfor %}
+
+                                </ul>
+
+
+                            {% else %}
+
+                                <p class="attack-path-muted">
+                                    No additional supporting
+                                    finding details available.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ==================================
+                             PATH RATIONALE
+                        =================================== -->
+
+                        <div class="attack-path-section">
+
+                            <h5>
+                                Why AttackLens Identified This Path
+                            </h5>
+
+
+                            {% if path.explanation %}
+
+                                <p>
+                                    {{ path.explanation }}
+                                </p>
+
+                            {% elif path.rationale %}
+
+                                <p>
+                                    {{ path.rationale }}
+                                </p>
+
+                            {% elif path.evidence|default([])|length > 0 %}
+
+                                <ul class="attack-path-evidence-list">
+
+                                    {% for evidence in path.evidence %}
+
+                                        <li>
+                                            {{ evidence }}
+                                        </li>
+
+                                    {% endfor %}
+
+                                </ul>
+
+
+                            {% else %}
+
+                                <p class="attack-path-muted">
+                                    This path was generated from
+                                    available service, vulnerability,
+                                    exposure, and asset evidence.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- ==================================
+                             POTENTIAL IMPACT
+                        =================================== -->
+
+                        <div class="attack-path-section">
+
+                            <h5>
+                                Potential Impact
+                            </h5>
+
+                            <p>
+
+                                {% if path.potential_impact %}
+
+                                    {{ path.potential_impact }}
+
+                                {% else %}
+
+                                    The furthest progression shown by
+                                    this path is limited to what is
+                                    currently supported by the available
+                                    security evidence.
+
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- ==================================
+                             FURTHEST SUPPORTED PROGRESSION
+                        =================================== -->
+
+                        {% if path.furthest_progression %}
+
+                            <div class="attack-path-section">
+
+                                <h5>
+                                    Furthest Evidence-Supported Progression
+                                </h5>
+
+                                <p>
+                                    {{ path.furthest_progression }}
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- ==================================
+                             PATH DISCLAIMER
+                        =================================== -->
+
+                        <div class="attack-path-disclaimer">
+
+                            <strong>
+                                Potential — exploitation not verified.
+                            </strong>
+
+                            <span>
+
+                                {% if path.disclaimer %}
+
+                                    {{ path.disclaimer }}
+
+                                {% else %}
+
+                                    This path represents an
+                                    evidence-supported security hypothesis
+                                    and does not prove successful
+                                    exploitation, compromise, or
+                                    lateral movement.
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
 
             </div>
 
+
         {% else %}
+
+            <!-- ==================================
+                 NO PATH STATE
+            =================================== -->
 
             <div class="empty-state">
 
@@ -774,31 +1462,47 @@ Visualize potential attack paths across discovered assets and services
                 </div>
 
                 <h4>
-                    No Attack Paths Available
+                    No Evidence-Supported Potential
+                    Attack Path Identified
                 </h4>
 
-                <p>
 
-                    {% if graph_statistics.total_assets|default(0) == 0 %}
+                {% if not selected_asset_id
+                      and available_assets|default([])|length > 0 %}
 
+                    <p>
+                        Select a host or IP address above
+                        to perform attack-path analysis.
+                    </p>
+
+
+                {% elif graph_statistics.total_assets|default(0) == 0 %}
+
+                    <p>
                         Complete an authorized security scan
-                        to generate data for attack path analysis.
+                        to generate Asset Inventory data for
+                        attack-path analysis.
+                    </p>
 
-                    {% elif graph_statistics.total_assets|default(0) == 1 %}
 
-                        The current environment contains only one
-                        analyzed asset and no supported multi-stage
-                        attack path has been identified.
+                {% else %}
 
-                    {% else %}
+                    <p>
+                        AttackLens did not identify sufficient
+                        service, vulnerability, exposure, or
+                        relationship evidence to construct a
+                        potential attacker progression path
+                        for the selected host.
+                    </p>
 
-                        The Attack Path Engine did not identify
-                        sufficient evidence for an attacker progression
-                        path across the current assets.
+                    <p class="attack-path-muted">
+                        Discovered vulnerabilities and security
+                        findings remain part of the attack surface
+                        even when they cannot be mapped to an
+                        evidence-supported attack path.
+                    </p>
 
-                    {% endif %}
-
-                </p>
+                {% endif %}
 
             </div>
 
@@ -808,7 +1512,7 @@ Visualize potential attack paths across discovered assets and services
 
 
     <!-- ==========================================
-         ANALYSIS NOTICE
+         ANALYSIS CONTEXT
     =========================================== -->
 
     <section class="dashboard-card">
@@ -841,24 +1545,34 @@ Visualize potential attack paths across discovered assets and services
             </h4>
 
             <p>
-                Attack paths are generated from available Asset Inventory
-                evidence such as exposure, open services, security-sensitive
-                ports, vulnerabilities, risk, and asset criticality.
-                They represent potential attacker progression and do not
-                prove successful exploitation or verified network reachability.
+                AttackLens generates potential attack paths from
+                available evidence such as exposed services,
+                mapped vulnerabilities, security findings,
+                asset exposure, risk, criticality, and explicitly
+                supported asset relationships. A vulnerability
+                or open port alone does not prove an attack path.
+                Results represent potential attacker progression
+                and do not prove successful exploitation,
+                compromise, network reachability, or lateral movement.
             </p>
 
         </div>
 
     </section>
 
-
 </section>
 
 
+<!-- ==========================================
+     ATTACK GRAPH DATA
+=========================================== -->
+
 {% if graph_nodes|default([])|length > 0 %}
 
-<script id="attack-path-graph-data" type="application/json">
+<script
+    id="attack-path-graph-data"
+    type="application/json"
+>
 {
     "nodes": {{ graph_nodes|default([])|tojson }},
     "edges": {{ graph_edges|default([])|tojson }},
@@ -867,10 +1581,17 @@ Visualize potential attack paths across discovered assets and services
 }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js" defer></script>
-<script src="{{ url_for('static', filename='js/attack_path_visualization.js') }}" defer></script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"
+    defer
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/attack_path_visualization.js') }}"
+    defer
+></script>
 
 {% endif %}
-
 
 {% endblock %}

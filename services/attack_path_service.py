@@ -617,54 +617,13 @@ def generate_attack_graph(
 
     # ======================================
 
-    # SINGLE-ASSET ATTACK-SURFACE EDGES
+    # SERVICE-LEVEL ENTRY ROUTES
 
     # ======================================
-
     #
-
-    # An attack path does not always require
-
-    # two different assets. A single host can
-
-    # expose an evidence-supported potential
-
-    # attack path through vulnerable or
-
-    # security-sensitive services.
-
-    #
-
-    # These self-contained relationships are
-
-    # explicitly POTENTIAL and do not claim
-
-    # successful exploitation.
-
-    # ======================================
-
-
-
-    single_asset_edges = (
-
-        generate_single_asset_attack_edges(
-
-            normalized_assets
-
-        )
-
-    )
-
-
-
-    edges.extend(
-
-        single_asset_edges
-
-    )
-
-
-
+    # Single-host attack paths are generated later from concrete service +
+    # finding evidence. We intentionally do NOT create Asset -> Asset self
+    # edges merely because a host has many vulnerabilities.
 
 
     # ======================================
@@ -703,7 +662,11 @@ def generate_attack_graph(
 
     )
 
-
+    # Build evidence-backed service entry routes for scanned assets. These
+    # routes explain *how* an attack could plausibly begin without claiming
+    # successful exploitation or fabricating lateral movement.
+    paths.extend(generate_service_entry_paths(normalized_assets))
+    paths = deduplicate_paths(paths)
 
 
 
@@ -719,7 +682,7 @@ def generate_attack_graph(
 
         paths
 
-    )
+    )[:3]
 
 
 
@@ -1805,112 +1768,248 @@ def generate_external_entry_edges(
 
 
 
-def generate_single_asset_attack_edges(
-    assets
-):
+def generate_single_asset_attack_edges(assets):
+    """Backward-compatible helper.
+
+    AttackLens no longer models a vulnerable host as an Asset -> Asset
+    self-edge. Single-host entry possibilities are represented as ranked
+    service-level potential attack paths by ``generate_service_entry_paths``.
     """
-    Create a conservative, evidence-supported single-host potential path.
+    return []
 
-    An ordinary open port, a sensitive port by itself, or a HIGH/CRITICAL
-    risk label by itself is not enough to create a single-host attack path.
 
-    Qualification requires:
-      1. at least one open port;
-      2. the asset is not explicitly EXTERNAL;
-      3. at least one active vulnerability finding; and
-      4. supporting context from a sensitive port or HIGH/CRITICAL risk.
+def generate_service_entry_paths(assets, max_paths_per_asset=3):
+    """Generate ranked, evidence-supported potential entry paths.
 
-    Explicitly EXTERNAL assets are represented by the normal
-    External Attacker -> Asset entry edge instead of an additional self-edge.
+    A candidate requires an open service plus at least one finding that can be
+    associated with that service by port or service/product evidence. Open
+    ports, high risk, or raw vulnerability count alone never create a path.
+    The result predicts only the furthest progression supported by available
+    evidence and never claims successful exploitation.
     """
-
-    edges = []
+    paths = []
 
     for asset in normalize_list(assets):
-
-        if not isinstance(asset, dict):
+        if not isinstance(asset, dict) or asset.get("_id") is None:
             continue
 
-        asset_id = asset.get("_id")
+        candidates = []
+        for service in get_asset_open_ports(asset):
+            candidate = build_service_entry_candidate(asset, service)
+            if candidate is not None:
+                candidates.append(candidate)
 
-        if asset_id is None:
-            continue
+        candidates.sort(key=lambda item: (-item["score"], item["port"], item["protocol"]))
 
-        open_ports = get_asset_open_ports(asset)
+        for candidate in candidates[:max_paths_per_asset]:
+            paths.append(build_service_entry_path(asset, candidate))
 
-        if not open_ports:
-            continue
+    return [path for path in paths if isinstance(path, dict)]
 
-        # Avoid duplicate path semantics for explicitly external assets.
-        if normalize_exposure(asset.get("exposure")) == "EXTERNAL":
-            continue
+def build_service_entry_candidate(asset, service):
+    """Build one potential entry-route candidate for an open service."""
+    if not isinstance(asset, dict) or not isinstance(service, dict):
+        return None
 
-        sensitive_ports = get_sensitive_open_ports(asset)
-        vulnerability_count = get_vulnerability_count(asset)
-        security_finding_count = get_attack_security_finding_count(asset)
-        attack_evidence_count = vulnerability_count + security_finding_count
-        risk_level = normalize_risk_level(asset.get("risk_level"))
+    port = normalize_port_number(service.get("port"))
+    if port is None:
+        return None
 
-        has_vulnerability_evidence = attack_evidence_count > 0
-        has_supporting_context = (
-            bool(sensitive_ports)
-            or risk_level in ("HIGH", "CRITICAL")
-        )
+    protocol = str(service.get("protocol", "tcp") or "tcp").strip().lower()
+    service_name = str(service.get("service", service.get("name", "")) or "").strip()
+    product = str(service.get("product", "") or "").strip()
+    version = str(service.get("version", "") or "").strip()
+    display_name = product or service_name or SENSITIVE_PORTS.get(port) or f"Port {port}"
+    if version and version.lower() not in display_name.lower():
+        display_name = f"{display_name} {version}".strip()
 
-        if not (
-            has_vulnerability_evidence
-            and has_supporting_context
-        ):
-            continue
+    findings = get_findings_for_service(asset, service)
+    if not findings:
+        return None
 
-        evidence = [
-            "Asset exposes one or more open network services.",
+    finding_score = 0.0
+    confidence_values = []
+    summaries = []
+
+    for finding in findings:
+        severity = normalize_risk_level(finding.get("severity"))
+        confidence = normalize_confidence(finding.get("confidence"))
+        confidence_values.append(confidence)
+        severity_points = {"CRITICAL": 30, "HIGH": 22, "MEDIUM": 12, "LOW": 5, "UNKNOWN": 2}.get(severity, 2)
+        confidence_factor = {"HIGH": 1.0, "MEDIUM": 0.75, "LOW": 0.4, "UNKNOWN": 0.2}.get(confidence, 0.2)
+        finding_score += severity_points * confidence_factor
+        summary = get_finding_summary(finding)
+        if summary and summary not in summaries:
+            summaries.append(summary)
+
+    exposure_bonus = 12 if normalize_exposure(asset.get("exposure")) == "EXTERNAL" else 0
+    sensitive_bonus = 8 if port in SENSITIVE_PORTS else 0
+    score = normalize_score(min(100, finding_score + exposure_bonus + sensitive_bonus))
+
+    if "HIGH" in confidence_values:
+        confidence = "HIGH"
+    elif "MEDIUM" in confidence_values:
+        confidence = "MEDIUM"
+    elif "LOW" in confidence_values:
+        confidence = "LOW"
+    else:
+        confidence = "UNKNOWN"
+
+    risk_level = determine_path_risk_level(score)
+    target = str(asset.get("target") or asset.get("hostname") or asset.get("_id"))
+    entry = f"{display_name} on {protocol.upper()}/{port}"
+    impact = build_service_impact_text(service_name, product, port, target)
+
+    return {
+        "port": port,
+        "protocol": protocol,
+        "service": service_name,
+        "product": product,
+        "version": version,
+        "entry_point": entry,
+        "score": score,
+        "risk_level": risk_level,
+        "confidence": confidence,
+        "findings": findings,
+        "finding_summaries": summaries[:8],
+        "explanation": (
+            f"{entry} is an evidence-supported potential starting point because "
+            f"AttackLens associated {len(findings)} active security finding(s) with this service."
+        ),
+        "potential_impact": impact,
+        "progression": [
+            "Potential attacker",
+            entry,
             (
-                f"Asset currently contains {attack_evidence_count} "
-                "active attack-relevant security finding(s)."
+                f"Applicable finding: {summaries[0]}"
+                if summaries
+                else "Applicable vulnerability / security finding"
             ),
-        ]
+            f"Potential access or service impact on {target}"
+        ],
+        "disclaimer": (
+            "Potential path only. Successful exploitation is not verified, and the path "
+            "stops at the furthest progression supported by current evidence."
+        )
+    }
 
-        if sensitive_ports:
-            evidence.append(
-                "Asset exposes security-sensitive service port(s): "
-                + ", ".join(str(port) for port in sensitive_ports)
-                + "."
+def get_findings_for_service(asset, service):
+    """Associate active CVE/non-CVE findings with a discovered service."""
+    port = normalize_port_number(service.get("port"))
+    tokens = {
+        str(service.get(key, "") or "").strip().lower()
+        for key in ("service", "name", "product")
+        if str(service.get(key, "") or "").strip()
+    }
+    tokens = {token for token in tokens if len(token) >= 3 and token not in {"http", "https", "tcp", "udp"}}
+
+    findings = []
+    seen = set()
+    raw_findings = []
+    raw_findings.extend(normalize_list(asset.get("vulnerabilities")))
+    raw_findings.extend(get_attack_security_findings(asset))
+
+    for finding in raw_findings:
+        if not isinstance(finding, dict):
+            continue
+        status = str(finding.get("status", "potential") or "potential").strip().lower()
+        if status in INACTIVE_SECURITY_STATUSES:
+            continue
+
+        finding_port = normalize_port_number(finding.get("port"))
+        port_match = port is not None and finding_port == port
+
+        searchable = " ".join(
+            str(finding.get(key, "") or "").lower()
+            for key in (
+                "service", "service_name", "product", "affected_product", "title",
+                "name", "description", "evidence", "endpoint", "cpe"
             )
-
-        if risk_level in ("HIGH", "CRITICAL"):
-            evidence.append(
-                f"Current asset risk level is {risk_level}."
-            )
-
-        evidence.append(
-            "Evidence supports a potential single-host entry path; "
-            "successful exploitation has not been verified."
         )
+        token_match = any(token in searchable for token in tokens)
 
-        if sensitive_ports and risk_level in ("HIGH", "CRITICAL"):
-            confidence = "HIGH"
-        else:
-            confidence = "MEDIUM"
+        if not (port_match or token_match):
+            continue
 
-        score = calculate_asset_attack_score(
-            asset,
-            confidence=confidence
-        )
+        identity = str(
+            finding.get("cve_id")
+            or finding.get("finding_id")
+            or finding.get("id")
+            or get_finding_summary(finding)
+        ).strip().lower()
+        if not identity or identity in seen:
+            continue
+        seen.add(identity)
+        findings.append(finding)
 
-        edge = create_attack_edge(
-            edge_id=f"single-asset-entry:{asset_id}",
-            source=asset_id,
-            target=asset_id,
-            relationship="potential_single_asset_entry",
-            confidence=confidence,
-            score=score,
-            evidence=evidence
-        )
+    return findings
 
-        edges.append(edge)
+def get_finding_summary(finding):
+    """Return a compact human-readable finding label."""
+    if not isinstance(finding, dict):
+        return ""
+    for key in ("cve_id", "title", "name", "category", "finding_id"):
+        value = str(finding.get(key, "") or "").strip()
+        if value:
+            return value
+    return "Security finding"
 
-    return edges
+def build_service_impact_text(service_name, product, port, target):
+    """Describe potential impact conservatively without asserting compromise."""
+    label = product or service_name or SENSITIVE_PORTS.get(port) or f"service on port {port}"
+    return (
+        f"If an associated weakness in {label} were exploitable, it could affect the "
+        f"confidentiality, integrity, or availability of that service and may provide "
+        f"a foothold on {target}. Further host or lateral impact is not assumed without "
+        "additional relationship evidence."
+    )
+
+def build_service_entry_path(asset, candidate):
+    """Convert a service candidate into the existing normalized path structure.
+
+    Service-entry paths are conceptual evidence-supported routes rather than
+    graph relationships. Therefore they intentionally do not reference a
+    synthetic graph edge.
+    """
+    asset_id = str(asset.get("_id"))
+    route_id = f"service-entry:{asset_id}:{candidate['protocol']}:{candidate['port']}"
+
+    evidence = [candidate["explanation"]]
+    evidence.extend(candidate["finding_summaries"])
+    evidence.append(candidate["potential_impact"])
+    evidence.append(candidate["disclaimer"])
+
+    path = create_attack_path(
+        path_id=f"path:{route_id}",
+        node_ids=[asset_id],
+        edge_ids=[],
+        score=candidate["score"],
+        risk_level=candidate["risk_level"],
+        confidence=candidate["confidence"],
+        evidence=evidence
+    )
+
+    if not isinstance(path, dict):
+        return None
+
+    path["path_type"] = "potential_service_entry"
+    path["analysis_status"] = "POTENTIAL"
+    path["exploitation_verified"] = False
+    path["furthest_progression"] = candidate["progression"][-1]
+    path["entry_point"] = candidate["entry_point"]
+    path["service"] = {
+        "port": candidate["port"],
+        "protocol": candidate["protocol"],
+        "name": candidate["service"],
+        "product": candidate["product"],
+        "version": candidate["version"]
+    }
+    path["associated_findings"] = candidate["finding_summaries"]
+    path["explanation"] = candidate["explanation"]
+    path["potential_impact"] = candidate["potential_impact"]
+    path["progression"] = candidate["progression"]
+    path["disclaimer"] = candidate["disclaimer"]
+    return path
 
 
 # ==========================================
@@ -3220,623 +3319,73 @@ def calculate_vulnerability_contribution(asset):
 
 
 
-def discover_attack_paths(
+def discover_attack_paths(nodes, edges, asset_lookup=None, max_depth=5):
+    """Discover relationship-backed external and multi-asset progression paths.
 
-    nodes,
-
-    edges,
-
-    asset_lookup=None,
-
-    max_depth=5
-
-):
-
+    Single-host service entry routes are generated separately. This traversal
+    only follows real graph relationships; it never converts an Asset -> Asset
+    self-loop into an attack path.
     """
-
-    Discover potential directed attack paths.
-
-
-
-    Supported path types:
-
-    - External Attacker -> externally exposed asset.
-
-    - External Attacker -> asset -> potential pivots.
-
-    - Single-asset evidence-supported paths for an
-
-      individual scanned host.
-
-
-
-    Internal assets therefore no longer require an
-
-    unrelated second asset merely to produce a path.
-
-    Cycles are prevented and traversal depth is limited.
-
-    """
-
-
-
-    if not isinstance(
-
-        nodes,
-
-        list
-
-    ):
-
-
-
+    if not isinstance(nodes, list) or not isinstance(edges, list):
         return []
-
-
-
-    if not isinstance(
-
-        edges,
-
-        list
-
-    ):
-
-
-
-        return []
-
-
-
     if asset_lookup is None:
-
-
-
         asset_lookup = {}
 
-
-
     node_ids = {
-
-        str(
-
-            node.get(
-
-                "id"
-
-            )
-
-        )
-
-        for node in nodes
-
-        if isinstance(
-
-            node,
-
-            dict
-
-        )
-
-        and node.get(
-
-            "id"
-
-        ) is not None
-
+        str(node.get("id")) for node in nodes
+        if isinstance(node, dict) and node.get("id") is not None
     }
+    if "external-attacker" not in node_ids:
+        return []
 
+    adjacency = {}
+    for edge in edges:
+        if not isinstance(edge, dict):
+            continue
+        source = str(edge.get("source", "")).strip()
+        target = str(edge.get("target", "")).strip()
+        if not source or not target or source == target:
+            continue
+        adjacency.setdefault(source, []).append(edge)
 
+    for source in adjacency:
+        adjacency[source].sort(
+            key=lambda edge: (-normalize_score(edge.get("score")), str(edge.get("target", "")))
+        )
 
     paths = []
 
-
-
-    # ======================================
-
-    # SINGLE-ASSET PATHS
-
-    # ======================================
-
-    #
-
-    # A self-contained edge represents an
-
-    # evidence-supported potential path on one
-
-    # host. Build it directly rather than trying
-
-    # to traverse the self-loop as lateral movement.
-
-    # ======================================
-
-
-
-    traversal_edges = []
-
-
-
-    for edge in edges:
-
-
-
-        if not isinstance(
-
-            edge,
-
-            dict
-
-        ):
-
-
-
-            continue
-
-
-
-        relationship = str(
-
-            edge.get(
-
-                "relationship",
-
-                ""
-
-            )
-
-        ).strip()
-
-
-
-        source = str(
-
-            edge.get(
-
-                "source",
-
-                ""
-
-            )
-
-        ).strip()
-
-
-
-        target = str(
-
-            edge.get(
-
-                "target",
-
-                ""
-
-            )
-
-        ).strip()
-
-
-
-        if (
-
-            relationship
-
-            ==
-
-            "potential_single_asset_entry"
-
-        ):
-
-
-
-            if (
-
-                source
-
-                and
-
-                source == target
-
-                and
-
-                source in node_ids
-
-            ):
-
-
-
-                path = build_attack_path(
-
-                    [
-
-                        source
-
-                    ],
-
-                    [
-
-                        edge
-
-                    ],
-
-                    asset_lookup
-
-                )
-
-
-
+    def walk(current_node, node_path, edge_path, visited):
+        if len(edge_path) >= max_depth:
+            if edge_path:
+                path = build_attack_path(node_path, edge_path, asset_lookup)
                 if path is not None:
+                    paths.append(path)
+            return
 
+        outgoing_edges = adjacency.get(current_node, [])
+        if not outgoing_edges:
+            if edge_path:
+                path = build_attack_path(node_path, edge_path, asset_lookup)
+                if path is not None:
+                    paths.append(path)
+            return
 
-
-                    paths.append(
-
-                        path
-
-                    )
-
-
-
-            continue
-
-
-
-        traversal_edges.append(
-
-            edge
-
-        )
-
-
-
-    # ======================================
-
-    # EXTERNAL / MULTI-ASSET TRAVERSAL
-
-    # ======================================
-
-
-
-    if "external-attacker" in node_ids:
-
-
-
-        adjacency = {}
-
-
-
-        for edge in traversal_edges:
-
-
-
-            source = str(
-
-                edge.get(
-
-                    "source",
-
-                    ""
-
-                )
-
-            ).strip()
-
-
-
-            target = str(
-
-                edge.get(
-
-                    "target",
-
-                    ""
-
-                )
-
-            ).strip()
-
-
-
-            if (
-
-                not source
-
-                or
-
-                not target
-
-            ):
-
-
-
+        extended = False
+        for edge in outgoing_edges:
+            target = str(edge.get("target", "")).strip()
+            if target in visited:
                 continue
-
-
-
-            adjacency.setdefault(
-
-                source,
-
-                []
-
-            ).append(
-
-                edge
-
-            )
-
-
-
-        for source in adjacency:
-
-
-
-            adjacency[source].sort(
-
-                key=lambda edge: (
-
-                    -normalize_score(
-
-                        edge.get(
-
-                            "score"
-
-                        )
-
-                    ),
-
-                    str(
-
-                        edge.get(
-
-                            "target",
-
-                            ""
-
-                        )
-
-                    )
-
-                )
-
-            )
-
-
-
-        def walk(
-
-            current_node,
-
-            node_path,
-
-            edge_path,
-
-            visited
-
-        ):
-
-
-
-            if len(
-
-                edge_path
-
-            ) >= max_depth:
-
-
-
-                if edge_path:
-
-
-
-                    path = build_attack_path(
-
-                        node_path,
-
-                        edge_path,
-
-                        asset_lookup
-
-                    )
-
-
-
-                    if path is not None:
-
-
-
-                        paths.append(
-
-                            path
-
-                        )
-
-
-
-                return
-
-
-
-            outgoing_edges = adjacency.get(
-
-                current_node,
-
-                []
-
-            )
-
-
-
-            if not outgoing_edges:
-
-
-
-                if edge_path:
-
-
-
-                    path = build_attack_path(
-
-                        node_path,
-
-                        edge_path,
-
-                        asset_lookup
-
-                    )
-
-
-
-                    if path is not None:
-
-
-
-                        paths.append(
-
-                            path
-
-                        )
-
-
-
-                return
-
-
-
-            extended = False
-
-
-
-            for edge in outgoing_edges:
-
-
-
-                target = str(
-
-                    edge.get(
-
-                        "target",
-
-                        ""
-
-                    )
-
-                )
-
-
-
-                if target in visited:
-
-
-
-                    continue
-
-
-
-                extended = True
-
-
-
-                walk(
-
-                    target,
-
-                    node_path
-
-                    +
-
-                    [
-
-                        target
-
-                    ],
-
-                    edge_path
-
-                    +
-
-                    [
-
-                        edge
-
-                    ],
-
-                    visited
-
-                    |
-
-                    {
-
-                        target
-
-                    }
-
-                )
-
-
-
-            if (
-
-                not extended
-
-                and
-
-                edge_path
-
-            ):
-
-
-
-                path = build_attack_path(
-
-                    node_path,
-
-                    edge_path,
-
-                    asset_lookup
-
-                )
-
-
-
-                if path is not None:
-
-
-
-                    paths.append(
-
-                        path
-
-                    )
-
-
-
-        walk(
-
-            "external-attacker",
-
-            [
-
-                "external-attacker"
-
-            ],
-
-            [],
-
-            {
-
-                "external-attacker"
-
-            }
-
-        )
-
-
-
-    return deduplicate_paths(
-
-        paths
-
-    )
+            extended = True
+            walk(target, node_path + [target], edge_path + [edge], visited | {target})
+
+        if not extended and edge_path:
+            path = build_attack_path(node_path, edge_path, asset_lookup)
+            if path is not None:
+                paths.append(path)
+
+    walk("external-attacker", ["external-attacker"], [], {"external-attacker"})
+    return deduplicate_paths(paths)
 
 
 

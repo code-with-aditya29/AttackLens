@@ -1,48 +1,198 @@
 # ==========================================
 
+
+
+
+
+
+
 # ATTACK PATH ENGINE TESTS
+
+
+
+
+
+
 
 # ==========================================
 
+
+
+
+
+
+
 #
+
+
+
+
+
+
 
 # Tests:
 
+
+
+
+
+
+
 #
+
+
+
+
+
+
 
 # 1. Attack Path model
 
+
+
+
+
+
+
 # 2. Asset node generation
+
+
+
+
+
+
 
 # 3. External attacker generation
 
+
+
+
+
+
+
 # 4. Exposure handling
+
+
+
+
+
+
 
 # 5. Open-port filtering
 
+
+
+
+
+
+
 # 6. Sensitive-port detection
+
+
+
+
+
+
 
 # 7. Entry-edge generation
 
+
+
+
+
+
+
 # 8. Asset relationship generation
+
+
+
+
+
+
 
 # 9. Attack-path discovery
 
+
+
+
+
+
+
 # 10. Path scoring
+
+
+
+
+
+
 
 # 11. Path confidence
 
+
+
+
+
+
+
 # 12. Path risk levels
+
+
+
+
+
+
 
 # 13. Ownership isolation
 
+
+
+
+
+
+
 # 14. Deduplication
+
+
+
+
+
+
 
 # 15. Empty / malformed data handling
 
+
+
+
+
+
+
 #
 
+
+
+
+
+
+
 # ==========================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -54,33 +204,147 @@ import unittest
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from models.attack_path_model import (
+
+
+
+
+
+
 
     create_attack_graph_document,
 
+
+
+
+
+
+
     create_asset_node,
+
+
+
+
+
+
 
     create_external_attacker_node,
 
+
+
+
+
+
+
     create_attack_edge,
+
+
+
+
+
+
 
     create_attack_path,
 
+
+
+
+
+
+
     create_graph_statistics,
+
+
+
+
+
+
 
     normalize_score,
 
+
+
+
+
+
+
     normalize_risk_level,
+
+
+
+
+
+
 
     normalize_confidence,
 
+
+
+
+
+
+
     normalize_evidence,
+
+
+
+
+
+
 
     normalize_identifier_list,
 
+
+
+
+
+
+
     normalize_non_negative_integer
 
+
+
+
+
+
+
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -88,47 +352,181 @@ from models.attack_path_model import (
 
 from services.attack_path_service import (
 
+
+
+
+
+
+
     generate_attack_graph,
+
+
+
+
+
+
 
     normalize_assets,
 
+
+
+
+
+
+
     build_asset_node,
+
+
+
+
+
+
 
     generate_external_entry_edges,
 
+
+
+
+
+
+
     generate_asset_relationships,
 
+
+
+
+
+
+
     evaluate_asset_relationship,
+
+
+
     get_explicit_relationship_evidence,
+
+
+
     generate_single_asset_attack_edges,
+
+    generate_service_entry_paths,
+
+
+
+
+
+
 
     calculate_asset_attack_score,
 
+
+
+
+
+
+
     calculate_vulnerability_contribution,
+
+
+
+
+
+
 
     discover_attack_paths,
 
+
+
+
+
+
+
     calculate_path_score,
+
+
+
+
+
+
 
     determine_path_risk_level,
 
+
+
+
+
+
+
     calculate_path_confidence,
+
+
+
+
+
+
 
     deduplicate_edges,
 
+
+
+
+
+
+
     deduplicate_paths,
+
+
+
+
+
+
 
     get_open_ports,
 
+
+
+
+
+
+
     get_sensitive_open_ports,
+
+
+
+
+
+
 
     get_vulnerability_count,
 
+
+
+
+
+
+
     normalize_exposure,
+
+
+
+
+
+
 
     normalize_criticality,
 
+
+
+
+
+
+
     normalize_port_number
+
+
+
+
+
+
 
 )
 
@@ -136,17 +534,71 @@ from services.attack_path_service import (
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ==========================================
+
+
+
+
+
+
 
 # TEST CLASS
 
+
+
+
+
+
+
 # ==========================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 class TestAttackPathEngine(
 
+
+
+
+
+
+
     unittest.TestCase
+
+
+
+
+
+
 
 ):
 
@@ -154,33 +606,135 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # TEST DATA SETUP
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def setUp(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.user_id = (
+
+
+
+
+
+
 
             "user-001"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.other_user_id = (
 
+
+
+
+
+
+
             "user-002"
+
+
+
+
+
+
 
         )
 
@@ -188,11 +742,53 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
 
         # INTERNAL LOW-RISK ASSET
 
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -200,15 +796,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "_id": "asset-internal",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             "created_by": (
 
+
+
+
+
+
+
                 self.user_id
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -216,7 +860,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "hostname": "internal-host",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -224,35 +892,143 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 80,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open",
 
+
+
+
+
+
+
                     "service": "http"
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 443,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "closed",
 
+
+
+
+
+
+
                     "service": "https"
+
+
+
+
+
+
 
                 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -260,15 +1036,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 80,
 
+
+
+
+
+
+
                     "name": "http",
+
+
+
+
+
+
 
                     "product": "nginx"
 
+
+
+
+
+
+
                 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -276,7 +1100,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "operating_system": "Linux",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -284,7 +1132,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "vulnerability_count": 0,
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -292,7 +1164,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "risk_level": "LOW",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -300,7 +1196,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "exposure": "INTERNAL"
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -310,11 +1230,53 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
 
         # EXTERNAL WEB ASSET
 
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -322,15 +1284,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "_id": "asset-external",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             "created_by": (
 
+
+
+
+
+
+
                 self.user_id
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -338,7 +1348,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "hostname": "public-web",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -346,35 +1380,143 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 80,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open",
 
+
+
+
+
+
+
                     "service": "http"
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 443,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open",
 
+
+
+
+
+
+
                     "service": "https"
+
+
+
+
+
+
 
                 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -382,27 +1524,111 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 80,
 
+
+
+
+
+
+
                     "name": "http"
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 443,
 
+
+
+
+
+
+
                     "name": "https"
+
+
+
+
+
+
 
                 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -410,11 +1636,47 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "vulnerabilities": [],
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "vulnerability_count": 0,
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -422,7 +1684,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "risk_level": "MEDIUM",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -430,7 +1716,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "exposure": "EXTERNAL"
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -440,11 +1750,53 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
 
         # INTERNAL SENSITIVE ASSET
 
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -452,15 +1804,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "_id": "asset-sensitive",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             "created_by": (
 
+
+
+
+
+
+
                 self.user_id
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -468,7 +1868,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "hostname": "file-server",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -476,35 +1900,143 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 445,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open",
 
+
+
+
+
+
+
                     "service": "microsoft-ds"
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 3389,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open",
 
+
+
+
+
+
+
                     "service": "ms-wbt-server"
+
+
+
+
+
+
 
                 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -512,23 +2044,95 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 445,
 
+
+
+
+
+
+
                     "name": "microsoft-ds"
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 3389,
 
+
+
+
+
+
+
                     "name": "ms-wbt-server"
 
+
+
+
+
+
+
                 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -536,11 +2140,47 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "operating_system": (
+
+
+
+
+
+
 
                 "Microsoft Windows 11"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -548,21 +2188,87 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "cve_id": "CVE-TEST-0001",
 
+
+
+
+
+
+
                     "severity": "HIGH",
+
+
+
+
+
+
 
                     "confidence": "HIGH",
 
+
+
+
+
+
+
                     "status": "potential"
+
+
+
+
+
+
 
                 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -570,7 +2276,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "risk_score": 65,
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -578,7 +2308,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "criticality": "HIGH",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -586,17 +2340,71 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         }
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
 
         # DIFFERENT OWNER ASSET
 
+
+
+
+
+
+
         # ==================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -604,15 +2412,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "_id": "asset-other-user",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             "created_by": (
 
+
+
+
+
+
+
                 self.other_user_id
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -620,7 +2476,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "hostname": "other-user-host",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -628,17 +2508,71 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 22,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open",
 
+
+
+
+
+
+
                     "service": "ssh"
 
+
+
+
+
+
+
                 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -646,7 +2580,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "services": [],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -654,7 +2612,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "vulnerability_count": 0,
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -662,7 +2644,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "risk_level": "HIGH",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -670,7 +2676,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "exposure": "EXTERNAL"
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -680,79 +2710,331 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # MODEL TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_create_empty_attack_graph(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         graph = (
+
+
+
+
+
+
 
             create_attack_graph_document(
 
+
+
+
+
+
+
                 created_by=self.user_id
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             graph["created_by"],
 
+
+
+
+
+
+
             self.user_id
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             graph["nodes"],
 
+
+
+
+
+
+
             []
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             graph["edges"],
 
+
+
+
+
+
+
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["paths"],
+
+
+
+
+
+
 
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertIsNotNone(
 
+
+
+
+
+
+
             graph["generated_at"]
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -760,9 +3042,33 @@ class TestAttackPathEngine(
 
     def test_create_asset_node(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -770,7 +3076,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             asset_id="asset-1",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -778,7 +3108,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             hostname="server",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -786,7 +3140,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             risk_level="HIGH",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -794,7 +3172,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             exposure="INTERNAL",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -802,7 +3204,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             open_ports=[],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -810,51 +3236,213 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             vulnerability_count=2
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["id"],
 
+
+
+
+
+
+
             "asset-1"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["node_type"],
 
+
+
+
+
+
+
             "asset"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["target"],
 
+
+
+
+
+
+
             "10.0.0.1"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             node["vulnerability_count"],
+
+
+
+
+
+
 
             2
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -862,47 +3450,191 @@ class TestAttackPathEngine(
 
     def test_external_attacker_node(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         node = (
+
+
+
+
+
+
 
             create_external_attacker_node()
 
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["id"],
 
+
+
+
+
+
+
             "external-attacker"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["node_type"],
 
+
+
+
+
+
+
             "attacker"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             node["exposure"],
+
+
+
+
+
+
 
             "EXTERNAL"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -910,9 +3642,33 @@ class TestAttackPathEngine(
 
     def test_create_attack_edge(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -920,7 +3676,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             edge_id="edge-1",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -928,7 +3708,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             target="target",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -936,7 +3740,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             confidence="HIGH",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -944,55 +3772,229 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             evidence=[
 
+
+
+
+
+
+
                 "External exposure"
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             edge["source"],
 
+
+
+
+
+
+
             "source"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             edge["target"],
 
+
+
+
+
+
+
             "target"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             edge["confidence"],
 
+
+
+
+
+
+
             "HIGH"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             edge["score"],
+
+
+
+
+
+
 
             60
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1000,9 +4002,33 @@ class TestAttackPathEngine(
 
     def test_create_attack_path(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1010,25 +4036,103 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             path_id="path-1",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             node_ids=[
 
+
+
+
+
+
+
                 "external-attacker",
+
+
+
+
+
+
 
                 "asset-1"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             edge_ids=[
 
+
+
+
+
+
+
                 "edge-1"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1036,7 +4140,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             risk_level="HIGH",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1044,47 +4172,185 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             evidence=[
 
+
+
+
+
+
+
                 "Evidence"
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             path["id"],
 
+
+
+
+
+
+
             "path-1"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             path["risk_level"],
 
+
+
+
+
+
+
             "HIGH"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             len(
+
+
+
+
+
+
 
                 path["nodes"]
 
+
+
+
+
+
+
             ),
 
+
+
+
+
+
+
             2
+
+
+
+
+
+
 
         )
 
@@ -1092,75 +4358,315 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # NORMALIZATION TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_score_normalization(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_score(
+
+
+
+
+
+
 
                 150
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             100
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_score(
+
+
+
+
+
+
 
                 -20
 
+
+
+
+
+
+
             ),
 
+
+
+
+
+
+
             0
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_score(
+
+
+
+
+
+
 
                 "50"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             50
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_score(
+
+
+
+
+
+
 
                 "invalid"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1168,37 +4674,151 @@ class TestAttackPathEngine(
 
     def test_risk_level_normalization(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_risk_level(
+
+
+
+
+
+
 
                 "high"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "HIGH"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_risk_level(
+
+
+
+
+
+
 
                 "invalid"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "UNKNOWN"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1206,37 +4826,151 @@ class TestAttackPathEngine(
 
     def test_confidence_normalization(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_confidence(
+
+
+
+
+
+
 
                 "medium"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "MEDIUM"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_confidence(
+
+
+
+
+
+
 
                 "invalid"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "UNKNOWN"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1244,9 +4978,33 @@ class TestAttackPathEngine(
 
     def test_evidence_deduplication(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1254,39 +5012,165 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 "Open port",
 
+
+
+
+
+
+
                 "open port",
+
+
+
+
+
+
 
                 "",
 
+
+
+
+
+
+
                 None,
 
+
+
+
+
+
+
                 "High risk"
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             evidence,
+
+
+
+
+
+
 
             [
 
+
+
+
+
+
+
                 "Open port",
+
+
+
+
+
+
 
                 "High risk"
 
+
+
+
+
+
+
             ]
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1294,53 +5178,215 @@ class TestAttackPathEngine(
 
     def test_identifier_deduplication(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         identifiers = (
+
+
+
+
+
+
 
             normalize_identifier_list(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 [
 
+
+
+
+
+
+
                     "a",
+
+
+
+
+
+
 
                     "b",
 
+
+
+
+
+
+
                     "a",
+
+
+
+
+
+
 
                     "",
 
+
+
+
+
+
+
                     None
+
+
+
+
+
+
 
                 ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             identifiers,
+
+
+
+
+
+
 
             [
 
+
+
+
+
+
+
                 "a",
+
+
+
+
+
+
 
                 "b"
 
+
+
+
+
+
+
             ]
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1348,21 +5394,75 @@ class TestAttackPathEngine(
 
     def test_negative_integer_becomes_zero(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             normalize_non_negative_integer(
 
+
+
+
+
+
+
                 -10
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             0
+
+
+
+
+
+
 
         )
 
@@ -1370,55 +5470,235 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # PORT TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_only_open_ports_returned(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         ports = get_open_ports(
+
+
+
+
+
+
 
             self.internal_asset[
 
+
+
+
+
+
+
                 "ports"
+
+
+
+
+
+
 
             ]
 
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             len(
 
+
+
+
+
+
+
                 ports
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             ports[0]["port"],
+
+
+
+
+
+
 
             80
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1426,9 +5706,33 @@ class TestAttackPathEngine(
 
     def test_duplicate_open_ports_removed(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1436,29 +5740,119 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 {
 
+
+
+
+
+
+
                     "port": 22,
+
+
+
+
+
+
 
                     "protocol": "tcp",
 
+
+
+
+
+
+
                     "state": "open"
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
+
+
+
+
+
+
 
                     "port": 22,
 
+
+
+
+
+
+
                     "protocol": "tcp",
+
+
+
+
+
+
 
                     "state": "open"
 
+
+
+
+
+
+
                 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1466,21 +5860,93 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             len(
+
+
+
+
+
+
 
                 ports
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1488,33 +5954,135 @@ class TestAttackPathEngine(
 
     def test_invalid_port_rejected(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertIsNone(
 
+
+
+
+
+
+
             normalize_port_number(
+
+
+
+
+
+
 
                 70000
 
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertIsNone(
 
+
+
+
+
+
+
             normalize_port_number(
+
+
+
+
+
+
 
                 "invalid"
 
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1522,35 +6090,131 @@ class TestAttackPathEngine(
 
     def test_sensitive_ports_detected(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         ports = (
 
+
+
+
+
+
+
             get_sensitive_open_ports(
+
+
+
+
+
+
 
                 self.sensitive_asset
 
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             ports,
+
+
+
+
+
+
 
             [
 
+
+
+
+
+
+
                 445,
+
+
+
+
+
+
 
                 3389
 
+
+
+
+
+
+
             ]
+
+
+
+
+
+
 
         )
 
@@ -1558,19 +6222,85 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # ASSET NORMALIZATION TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_assets_filtered_by_owner(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1578,13 +6308,55 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 self.internal_asset,
 
+
+
+
+
+
+
                 self.other_user_asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1592,31 +6364,133 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             len(
 
+
+
+
+
+
+
                 assets
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             assets[0]["_id"],
+
+
+
+
+
+
 
             "asset-internal"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1624,49 +6498,199 @@ class TestAttackPathEngine(
 
     def test_asset_without_id_rejected(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         asset = dict(
+
+
+
+
+
+
 
             self.internal_asset
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         asset.pop(
 
+
+
+
+
+
+
             "_id"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         assets = normalize_assets(
 
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             created_by=self.user_id
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             assets,
+
+
+
+
+
+
 
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1674,17 +6698,65 @@ class TestAttackPathEngine(
 
     def test_asset_without_target_rejected(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         asset = dict(
+
+
+
+
+
+
 
             self.internal_asset
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1692,27 +6764,117 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         assets = normalize_assets(
+
+
+
+
+
+
 
             [
 
+
+
+
+
+
+
                 asset
+
+
+
+
+
+
 
             ],
 
+
+
+
+
+
+
             created_by=self.user_id
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             assets,
+
+
+
+
+
+
 
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1720,59 +6882,227 @@ class TestAttackPathEngine(
 
     def test_build_asset_node(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         node = build_asset_node(
 
+
+
+
+
+
+
             self.internal_asset
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["id"],
 
+
+
+
+
+
+
             "asset-internal"
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["risk_score"],
 
+
+
+
+
+
+
             12
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             node["exposure"],
 
+
+
+
+
+
+
             "INTERNAL"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             len(
+
+
+
+
+
+
 
                 node["open_ports"]
 
+
+
+
+
+
+
             ),
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
@@ -1780,47 +7110,203 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # EXPOSURE TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_exposure_normalization(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_exposure(
+
+
+
+
+
+
 
                 "external"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "EXTERNAL"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_exposure(
+
+
+
+
+
+
 
                 "internal"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "INTERNAL"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1828,23 +7314,95 @@ class TestAttackPathEngine(
 
     def test_invalid_exposure_defaults_internal(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             normalize_exposure(
 
+
+
+
+
+
+
                 "invalid"
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             "INTERNAL"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1852,35 +7410,131 @@ class TestAttackPathEngine(
 
     def test_criticality_normalization(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_criticality(
+
+
+
+
+
+
 
                 "high"
 
+
+
+
+
+
+
             ),
+
+
+
+
+
+
 
             "HIGH"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             normalize_criticality(
+
+
+
+
+
+
 
                 None
 
+
+
+
+
+
+
             ),
 
+
+
+
+
+
+
             "NORMAL"
+
+
+
+
+
+
 
         )
 
@@ -1888,41 +7542,179 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # VULNERABILITY TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_vulnerability_count(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         count = (
+
+
+
+
+
+
 
             get_vulnerability_count(
 
+
+
+
+
+
+
                 self.sensitive_asset
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             count,
+
+
+
+
+
+
 
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1930,31 +7722,127 @@ class TestAttackPathEngine(
 
     def test_vulnerability_contribution(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         score = (
+
+
+
+
+
+
 
             calculate_vulnerability_contribution(
 
+
+
+
+
+
+
                 self.sensitive_asset
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertGreater(
 
+
+
+
+
+
+
             score,
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1962,17 +7850,65 @@ class TestAttackPathEngine(
 
     def test_resolved_vulnerability_ignored(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         asset = dict(
+
+
+
+
+
+
 
             self.sensitive_asset
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1980,15 +7916,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             {
+
+
+
+
+
+
 
                 "severity": "CRITICAL",
 
+
+
+
+
+
+
                 "confidence": "HIGH",
+
+
+
+
+
+
 
                 "status": "resolved"
 
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1996,25 +7980,109 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         score = (
+
+
+
+
+
+
 
             calculate_vulnerability_contribution(
 
+
+
+
+
+
+
                 asset
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             score,
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2022,17 +8090,65 @@ class TestAttackPathEngine(
 
     def test_rejected_vulnerability_ignored(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         asset = dict(
+
+
+
+
+
+
 
             self.sensitive_asset
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2040,15 +8156,63 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             {
+
+
+
+
+
+
 
                 "severity": "CRITICAL",
 
+
+
+
+
+
+
                 "confidence": "HIGH",
+
+
+
+
+
+
 
                 "status": "rejected"
 
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2056,23 +8220,89 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         score = (
+
+
+
+
+
+
 
             calculate_vulnerability_contribution(
 
+
+
+
+
+
+
                 asset
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             score,
 
+
+
+
+
+
+
             0
+
+
+
+
+
+
 
         )
 
@@ -2080,69 +8310,291 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # EXTERNAL ENTRY TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_external_asset_creates_entry_edge(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         edges = (
+
+
+
+
+
+
 
             generate_external_entry_edges(
 
+
+
+
+
+
+
                 [
+
+
+
+
+
+
 
                     self.external_asset
 
+
+
+
+
+
+
                 ]
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             len(
 
+
+
+
+
+
+
                 edges
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             edges[0]["source"],
 
+
+
+
+
+
+
             "external-attacker"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             edges[0]["target"],
+
+
+
+
+
+
 
             "asset-external"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2150,33 +8602,123 @@ class TestAttackPathEngine(
 
     def test_internal_asset_does_not_create_entry_edge(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         edges = (
+
+
+
+
+
+
 
             generate_external_entry_edges(
 
+
+
+
+
+
+
                 [
+
+
+
+
+
+
 
                     self.internal_asset
 
+
+
+
+
+
+
                 ]
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             edges,
 
+
+
+
+
+
+
             []
+
+
+
+
+
+
 
         )
 
@@ -2184,181 +8726,739 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # ASSET RELATIONSHIP TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_single_asset_has_no_relationship(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         edges = (
+
+
+
+
+
+
 
             generate_asset_relationships(
 
+
+
+
+
+
+
                 [
+
+
+
+
+
+
 
                     self.internal_asset
 
+
+
+
+
+
+
                 ]
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             edges,
+
+
+
+
+
+
 
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
     def test_sensitive_target_without_topology_is_not_connected(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         relationship = evaluate_asset_relationship(
+
+
+
             self.external_asset,
+
+
+
             self.sensitive_asset
+
+
+
         )
+
+
+
+
+
+
 
         self.assertIsNone(relationship)
 
 
+
+
+
+
+
+
+
+
+
     def test_explicit_relationship_can_create_potential_relationship(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         source = dict(self.external_asset)
+
+
+
         source["reachable_assets"] = [
+
+
+
             self.sensitive_asset["_id"]
+
+
+
         ]
 
+
+
+
+
+
+
         relationship = evaluate_asset_relationship(
+
+
+
             source,
+
+
+
             self.sensitive_asset
+
+
+
         )
 
+
+
+
+
+
+
         self.assertIsNotNone(relationship)
+
+
+
         self.assertIn(
+
+
+
             relationship["confidence"],
+
+
+
             ["LOW", "MEDIUM"]
+
+
+
         )
+
+
+
+
+
+
 
     def test_low_evidence_target_rejected(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         relationship = (
 
+
+
+
+
+
+
             evaluate_asset_relationship(
+
+
+
+
+
+
 
                 self.external_asset,
 
+
+
+
+
+
+
                 self.internal_asset
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertIsNone(
 
+
+
+
+
+
+
             relationship
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
     def test_asset_relationship_never_high_confidence(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         source = dict(self.external_asset)
+
+
+
         source["reachable_assets"] = [
+
+
+
             self.sensitive_asset["_id"]
+
+
+
         ]
 
+
+
+
+
+
+
         relationship = evaluate_asset_relationship(
+
+
+
             source,
+
+
+
             self.sensitive_asset
+
+
+
         )
+
+
+
+
+
+
 
         self.assertIsNotNone(relationship)
+
+
+
         self.assertNotEqual(
+
+
+
             relationship["confidence"],
+
+
+
             "HIGH"
+
+
+
         )
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # ATTACK SCORE TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_attack_score_stays_in_range(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         score = (
+
+
+
+
+
+
 
             calculate_asset_attack_score(
 
+
+
+
+
+
+
                 self.sensitive_asset,
+
+
+
+
+
+
 
                 confidence="HIGH"
 
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertGreaterEqual(
 
+
+
+
+
+
+
             score,
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertLessEqual(
 
+
+
+
+
+
+
             score,
+
+
+
+
+
+
 
             100
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2366,39 +9466,147 @@ class TestAttackPathEngine(
 
     def test_external_asset_scores_higher_than_internal_copy(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         external = dict(
+
+
+
+
+
+
 
             self.external_asset
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         internal = dict(
 
+
+
+
+
+
+
             self.external_asset
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         external[
 
+
+
+
+
+
+
             "exposure"
+
+
+
+
+
+
 
         ] = "EXTERNAL"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         internal[
 
+
+
+
+
+
+
             "exposure"
+
+
+
+
+
+
 
         ] = "INTERNAL"
 
@@ -2406,31 +9614,139 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         external_score = (
+
+
+
+
+
+
 
             calculate_asset_attack_score(
 
+
+
+
+
+
+
                 external,
+
+
+
+
+
+
 
                 confidence="MEDIUM"
 
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         internal_score = (
 
+
+
+
+
+
+
             calculate_asset_attack_score(
+
+
+
+
+
+
 
                 internal,
 
+
+
+
+
+
+
                 confidence="MEDIUM"
+
+
+
+
+
+
 
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2438,9 +9754,27 @@ class TestAttackPathEngine(
 
         self.assertGreater(
 
+
+
+
+
+
+
             external_score,
 
+
+
+
+
+
+
             internal_score
+
+
+
+
+
+
 
         )
 
@@ -2448,33 +9782,147 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # PATH SCORE TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_path_score_empty_edges_zero(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             calculate_path_score(
 
+
+
+
+
+
+
                 []
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2482,9 +9930,33 @@ class TestAttackPathEngine(
 
     def test_path_score_single_edge(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2492,29 +9964,125 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 {
 
+
+
+
+
+
+
                     "score": 60
 
+
+
+
+
+
+
                 }
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             score,
+
+
+
+
+
+
 
             60
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2522,9 +10090,33 @@ class TestAttackPathEngine(
 
     def test_path_score_does_not_exceed_100(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2532,29 +10124,119 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
 
+
+
+
+
+
+
                 {
 
+
+
+
+
+
+
                     "score": 100
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
 
+
+
+
+
+
+
                     "score": 100
+
+
+
+
+
+
 
                 },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 {
 
+
+
+
+
+
+
                     "score": 100
+
+
+
+
+
+
 
                 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2562,15 +10244,57 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertLessEqual(
 
+
+
+
+
+
+
             score,
 
+
+
+
+
+
+
             100
+
+
+
+
+
+
 
         )
 
@@ -2578,33 +10302,147 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # PATH RISK LEVEL TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_low_path_risk(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             determine_path_risk_level(
 
+
+
+
+
+
+
                 10
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             "LOW"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2612,23 +10450,95 @@ class TestAttackPathEngine(
 
     def test_medium_path_risk(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             determine_path_risk_level(
 
+
+
+
+
+
+
                 30
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             "MEDIUM"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2636,23 +10546,95 @@ class TestAttackPathEngine(
 
     def test_high_path_risk(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             determine_path_risk_level(
 
+
+
+
+
+
+
                 60
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             "HIGH"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2660,21 +10642,75 @@ class TestAttackPathEngine(
 
     def test_critical_path_risk(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             determine_path_risk_level(
 
+
+
+
+
+
+
                 80
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             "CRITICAL"
+
+
+
+
+
+
 
         )
 
@@ -2682,43 +10718,181 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # PATH CONFIDENCE TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_path_confidence_weakest_edge_wins(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         confidence = (
+
+
+
+
+
+
 
             calculate_path_confidence(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 [
+
+
+
+
+
+
 
                     {
 
+
+
+
+
+
+
                         "confidence": "HIGH"
+
+
+
+
+
+
 
                     },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                     {
+
+
+
+
+
+
 
                         "confidence": "LOW"
 
+
+
+
+
+
+
                     }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2726,19 +10900,85 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             confidence,
+
+
+
+
+
+
 
             "LOW"
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2746,33 +10986,129 @@ class TestAttackPathEngine(
 
     def test_medium_path_confidence(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         confidence = (
+
+
+
+
+
+
 
             calculate_path_confidence(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 [
+
+
+
+
+
+
 
                     {
 
+
+
+
+
+
+
                         "confidence": "HIGH"
+
+
+
+
+
+
 
                     },
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                     {
+
+
+
+
+
+
 
                         "confidence": "MEDIUM"
 
+
+
+
+
+
+
                     }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2780,17 +11116,65 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             confidence,
 
+
+
+
+
+
+
             "MEDIUM"
+
+
+
+
+
+
 
         )
 
@@ -2798,23 +11182,101 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # GRAPH GENERATION TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_empty_assets_generate_empty_graph(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         graph = generate_attack_graph(
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2822,53 +11284,221 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             created_by=self.user_id
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_assets"
 
+
+
+
+
+
+
             ],
 
+
+
+
+
+
+
             0
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_nodes"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_paths"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2876,9 +11506,33 @@ class TestAttackPathEngine(
 
     def test_internal_asset_has_no_attacker_node(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2886,11 +11540,47 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             assets=[
+
+
+
+
+
+
 
                 self.internal_asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2898,63 +11588,261 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_assets"
 
+
+
+
+
+
+
             ],
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_nodes"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_edges"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_paths"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2962,9 +11850,33 @@ class TestAttackPathEngine(
 
     def test_external_asset_adds_attacker_node(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2972,11 +11884,47 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             assets=[
+
+
+
+
+
+
 
                 self.external_asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2984,7 +11932,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2992,13 +11964,55 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             node["id"]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             for node
 
+
+
+
+
+
+
             in graph["nodes"]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3008,41 +12022,179 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertIn(
+
+
+
+
+
+
 
             "external-attacker",
 
+
+
+
+
+
+
             node_ids
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_assets"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["statistics"][
+
+
+
+
+
+
 
                 "total_nodes"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             2
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3050,9 +12202,33 @@ class TestAttackPathEngine(
 
     def test_external_asset_generates_attack_path(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3060,11 +12236,47 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             assets=[
+
+
+
+
+
+
 
                 self.external_asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3072,200 +12284,942 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             graph["statistics"][
 
+
+
+
+
+
+
                 "total_paths"
+
+
+
+
+
+
 
             ],
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             graph["paths"][0][
 
+
+
+
+
+
+
                 "nodes"
+
+
+
+
+
+
 
             ],
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 "external-attacker",
 
+
+
+
+
+
+
                 "asset-external"
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 
     def test_multi_asset_attack_path_generation(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         external = dict(self.external_asset)
+
+
+
         external["reachable_assets"] = [
+
+
+
             self.sensitive_asset["_id"]
+
+
+
         ]
 
+
+
+
+
+
+
         graph = generate_attack_graph(
+
+
+
             assets=[
+
+
+
                 external,
+
+
+
                 self.sensitive_asset
+
+
+
             ],
+
+
+
             created_by=self.user_id
+
+
+
         )
+
+
+
+
+
+
 
         discovered = False
 
+
+
+
+
+
+
         for path in graph["paths"]:
+
+
+
             if (
+
+
+
                 "external-attacker" in path["nodes"]
+
+
+
                 and "asset-external" in path["nodes"]
+
+
+
                 and "asset-sensitive" in path["nodes"]
+
+
+
             ):
+
+
+
                 discovered = True
+
+
+
+
+
+
 
         self.assertTrue(discovered)
 
 
+
+
+
+
+
+
+
+
+
     def test_unrelated_assets_do_not_create_multi_asset_pivot(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         graph = generate_attack_graph(
+
+
+
             assets=[
+
+
+
                 self.external_asset,
+
+
+
                 self.sensitive_asset
+
+
+
             ],
+
+
+
             created_by=self.user_id
+
+
+
         )
 
+
+
+
+
+
+
         pivot_edges = [
+
+
+
             edge
+
+
+
             for edge in graph["edges"]
+
+
+
             if edge.get("relationship") == "potential_pivot"
+
+
+
         ]
+
+
+
+
+
+
 
         self.assertEqual(pivot_edges, [])
 
 
+
+
+
+
+
+
+
+
+
     def test_sensitive_port_alone_does_not_create_single_host_path(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         asset = dict(self.internal_asset)
+
+
+
         asset["_id"] = "asset-sensitive-port-only"
+
+
+
         asset["target"] = "10.0.0.30"
+
+
+
         asset["ports"] = [
+
+
+
             {
+
+
+
                 "port": 22,
+
+
+
                 "protocol": "tcp",
+
+
+
                 "state": "open",
+
+
+
                 "service": "ssh"
+
+
+
             }
+
+
+
         ]
+
+
+
         asset["services"] = [
+
+
+
             {
+
+
+
                 "port": 22,
+
+
+
                 "name": "ssh"
+
+
+
             }
+
+
+
         ]
+
+
+
         asset["vulnerabilities"] = []
+
+
+
         asset["vulnerability_count"] = 0
+
+
+
         asset["risk_score"] = 25
+
+
+
         asset["risk_level"] = "MEDIUM"
+
+
+
         asset["exposure"] = "INTERNAL"
 
+
+
+
+
+
+
         edges = generate_single_asset_attack_edges([asset])
+
+
+
         self.assertEqual(edges, [])
+
+
+
+
+
+
+
+
+
 
 
     def test_high_risk_without_vulnerability_does_not_create_single_host_path(
+
+
+
         self
+
+
+
     ):
 
+
+
+
+
+
+
         asset = dict(self.internal_asset)
+
+
+
         asset["_id"] = "asset-high-risk-no-vuln"
+
+
+
         asset["target"] = "10.0.0.31"
+
+
+
         asset["ports"] = [
+
+
+
             {
+
+
+
                 "port": 3306,
+
+
+
                 "protocol": "tcp",
+
+
+
                 "state": "open",
+
+
+
                 "service": "mysql"
+
+
+
             }
+
+
+
         ]
+
+
+
         asset["services"] = []
+
+
+
         asset["vulnerabilities"] = []
+
+
+
         asset["vulnerability_count"] = 0
+
+
+
         asset["risk_score"] = 70
+
+
+
         asset["risk_level"] = "HIGH"
+
+
+
         asset["exposure"] = "INTERNAL"
 
+
+
+
+
+
+
         edges = generate_single_asset_attack_edges([asset])
+
+
+
         self.assertEqual(edges, [])
 
 
-    def test_vulnerability_plus_sensitive_surface_creates_single_host_path(
+
+
+
+
+
+
+
+
+
+    def test_vulnerability_plus_sensitive_surface_does_not_create_self_edge(
+
         self
+
     ):
 
-        edges = generate_single_asset_attack_edges(
-            [self.sensitive_asset]
-        )
+        edges = generate_single_asset_attack_edges([self.sensitive_asset])
 
-        self.assertEqual(len(edges), 1)
-        self.assertEqual(
-            edges[0]["relationship"],
-            "potential_single_asset_entry"
-        )
+        self.assertEqual(edges, [])
 
 
-    def test_external_asset_does_not_receive_duplicate_single_host_self_edge(
+
+    def test_service_mapped_vulnerability_creates_service_entry_path(
+
         self
+
     ):
 
         asset = dict(self.sensitive_asset)
+
+        asset["vulnerabilities"] = [
+
+            {
+
+                "cve_id": "CVE-TEST-SMB-0001",
+
+                "severity": "HIGH",
+
+                "confidence": "HIGH",
+
+                "status": "potential",
+
+                "port": 445,
+
+                "protocol": "tcp",
+
+                "service": "microsoft-ds"
+
+            }
+
+        ]
+
+        paths = generate_service_entry_paths([asset])
+
+        self.assertGreaterEqual(len(paths), 1)
+
+        self.assertLessEqual(len(paths), 3)
+
+        self.assertEqual(
+            paths[0].get("path_type"),
+            "potential_service_entry"
+        )
+        self.assertIsInstance(
+            paths[0].get("entry_point"),
+            str
+        )
+        self.assertIn(
+            "445",
+            paths[0].get("entry_point", "")
+        )
+        self.assertIn(
+            "potential",
+            paths[0].get("disclaimer", "").lower()
+        )
+        self.assertIn(
+            "not verified",
+            paths[0].get("disclaimer", "").lower()
+        )
+
+
+
+    def test_unmapped_vulnerability_does_not_create_service_entry_path(
+
+        self
+
+    ):
+
+        asset = dict(self.sensitive_asset)
+
+        asset["vulnerabilities"] = [
+
+            {
+
+                "cve_id": "CVE-TEST-UNMAPPED-0001",
+
+                "severity": "HIGH",
+
+                "confidence": "HIGH",
+
+                "status": "potential"
+
+            }
+
+        ]
+
+        paths = generate_service_entry_paths([asset])
+
+        self.assertEqual(paths, [])
+
+
+
+    def test_service_entry_paths_are_capped_at_three(
+
+        self
+
+    ):
+
+        asset = dict(self.sensitive_asset)
+
+        asset["_id"] = "asset-many-services"
+
+        asset["target"] = "10.0.0.40"
+
+        asset["ports"] = []
+
+        asset["services"] = []
+
+        asset["vulnerabilities"] = []
+
+        for index, port in enumerate([21, 22, 23, 445, 3306], start=1):
+
+            service_name = f"service-{index}"
+
+            asset["ports"].append({
+
+                "port": port,
+
+                "protocol": "tcp",
+
+                "state": "open",
+
+                "service": service_name
+
+            })
+
+            asset["services"].append({
+
+                "port": port,
+
+                "protocol": "tcp",
+
+                "name": service_name,
+
+                "product": service_name
+
+            })
+
+            asset["vulnerabilities"].append({
+
+                "cve_id": f"CVE-TEST-{index:04d}",
+
+                "severity": "HIGH",
+
+                "confidence": "HIGH",
+
+                "status": "potential",
+
+                "port": port,
+
+                "protocol": "tcp",
+
+                "service": service_name,
+
+                "product": service_name
+
+            })
+
+        paths = generate_service_entry_paths([asset])
+
+        self.assertEqual(len(paths), 3)
+
+
+
+    def test_graph_never_contains_old_single_asset_self_relationship(
+
+        self
+
+    ):
+
+        graph = generate_attack_graph(
+
+            assets=[self.sensitive_asset],
+
+            created_by=self.user_id
+
+        )
+
+        old_edges = [
+
+            edge for edge in graph["edges"]
+
+            if edge.get("relationship") == "potential_single_asset_entry"
+
+        ]
+
+        self.assertEqual(old_edges, [])
+
+
+
+    def test_external_asset_does_not_receive_duplicate_single_host_self_edge(
+
+
+
+        self
+
+
+
+    ):
+
+
+
+
+
+
+
+        asset = dict(self.sensitive_asset)
+
+
+
         asset["_id"] = "asset-external-vulnerable"
+
+
+
         asset["target"] = "198.51.100.20"
+
+
+
         asset["exposure"] = "EXTERNAL"
 
+
+
+
+
+
+
         edges = generate_single_asset_attack_edges([asset])
+
+
+
         self.assertEqual(edges, [])
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # OWNERSHIP ISOLATION TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_other_user_asset_not_in_graph(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3273,13 +13227,55 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             assets=[
+
+
+
+
+
+
 
                 self.internal_asset,
 
+
+
+
+
+
+
                 self.other_user_asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3287,7 +13283,37 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3297,13 +13323,55 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             node["id"]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             for node
 
+
+
+
+
+
+
             in graph["nodes"]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3313,23 +13381,107 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertIn(
+
+
+
+
+
+
 
             "asset-internal",
 
+
+
+
+
+
+
             node_ids
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertNotIn(
 
+
+
+
+
+
+
             "asset-other-user",
+
+
+
+
+
+
 
             node_ids
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3337,9 +13489,33 @@ class TestAttackPathEngine(
 
     def test_different_users_never_connected(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3347,13 +13523,55 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             assets=[
+
+
+
+
+
+
 
                 self.external_asset,
 
+
+
+
+
+
+
                 self.other_user_asset
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3361,7 +13579,37 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3371,21 +13619,81 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             self.assertNotEqual(
+
+
+
+
+
+
 
                 edge["source"],
 
+
+
+
+
+
+
                 "asset-other-user"
 
+
+
+
+
+
+
             )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             self.assertNotEqual(
 
+
+
+
+
+
+
                 edge["target"],
 
+
+
+
+
+
+
                 "asset-other-user"
+
+
+
+
+
+
 
             )
 
@@ -3393,19 +13701,85 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # DEDUPLICATION TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_duplicate_edges_removed(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3413,7 +13787,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "id": "edge-1",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3421,7 +13819,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "target": "b",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3429,7 +13851,37 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3439,21 +13891,93 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             [
+
+
+
+
+
+
 
                 edge,
 
+
+
+
+
+
+
                 dict(
+
+
+
+
+
+
 
                     edge
 
+
+
+
+
+
+
                 )
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3461,13 +13985,43 @@ class TestAttackPathEngine(
 
         self.assertEqual(
 
+
+
+
+
+
+
             len(
+
+
+
+
+
+
 
                 edges
 
+
+
+
+
+
+
             ),
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
@@ -3475,11 +14029,53 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def test_duplicate_paths_removed(
+
+
+
+
+
+
 
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3487,17 +14083,71 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             "id": "path-1",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             "nodes": [
 
+
+
+
+
+
+
                 "a",
+
+
+
+
+
+
 
                 "b"
 
+
+
+
+
+
+
             ]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3507,25 +14157,115 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         paths = deduplicate_paths(
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
             [
 
+
+
+
+
+
+
                 path,
+
+
+
+
+
+
 
                 dict(
 
+
+
+
+
+
+
                     path
 
+
+
+
+
+
+
                 )
+
+
+
+
+
+
 
             ]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3533,13 +14273,43 @@ class TestAttackPathEngine(
 
         self.assertEqual(
 
+
+
+
+
+
+
             len(
+
+
+
+
+
+
 
                 paths
 
+
+
+
+
+
+
             ),
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
@@ -3547,19 +14317,85 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # GRAPH STATISTICS TEST
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_graph_statistics(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3567,7 +14403,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             create_external_attacker_node(),
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3575,7 +14435,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 asset_id="asset-1",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3583,11 +14467,53 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3597,7 +14523,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             create_attack_edge(
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3605,7 +14555,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 source="external-attacker",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3613,7 +14587,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 relationship="external_entry",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3621,7 +14619,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 score=80
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3629,7 +14651,37 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3639,7 +14691,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             create_attack_path(
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3647,21 +14723,87 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 node_ids=[
+
+
+
+
+
+
 
                     "external-attacker",
 
+
+
+
+
+
+
                     "asset-1"
 
+
+
+
+
+
+
                 ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
                 edge_ids=[
 
+
+
+
+
+
+
                     "edge-1"
 
+
+
+
+
+
+
                 ],
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3669,7 +14811,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 risk_level="CRITICAL",
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3677,7 +14843,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3687,9 +14877,45 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         statistics = (
 
+
+
+
+
+
+
             create_graph_statistics(
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3697,7 +14923,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
                 edges=edges,
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3705,7 +14955,25 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             )
+
+
+
+
+
+
 
         )
 
@@ -3713,71 +14981,287 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             statistics[
+
+
+
+
+
+
 
                 "total_nodes"
 
+
+
+
+
+
+
             ],
 
+
+
+
+
+
+
             2
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             statistics[
+
+
+
+
+
+
 
                 "total_assets"
 
+
+
+
+
+
+
             ],
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             statistics[
+
+
+
+
+
+
 
                 "total_edges"
 
+
+
+
+
+
+
             ],
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
 
+
+
+
+
+
+
             statistics[
+
+
+
+
+
+
 
                 "total_paths"
 
+
+
+
+
+
+
             ],
+
+
+
+
+
+
 
             1
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             statistics[
+
+
+
+
+
+
 
                 "critical_risk_paths"
 
+
+
+
+
+
+
             ],
 
+
+
+
+
+
+
             1
+
+
+
+
+
+
 
         )
 
@@ -3785,19 +15269,85 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
 
     # MALFORMED INPUT TESTS
 
+
+
+
+
+
+
     # ======================================
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     def test_invalid_assets_input_returns_empty_graph(
 
+
+
+
+
+
+
         self
 
+
+
+
+
+
+
     ):
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3805,7 +15355,31 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             assets=None,
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3813,37 +15387,157 @@ class TestAttackPathEngine(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             graph["nodes"],
 
+
+
+
+
+
+
             []
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             graph["edges"],
 
+
+
+
+
+
+
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         self.assertEqual(
 
+
+
+
+
+
+
             graph["paths"],
+
+
+
+
+
+
 
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3851,23 +15545,95 @@ class TestAttackPathEngine(
 
     def test_invalid_port_list_returns_empty(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         self.assertEqual(
+
+
+
+
+
+
 
             get_open_ports(
 
+
+
+
+
+
+
                 None
+
+
+
+
+
+
 
             ),
 
+
+
+
+
+
+
             []
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3875,33 +15641,135 @@ class TestAttackPathEngine(
 
     def test_invalid_vulnerability_list_safe(
 
+
+
+
+
+
+
         self
+
+
+
+
+
+
 
     ):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         asset = dict(
 
+
+
+
+
+
+
             self.internal_asset
+
+
+
+
+
+
 
         )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         asset[
+
+
+
+
+
+
 
             "vulnerabilities"
 
+
+
+
+
+
+
         ] = None
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
         asset[
 
+
+
+
+
+
+
             "vulnerability_count"
 
+
+
+
+
+
+
         ] = None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3909,13 +15777,55 @@ class TestAttackPathEngine(
 
         count = (
 
+
+
+
+
+
+
             get_vulnerability_count(
+
+
+
+
+
+
 
                 asset
 
+
+
+
+
+
+
             )
 
+
+
+
+
+
+
         )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3923,26 +15833,34 @@ class TestAttackPathEngine(
 
         self.assertEqual(
 
+
+
+
+
+
+
             count,
+
+
+
+
+
+
 
             0
 
+
+
+
+
+
+
         )
 
-
-
-
-
 # ==========================================
-
 # RUN TESTS
-
 # ==========================================
-
-
 
 if __name__ == "__main__":
-
-
 
     unittest.main()
