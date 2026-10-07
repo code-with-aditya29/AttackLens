@@ -1,4 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+
+
 
 
 
@@ -8,25 +12,53 @@ from bson import ObjectId
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # CREATE NEW SCAN
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def create_scan(
 
+
+
     db,
+
+
 
     target,
 
+
+
     scan_profile,
+
+
 
     created_by
 
+
+
 ):
+
+
+
+
 
 
 
@@ -34,11 +66,23 @@ def create_scan(
 
 
 
+
+
+
+
         # ==================================
+
+
 
         # BASIC INFORMATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -46,11 +90,23 @@ def create_scan(
 
 
 
+
+
+
+
         "scan_profile": scan_profile,
 
 
 
+
+
+
+
         "status": "pending",
+
+
+
+
 
 
 
@@ -60,19 +116,41 @@ def create_scan(
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # TIMESTAMPS
 
+
+
         # ==================================
 
 
 
-        "created_at": datetime.utcnow(),
+
+
+
+
+        "created_at": datetime.now(timezone.utc),
+
+
+
+
 
 
 
         "started_at": None,
+
+
+
+
 
 
 
@@ -82,11 +160,25 @@ def create_scan(
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # HOST INFORMATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -94,7 +186,15 @@ def create_scan(
 
 
 
+
+
+
+
         "host_status": "unknown",
+
+
+
+
 
 
 
@@ -104,15 +204,33 @@ def create_scan(
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # NETWORK INFORMATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
         "ports": [],
+
+
+
+
 
 
 
@@ -122,15 +240,33 @@ def create_scan(
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # OS INFORMATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
         "os_detection": None,
+
+
+
+
 
 
 
@@ -140,11 +276,25 @@ def create_scan(
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # SECURITY INFORMATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
@@ -152,11 +302,23 @@ def create_scan(
 
 
 
+
+
+
+
         "vulnerability_count": 0,
+
+
 
         "security_findings": [],
 
+
+
         "security_finding_count": 0,
+
+
+
+
 
 
 
@@ -164,11 +326,23 @@ def create_scan(
 
 
 
+
+
+
+
         "risk_score": None,
 
 
 
+
+
+
+
         "risk_level": None,
+
+
+
+
 
 
 
@@ -178,15 +352,33 @@ def create_scan(
 
 
 
+
+
+
+
+
+
         # ==================================
+
+
 
         # ERROR INFORMATION
 
+
+
         # ==================================
+
+
+
+
 
 
 
         "error_message": None
+
+
+
+
 
 
 
@@ -196,19 +388,43 @@ def create_scan(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # INSERT INTO DATABASE
 
+
+
     # ======================================
+
+
+
+
 
 
 
     result = db.scans.insert_one(
 
+
+
         scan_data
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -220,35 +436,73 @@ def create_scan(
 
 
 
+
+
+
+
+
+
     return scan_data
 
 
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # START SCAN
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def start_scan(
 
+
+
     db,
 
+
+
     scan_id
+
+
 
 ):
 
 
 
+
+
+
+
     if not ObjectId.is_valid(
+
+
 
         scan_id
 
+
+
     ):
+
+
+
+
 
 
 
@@ -258,25 +512,53 @@ def start_scan(
 
 
 
+
+
+
+
+
+
     result = db.scans.update_one(
+
+
+
+
 
 
 
         {
 
+
+
             "_id": ObjectId(
+
+
 
                 scan_id
 
+
+
             )
+
+
 
         },
 
 
 
+
+
+
+
         {
 
+
+
             "$set": {
+
+
+
+
 
 
 
@@ -284,7 +566,15 @@ def start_scan(
 
 
 
-                "started_at": datetime.utcnow(),
+
+
+
+
+                "started_at": datetime.now(timezone.utc),
+
+
+
+
 
 
 
@@ -292,13 +582,29 @@ def start_scan(
 
 
 
+
+
+
+
             }
+
+
 
         }
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -310,35 +616,75 @@ def start_scan(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # UPDATE SCAN STATUS
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def update_scan_status(
 
+
+
     db,
+
+
 
     scan_id,
 
+
+
     status
+
+
 
 ):
 
 
 
+
+
+
+
     if not ObjectId.is_valid(
 
+
+
         scan_id
+
+
 
     ):
 
 
 
+
+
+
+
         return False
+
+
+
+
+
+
 
 
 
@@ -348,21 +694,43 @@ def update_scan_status(
 
 
 
+
+
+
+
         {
+
+
 
             "_id": ObjectId(
 
+
+
                 scan_id
 
+
+
             )
+
+
 
         },
 
 
 
+
+
+
+
         {
 
+
+
             "$set": {
+
+
+
+
 
 
 
@@ -370,13 +738,29 @@ def update_scan_status(
 
 
 
+
+
+
+
             }
+
+
 
         }
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -388,31 +772,65 @@ def update_scan_status(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # SAVE SCAN RESULTS
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def save_scan_results(
 
+
+
     db,
+
+
 
     scan_id,
 
+
+
     results
+
+
 
 ):
 
 
 
+
+
+
+
     if not ObjectId.is_valid(
+
+
 
         scan_id
 
+
+
     ):
+
+
+
+
 
 
 
@@ -422,19 +840,39 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # GET VULNERABILITY RESULTS
 
+
+
     # ======================================
+
+
+
+
 
 
 
     vulnerabilities = results.get(
 
+
+
         "vulnerabilities",
 
+
+
         []
+
+
 
     )
 
@@ -442,19 +880,41 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
     # Ensure vulnerabilities always remain
+
+
 
     # a list before they are stored.
 
 
 
+
+
+
+
     if not isinstance(
+
+
 
         vulnerabilities,
 
+
+
         list
 
+
+
     ):
+
+
+
+
 
 
 
@@ -464,61 +924,123 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # VULNERABILITY COUNT
 
+
+
     # ======================================
+
+
+
+
 
 
 
     vulnerability_count = len(
 
+
+
         vulnerabilities
 
+
+
     )
 
 
 
 
 
+
+
+
+
+
+
     # ======================================
+
     # GET NON-CVE SECURITY FINDINGS
+
     # ======================================
+
+
 
     security_findings = results.get(
+
         "security_findings",
+
         []
+
     )
+
+
 
     # Preserve a predictable MongoDB schema. If a caller
+
     # supplies an invalid value, store an empty list rather
+
     # than corrupting the completed scan document.
+
     if not isinstance(
+
         security_findings,
+
         list
+
     ):
+
         security_findings = []
 
+
+
     security_finding_count = len(
+
         security_findings
+
     )
 
+
+
     # ======================================
+
+
 
     # HIGHEST SEVERITY
 
+
+
     # ======================================
+
+
+
+
 
 
 
     highest_severity = (
 
+
+
         get_highest_severity(
+
+
 
             vulnerabilities
 
+
+
         )
+
+
 
     )
 
@@ -526,11 +1048,25 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # UPDATE SCAN DOCUMENT
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -538,53 +1074,105 @@ def save_scan_results(
 
 
 
+
+
+
+
         {
+
+
 
             "_id": ObjectId(
 
+
+
                 scan_id
 
+
+
             )
+
+
 
         },
 
 
 
+
+
+
+
         {
+
+
 
             "$set": {
 
 
 
+
+
+
+
                 # ==========================
+
+
 
                 # HOST INFORMATION
 
+
+
                 # ==========================
+
+
+
+
 
 
 
                 "hostname": results.get(
 
+
+
                     "hostname"
 
+
+
                 ),
+
+
+
+
 
 
 
                 "host_status": results.get(
 
+
+
                     "host_status",
+
+
 
                     "unknown"
 
+
+
                 ),
+
+
+
+
 
 
 
                 "mac_address": results.get(
 
+
+
                     "mac_address"
+
+
 
                 ),
 
@@ -592,29 +1180,59 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
                 # ==========================
+
+
 
                 # NETWORK INFORMATION
 
+
+
                 # ==========================
+
+
+
+
 
 
 
                 "ports": results.get(
 
+
+
                     "ports",
+
+
 
                     []
 
+
+
                 ),
+
+
+
+
 
 
 
                 "services": results.get(
 
+
+
                     "services",
 
+
+
                     []
+
+
 
                 ),
 
@@ -622,25 +1240,51 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
                 # ==========================
+
+
 
                 # OS INFORMATION
 
+
+
                 # ==========================
+
+
+
+
 
 
 
                 "os_detection": results.get(
 
+
+
                     "os_detection"
 
+
+
                 ),
+
+
+
+
 
 
 
                 "os_accuracy": results.get(
 
+
+
                     "os_accuracy"
+
+
 
                 ),
 
@@ -648,65 +1292,131 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
                 # ==========================
+
+
 
                 # SECURITY INFORMATION
 
+
+
                 # ==========================
+
+
+
+
 
 
 
                 "vulnerabilities": (
 
+
+
                     vulnerabilities
 
+
+
                 ),
+
+
+
+
 
 
 
                 "vulnerability_count": (
 
+
+
                     vulnerability_count
 
+
+
                 ),
+
+
 
                 "security_findings": (
+
                     security_findings
+
                 ),
 
+
+
                 "security_finding_count": (
+
                     security_finding_count
+
                 ),
+
+
+
+
 
 
 
                 "highest_severity": (
 
+
+
                     highest_severity
 
+
+
                 ),
+
+
+
+
 
 
 
                 "risk_score": results.get(
 
+
+
                     "risk_score"
 
+
+
                 ),
+
+
+
+
 
 
 
                 "risk_level": results.get(
 
+
+
                     "risk_level"
 
+
+
                 ),
+
+
+
+
 
 
 
                 "risk_breakdown": results.get(
 
+
+
                     "risk_breakdown"
+
+
 
                 ),
 
@@ -714,11 +1424,25 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
                 # ==========================
+
+
 
                 # SCAN STATUS
 
+
+
                 # ==========================
+
+
+
+
 
 
 
@@ -726,7 +1450,15 @@ def save_scan_results(
 
 
 
-                "completed_at": datetime.utcnow(),
+
+
+
+
+                "completed_at": datetime.now(timezone.utc),
+
+
+
+
 
 
 
@@ -734,13 +1466,29 @@ def save_scan_results(
 
 
 
+
+
+
+
             }
+
+
 
         }
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -752,27 +1500,57 @@ def save_scan_results(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # GET HIGHEST VULNERABILITY SEVERITY
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def get_highest_severity(
 
+
+
     vulnerabilities
+
+
 
 ):
 
 
 
+
+
+
+
     """
+
+
 
     Determine the highest vulnerability
 
+
+
     severity found during CVE correlation.
+
+
+
+
 
 
 
@@ -780,29 +1558,59 @@ def get_highest_severity(
 
 
 
+
+
+
+
         CRITICAL
+
+
 
         HIGH
 
+
+
         MEDIUM
+
+
 
         LOW
 
+
+
         NONE
+
+
 
         UNKNOWN
 
 
 
+
+
+
+
     Returns None when no vulnerabilities
 
+
+
     were identified.
+
+
 
     """
 
 
 
+
+
+
+
     if not vulnerabilities:
+
+
+
+
 
 
 
@@ -812,7 +1620,17 @@ def get_highest_severity(
 
 
 
+
+
+
+
+
+
     severity_priority = {
+
+
+
+
 
 
 
@@ -820,7 +1638,15 @@ def get_highest_severity(
 
 
 
+
+
+
+
         "NONE": 1,
+
+
+
+
 
 
 
@@ -828,7 +1654,15 @@ def get_highest_severity(
 
 
 
+
+
+
+
         "MEDIUM": 3,
+
+
+
+
 
 
 
@@ -836,7 +1670,15 @@ def get_highest_severity(
 
 
 
+
+
+
+
         "CRITICAL": 5
+
+
+
+
 
 
 
@@ -846,7 +1688,17 @@ def get_highest_severity(
 
 
 
+
+
+
+
+
+
     highest_severity = None
+
+
+
+
 
 
 
@@ -856,17 +1708,37 @@ def get_highest_severity(
 
 
 
+
+
+
+
+
+
     for vulnerability in vulnerabilities:
+
+
+
+
 
 
 
         if not isinstance(
 
+
+
             vulnerability,
+
+
 
             dict
 
+
+
         ):
+
+
+
+
 
 
 
@@ -876,13 +1748,31 @@ def get_highest_severity(
 
 
 
+
+
+
+
+
+
         severity = vulnerability.get(
+
+
 
             "severity",
 
+
+
             "UNKNOWN"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -892,19 +1782,39 @@ def get_highest_severity(
 
 
 
+
+
+
+
             severity = (
+
+
 
                 str(severity)
 
+
+
                 .strip()
 
+
+
                 .upper()
+
+
 
             )
 
 
 
+
+
+
+
         else:
+
+
+
+
 
 
 
@@ -914,13 +1824,31 @@ def get_highest_severity(
 
 
 
+
+
+
+
+
+
         priority = severity_priority.get(
+
+
 
             severity,
 
+
+
             0
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -930,11 +1858,25 @@ def get_highest_severity(
 
 
 
+
+
+
+
             highest_priority = priority
 
 
 
+
+
+
+
             highest_severity = severity
+
+
+
+
+
+
 
 
 
@@ -946,31 +1888,65 @@ def get_highest_severity(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # FAIL SCAN
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def fail_scan(
 
+
+
     db,
+
+
 
     scan_id,
 
+
+
     error_message="Scan failed."
+
+
 
 ):
 
 
 
+
+
+
+
     if not ObjectId.is_valid(
+
+
 
         scan_id
 
+
+
     ):
+
+
+
+
 
 
 
@@ -980,25 +1956,53 @@ def fail_scan(
 
 
 
+
+
+
+
+
+
     result = db.scans.update_one(
+
+
+
+
 
 
 
         {
 
+
+
             "_id": ObjectId(
+
+
 
                 scan_id
 
+
+
             )
+
+
 
         },
 
 
 
+
+
+
+
         {
 
+
+
             "$set": {
+
+
+
+
 
 
 
@@ -1006,7 +2010,15 @@ def fail_scan(
 
 
 
-                "completed_at": datetime.utcnow(),
+
+
+
+
+                "completed_at": datetime.now(timezone.utc),
+
+
+
+
 
 
 
@@ -1014,13 +2026,29 @@ def fail_scan(
 
 
 
+
+
+
+
             }
+
+
 
         }
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1032,31 +2060,65 @@ def fail_scan(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # GET SINGLE SCAN
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def get_scan_by_id(
 
+
+
     db,
+
+
 
     scan_id,
 
+
+
     created_by=None
+
+
 
 ):
 
 
 
+
+
+
+
     if not ObjectId.is_valid(
+
+
 
         scan_id
 
+
+
     ):
+
+
+
+
 
 
 
@@ -1066,15 +2128,33 @@ def get_scan_by_id(
 
 
 
+
+
+
+
+
+
     query = {
+
+
+
+
 
 
 
         "_id": ObjectId(
 
+
+
             scan_id
 
+
+
         )
+
+
+
+
 
 
 
@@ -1084,29 +2164,61 @@ def get_scan_by_id(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # USER OWNERSHIP FILTER
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # If created_by is provided, the scan
 
+
+
     # must belong to that user.
+
+
 
     #
 
+
+
     # Super Admin can call this function
+
+
 
     # without created_by to access all scans.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     if created_by is not None:
+
+
+
+
 
 
 
@@ -1116,9 +2228,19 @@ def get_scan_by_id(
 
 
 
+
+
+
+
+
+
     return db.scans.find_one(
 
+
+
         query
+
+
 
     )
 
@@ -1126,23 +2248,49 @@ def get_scan_by_id(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # GET SCAN HISTORY
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def get_scan_history(
 
+
+
     db,
+
+
 
     created_by=None,
 
+
+
     limit=100
 
+
+
 ):
+
+
+
+
 
 
 
@@ -1152,15 +2300,33 @@ def get_scan_history(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # USER OWNERSHIP FILTER
 
+
+
     # ======================================
+
+
+
+
 
 
 
     if created_by is not None:
+
+
+
+
 
 
 
@@ -1170,7 +2336,17 @@ def get_scan_history(
 
 
 
+
+
+
+
+
+
     scans = db.scans.find(
+
+
+
+
 
 
 
@@ -1178,13 +2354,27 @@ def get_scan_history(
 
 
 
+
+
+
+
     ).sort(
+
+
+
+
 
 
 
         "created_at",
 
+
+
         -1
+
+
+
+
 
 
 
@@ -1192,11 +2382,25 @@ def get_scan_history(
 
 
 
+
+
+
+
         limit
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1204,7 +2408,11 @@ def get_scan_history(
 
     return list(
 
+
+
         scans
+
+
 
     )
 
@@ -1212,31 +2420,65 @@ def get_scan_history(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # RECONCILE ASSET AFTER SCAN DELETION
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def _reconcile_asset_after_scan_deletion(
 
+
+
     db,
+
+
 
     target,
 
+
+
     created_by
+
+
 
 ):
 
 
 
+
+
+
+
     """
+
+
 
     Reconcile the Asset Inventory after one
 
+
+
     or more scan records have been deleted.
+
+
+
+
 
 
 
@@ -1244,7 +2486,15 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         created_by + target
+
+
+
+
 
 
 
@@ -1252,83 +2502,165 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
     1. If completed scans still exist for the
+
+
 
        same owner and target, rebuild the
 
+
+
        current Asset from the newest remaining
+
+
 
        completed scan.
 
 
 
+
+
+
+
     2. first_seen is recalculated from the
+
+
 
        earliest remaining completed scan.
 
 
 
+
+
+
+
     3. last_seen and latest_scan_id are taken
+
+
 
        from the newest remaining scan.
 
 
 
+
+
+
+
     4. Manual Asset Context fields such as
+
+
 
        criticality and exposure are preserved.
 
 
 
+
+
+
+
     5. If no completed scan remains for the
+
+
 
        owner and target, delete the Asset.
 
 
 
+
+
+
+
     Downstream modules that use the Asset
+
+
 
     Inventory will therefore stop displaying
 
+
+
     stale information from deleted scans.
+
+
 
     """
 
 
 
+
+
+
+
     # ======================================
+
+
 
     # LOCAL IMPORTS
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # These are kept local because this
+
+
 
     # function is deletion-specific and it
 
+
+
     # avoids unnecessary service-level
+
+
 
     # dependencies during module loading.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     from services.asset_service import (
 
+
+
         build_asset_update_from_scan,
+
+
 
         get_scan_timestamp
 
+
+
     )
+
+
+
+
 
 
 
     from models.asset_model import (
 
+
+
         create_asset_document
+
+
 
     )
 
@@ -1336,19 +2668,43 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # NORMALIZE IDENTITY
 
+
+
     # ======================================
+
+
+
+
 
 
 
     target = str(
 
+
+
         target or ""
 
+
+
     ).strip()
+
+
+
+
+
+
 
 
 
@@ -1358,17 +2714,35 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         return False
 
 
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # FIND REMAINING COMPLETED SCANS
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1376,23 +2750,47 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         db.scans.find(
+
+
+
+
 
 
 
             {
 
+
+
                 "target": target,
+
+
 
                 "created_by": created_by,
 
+
+
                 "status": "completed"
+
+
 
             }
 
 
 
+
+
+
+
         )
+
+
+
+
 
 
 
@@ -1402,25 +2800,53 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # NO COMPLETED SCANS REMAIN
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # No scan now supports this Asset.
 
+
+
     #
+
+
 
     # Remove the Asset completely so that
 
+
+
     # Dashboard and all downstream analysis
+
+
 
     # stop using stale information.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1428,21 +2854,45 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         db.assets.delete_one(
+
+
+
+
 
 
 
             {
 
+
+
                 "target": target,
 
+
+
                 "created_by": created_by
+
+
 
             }
 
 
 
+
+
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1454,11 +2904,25 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # SORT REMAINING SCANS
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1466,7 +2930,15 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         remaining_scans,
+
+
+
+
 
 
 
@@ -1474,7 +2946,17 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1482,13 +2964,27 @@ def _reconcile_asset_after_scan_deletion(
 
     earliest_scan = (
 
+
+
         remaining_scans[
+
+
 
             0
 
+
+
         ]
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1496,13 +2992,27 @@ def _reconcile_asset_after_scan_deletion(
 
     latest_scan = (
 
+
+
         remaining_scans[
+
+
 
             -1
 
+
+
         ]
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1510,9 +3020,19 @@ def _reconcile_asset_after_scan_deletion(
 
     earliest_time = get_scan_timestamp(
 
+
+
         earliest_scan
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1520,7 +3040,11 @@ def _reconcile_asset_after_scan_deletion(
 
     latest_time = get_scan_timestamp(
 
+
+
         latest_scan
+
+
 
     )
 
@@ -1528,23 +3052,51 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # BUILD CURRENT ASSET SNAPSHOT
 
+
+
     # ======================================
+
+
+
+
 
 
 
     asset_update = (
 
+
+
         build_asset_update_from_scan(
+
+
 
             latest_scan
 
+
+
         )
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1554,23 +3106,45 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         return False
 
 
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # FORCE CORRECT DISCOVERY RANGE
 
+
+
     # ======================================
+
+
+
+
 
 
 
     asset_update[
 
+
+
         "first_seen"
+
+
 
     ] = earliest_time
 
@@ -1578,9 +3152,19 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     asset_update[
 
+
+
         "last_seen"
+
+
 
     ] = latest_time
 
@@ -1588,25 +3172,53 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # UPDATE EXISTING ASSET
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # build_asset_update_from_scan() contains
 
+
+
     # scan-controlled fields only.
+
+
 
     #
 
+
+
     # criticality and exposure are therefore
+
+
 
     # intentionally preserved.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1614,21 +3226,43 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         {
+
+
 
             "target": target,
 
+
+
             "created_by": created_by
+
+
 
         },
 
 
 
+
+
+
+
         {
+
+
 
             "$set": asset_update
 
+
+
         }
+
+
+
+
 
 
 
@@ -1638,27 +3272,57 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # RECREATE MISSING ASSET
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # Normally an Asset already exists here.
 
+
+
     #
+
+
 
     # This fallback repairs an inconsistent
 
+
+
     # database where completed scans exist
+
+
 
     # but the corresponding Asset document
 
+
+
     # is missing.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1666,7 +3330,15 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
         asset = create_asset_document(
+
+
+
+
 
 
 
@@ -1674,11 +3346,25 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
             created_by=created_by
 
 
 
+
+
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1686,7 +3372,11 @@ def _reconcile_asset_after_scan_deletion(
 
         asset.update(
 
+
+
             asset_update
+
+
 
         )
 
@@ -1694,9 +3384,19 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
         asset[
 
+
+
             "first_seen"
+
+
 
         ] = earliest_time
 
@@ -1704,9 +3404,19 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
         asset[
 
+
+
             "last_seen"
+
+
 
         ] = latest_time
 
@@ -1714,11 +3424,27 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
         db.assets.insert_one(
+
+
 
             asset
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1730,55 +3456,113 @@ def _reconcile_asset_after_scan_deletion(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # DELETE SINGLE SCAN
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def delete_scan(
 
+
+
     db,
+
+
 
     scan_id,
 
+
+
     created_by=None
+
+
 
 ):
 
 
 
+
+
+
+
     """
 
+
+
     Delete one scan and synchronize the
+
+
 
     Asset Inventory for the affected target.
 
 
 
+
+
+
+
     Ownership protection is applied before
 
+
+
     any deletion occurs.
+
+
 
     """
 
 
 
+
+
+
+
     # ======================================
+
+
 
     # VALIDATE SCAN ID
 
+
+
     # ======================================
+
+
+
+
 
 
 
     if not ObjectId.is_valid(
 
+
+
         scan_id
 
+
+
     ):
+
+
+
+
 
 
 
@@ -1788,11 +3572,25 @@ def delete_scan(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # BUILD DELETE QUERY
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1800,11 +3598,23 @@ def delete_scan(
 
 
 
+
+
+
+
         "_id": ObjectId(
+
+
 
             scan_id
 
+
+
         )
+
+
+
+
 
 
 
@@ -1814,11 +3624,25 @@ def delete_scan(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # USER OWNERSHIP FILTER
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1826,9 +3650,17 @@ def delete_scan(
 
 
 
+
+
+
+
         query[
 
+
+
             "created_by"
+
+
 
         ] = created_by
 
@@ -1836,29 +3668,63 @@ def delete_scan(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # LOAD SCAN BEFORE DELETION
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # target and created_by are required
+
+
 
     # afterwards to determine which Asset
 
+
+
     # must be rebuilt or removed.
 
+
+
     # ======================================
+
+
+
+
 
 
 
     scan = db.scans.find_one(
 
+
+
         query
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1868,7 +3734,17 @@ def delete_scan(
 
 
 
+
+
+
+
         return False
+
+
+
+
+
+
 
 
 
@@ -1878,13 +3754,27 @@ def delete_scan(
 
 
 
+
+
+
+
         scan.get(
+
+
 
             "target",
 
+
+
             ""
 
+
+
         )
+
+
+
+
 
 
 
@@ -1894,9 +3784,19 @@ def delete_scan(
 
 
 
+
+
+
+
+
+
     scan_owner = scan.get(
 
+
+
         "created_by"
+
+
 
     )
 
@@ -1904,19 +3804,43 @@ def delete_scan(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # DELETE SCAN
 
+
+
     # ======================================
+
+
+
+
 
 
 
     result = db.scans.delete_one(
 
+
+
         query
 
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -1926,17 +3850,35 @@ def delete_scan(
 
 
 
+
+
+
+
         return False
 
 
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # RECONCILE RELATED ASSET
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -1944,7 +3886,15 @@ def delete_scan(
 
 
 
+
+
+
+
         _reconcile_asset_after_scan_deletion(
+
+
+
+
 
 
 
@@ -1952,7 +3902,15 @@ def delete_scan(
 
 
 
+
+
+
+
             target=target,
+
+
+
+
 
 
 
@@ -1960,7 +3918,17 @@ def delete_scan(
 
 
 
+
+
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -1972,41 +3940,85 @@ def delete_scan(
 
 
 
+
+
+
+
+
+
 # ==========================================
+
+
 
 # BULK DELETE SCANS
 
+
+
 # ==========================================
+
+
+
+
 
 
 
 def bulk_delete_scans(
 
+
+
     db,
+
+
 
     scan_ids,
 
+
+
     created_by=None
+
+
 
 ):
 
 
 
+
+
+
+
     """
 
+
+
     Delete multiple scan records and then
+
+
 
     reconcile every affected Asset.
 
 
 
+
+
+
+
     Multiple deleted scans belonging to the
+
+
 
     same owner + target are reconciled only
 
+
+
     once.
 
+
+
     """
+
+
+
+
 
 
 
@@ -2016,11 +4028,25 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # VALIDATE IDS
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2028,11 +4054,23 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         if ObjectId.is_valid(
+
+
 
             scan_id
 
+
+
         ):
+
+
+
+
 
 
 
@@ -2040,15 +4078,33 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
                 ObjectId(
 
+
+
                     scan_id
+
+
 
                 )
 
 
 
+
+
+
+
             )
+
+
+
+
+
+
 
 
 
@@ -2058,17 +4114,35 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         return 0
 
 
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # BUILD OWNERSHIP-PROTECTED QUERY
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2076,7 +4150,15 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         "_id": {
+
+
+
+
 
 
 
@@ -2084,7 +4166,15 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         }
+
+
+
+
 
 
 
@@ -2094,13 +4184,27 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
     if created_by is not None:
+
+
+
+
 
 
 
         query[
 
+
+
             "created_by"
+
+
 
         ] = created_by
 
@@ -2108,21 +4212,45 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # LOAD SCANS BEFORE DELETION
 
+
+
     # ======================================
+
+
 
     #
 
+
+
     # Once the documents are deleted we can
+
+
 
     # no longer obtain their target/owner
 
+
+
     # relationships.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2130,15 +4258,33 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         db.scans.find(
 
+
+
             query
+
+
 
         )
 
 
 
+
+
+
+
     )
+
+
+
+
+
+
 
 
 
@@ -2148,43 +4294,87 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         return 0
 
 
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # COLLECT AFFECTED ASSETS
 
+
+
     # ======================================
 
+
+
     #
+
+
 
     # Dictionary key:
 
+
+
     #
+
+
 
     #     str(created_by), target
 
+
+
     #
+
+
 
     # Dictionary value:
 
+
+
     #
+
+
 
     #     original created_by value
 
+
+
     #
+
+
 
     # This avoids reconciling the same Asset
 
+
+
     # repeatedly when several of its scans
+
+
 
     # are selected together.
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2194,7 +4384,17 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
     for scan in scans_to_delete:
+
+
+
+
 
 
 
@@ -2202,13 +4402,27 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
             scan.get(
+
+
 
                 "target",
 
+
+
                 ""
 
+
+
             )
+
+
+
+
 
 
 
@@ -2218,11 +4432,27 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
         scan_owner = scan.get(
+
+
 
             "created_by"
 
+
+
         )
+
+
+
+
+
+
 
 
 
@@ -2232,7 +4462,17 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
             continue
+
+
+
+
+
+
 
 
 
@@ -2242,15 +4482,31 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
             str(
 
+
+
                 scan_owner
+
+
 
             ),
 
 
 
+
+
+
+
             target
+
+
+
+
 
 
 
@@ -2260,9 +4516,19 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
         affected_assets[
 
+
+
             key
+
+
 
         ] = scan_owner
 
@@ -2270,17 +4536,35 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # DELETE SELECTED SCANS
 
+
+
     # ======================================
+
+
+
+
 
 
 
     result = db.scans.delete_many(
 
+
+
         query
+
+
 
     )
 
@@ -2288,11 +4572,25 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
+
+
     # ======================================
+
+
 
     # RECONCILE AFFECTED ASSETS
 
+
+
     # ======================================
+
+
+
+
 
 
 
@@ -2300,13 +4598,27 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
         for (
+
+
 
             owner_string,
 
+
+
             target
 
+
+
         ), scan_owner in affected_assets.items():
+
+
+
+
 
 
 
@@ -2314,7 +4626,15 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
                 db=db,
+
+
+
+
 
 
 
@@ -2322,11 +4642,25 @@ def bulk_delete_scans(
 
 
 
+
+
+
+
                 created_by=scan_owner
 
 
 
+
+
+
+
             )
+
+
+
+
+
+
 
 
 

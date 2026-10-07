@@ -81,7 +81,33 @@ login-body
             method="POST"
             action="{{ url_for('auth.login') }}"
             class="login-form"
+            id="login-form"
         >
+
+            <!--
+                USER TIMEZONE
+
+                This value is populated automatically by
+                the browser before the login form is
+                submitted.
+
+                Example values:
+
+                Asia/Kolkata
+                Asia/Tokyo
+                Europe/Berlin
+                America/New_York
+
+                No geographical timezone is hardcoded.
+            -->
+
+            <input
+                type="hidden"
+                id="timezone"
+                name="timezone"
+                value=""
+            >
+
 
             <div class="form-group">
 
@@ -146,5 +172,53 @@ login-body
     </div>
 
 </div>
+
+
+<!-- ======================================
+     USER TIMEZONE DETECTION
+======================================= -->
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const timezoneInput =
+                document.getElementById("timezone");
+
+            if (!timezoneInput) {
+                return;
+            }
+
+            try {
+
+                const detectedTimezone =
+                    Intl.DateTimeFormat()
+                        .resolvedOptions()
+                        .timeZone;
+
+                if (detectedTimezone) {
+                    timezoneInput.value =
+                        detectedTimezone;
+                }
+
+            } catch (error) {
+
+                /*
+                 * Leave the field empty.
+                 *
+                 * routes/auth.py will safely
+                 * fall back to UTC when the
+                 * browser cannot provide a
+                 * valid timezone.
+                 */
+
+                timezoneInput.value = "";
+
+            }
+
+        }
+    );
+</script>
 
 {% endblock %}

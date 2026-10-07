@@ -1,26 +1,20 @@
 {% extends "base.html" %}
 
-
 {% block title %}
 AttackLens | Assets
 {% endblock %}
-
 
 {% block page_title %}
 Assets
 {% endblock %}
 
-
 {% block page_subtitle %}
 View and manage discovered assets from authorized security scans
 {% endblock %}
 
-
 {% block content %}
 
-
 <section class="dashboard-overview">
-
 
     <!-- ==========================================
          PAGE HEADER
@@ -418,9 +412,11 @@ View and manage discovered assets from authorized security scans
 
                             {% if asset.last_seen %}
 
-                                {{ asset.last_seen.strftime(
-                                    "%d %b %Y %H:%M"
-                                ) }}
+                                {{ asset.last_seen
+                                    | local_datetime(
+                                        '%d %b %Y %I:%M %p'
+                                    )
+                                }}
 
                             {% else %}
 
@@ -607,6 +603,5 @@ View and manage discovered assets from authorized security scans
 
 
 </section>
-
 
 {% endblock %}

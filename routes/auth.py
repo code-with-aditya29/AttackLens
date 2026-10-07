@@ -16,7 +16,37 @@ from werkzeug.security import (
 
 from functools import wraps
 from bson import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+
+# ==========================================
+# TIMEZONE VALIDATION
+# ==========================================
+
+def normalize_timezone_name(timezone_name):
+    """Validate a browser/device supplied IANA timezone name."""
+
+    default_timezone = current_app.config.get(
+        "DEFAULT_TIMEZONE",
+        "UTC"
+    )
+
+    try:
+        ZoneInfo(str(default_timezone))
+    except (ZoneInfoNotFoundError, TypeError, ValueError):
+        default_timezone = "UTC"
+
+    if not timezone_name:
+        return default_timezone
+
+    timezone_name = str(timezone_name).strip()
+
+    try:
+        ZoneInfo(timezone_name)
+        return timezone_name
+    except (ZoneInfoNotFoundError, TypeError, ValueError):
+        return default_timezone
 
 
 auth_bp = Blueprint(
@@ -114,6 +144,14 @@ def login():
             ""
         )
 
+        # Browser/device timezone supplied by the login page.
+        browser_timezone = normalize_timezone_name(
+            request.form.get(
+                "timezone",
+                ""
+            )
+        )
+
         if not email or not password:
 
             flash(
@@ -151,6 +189,8 @@ def login():
                 "role",
                 "admin"
             )
+
+            session["timezone"] = browser_timezone
 
             flash(
                 "Login successful!",
@@ -346,7 +386,7 @@ def add_admin():
 
             "role": "admin",
 
-            "created_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc)
 
         })
 

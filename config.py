@@ -72,6 +72,29 @@ class Config:
 
 
     # ==========================================
+    # TIMEZONE CONFIGURATION
+    # ==========================================
+
+    # Safe application fallback only.
+    #
+    # The user's actual timezone is detected
+    # automatically by the browser during login.
+    #
+    # Examples:
+    # Asia/Kolkata
+    # Asia/Tokyo
+    # Europe/Berlin
+    # America/New_York
+    #
+    # No user location is hardcoded here.
+
+    DEFAULT_TIMEZONE = os.getenv(
+        "DEFAULT_TIMEZONE",
+        "UTC"
+    )
+
+
+    # ==========================================
     # SESSION SECURITY
     # ==========================================
 

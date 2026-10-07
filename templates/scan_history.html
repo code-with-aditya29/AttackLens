@@ -90,9 +90,9 @@ View and manage your previous security scans
 
                 {{
                     scans
-                    | selectattr("status", "equalto", "completed")
-                    | list
-                    | length
+                        | selectattr("status", "equalto", "completed")
+                        | list
+                        | length
                 }}
 
             </strong>
@@ -112,9 +112,9 @@ View and manage your previous security scans
 
                 {{
                     scans
-                    | selectattr("status", "equalto", "failed")
-                    | list
-                    | length
+                        | selectattr("status", "equalto", "failed")
+                        | list
+                        | length
                 }}
 
             </strong>
@@ -135,16 +135,16 @@ View and manage your previous security scans
                 {{
                     (
                         scans
-                        | selectattr("status", "equalto", "running")
-                        | list
-                        | length
+                            | selectattr("status", "equalto", "running")
+                            | list
+                            | length
                     )
                     +
                     (
                         scans
-                        | selectattr("status", "equalto", "pending")
-                        | list
-                        | length
+                            | selectattr("status", "equalto", "pending")
+                            | list
+                            | length
                     )
                 }}
 
@@ -442,6 +442,8 @@ View and manage your previous security scans
 
                             <!-- ==================================
                                  CREATED DATE
+                                 Converted from stored UTC to
+                                 the logged-in user's timezone.
                             =================================== -->
 
                             <td>
@@ -450,10 +452,16 @@ View and manage your previous security scans
 
                                     {% if scan.created_at %}
 
-                                        {{ scan.created_at.strftime('%d %b %Y') }}
+                                        {{
+                                            scan.created_at
+                                                | local_datetime('%d %b %Y')
+                                        }}
 
                                         <small>
-                                            {{ scan.created_at.strftime('%I:%M %p') }}
+                                            {{
+                                                scan.created_at
+                                                    | local_datetime('%I:%M %p')
+                                            }}
                                         </small>
 
                                     {% else %}
@@ -469,6 +477,8 @@ View and manage your previous security scans
 
                             <!-- ==================================
                                  COMPLETED DATE
+                                 Converted from stored UTC to
+                                 the logged-in user's timezone.
                             =================================== -->
 
                             <td>
@@ -477,10 +487,16 @@ View and manage your previous security scans
 
                                     {% if scan.completed_at %}
 
-                                        {{ scan.completed_at.strftime('%d %b %Y') }}
+                                        {{
+                                            scan.completed_at
+                                                | local_datetime('%d %b %Y')
+                                        }}
 
                                         <small>
-                                            {{ scan.completed_at.strftime('%I:%M %p') }}
+                                            {{
+                                                scan.completed_at
+                                                    | local_datetime('%I:%M %p')
+                                            }}
                                         </small>
 
                                     {% else %}
