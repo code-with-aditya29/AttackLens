@@ -1117,7 +1117,9 @@ def calculate_asset_path_frequency(
 
             path.get(
 
-                "nodes"
+                "node_ids",
+
+                path.get("nodes")
 
             )
 
@@ -3182,7 +3184,9 @@ def calculate_edge_path_frequency(
 
             path.get(
 
-                "edges"
+                "edge_ids",
+
+                path.get("edges")
 
             )
 
@@ -3632,7 +3636,9 @@ def generate_path_findings(
 
             path.get(
 
-                "nodes"
+                "node_ids",
+
+                path.get("nodes")
 
             )
 
@@ -3662,7 +3668,9 @@ def generate_path_findings(
 
             path.get(
 
-                "edges"
+                "edge_ids",
+
+                path.get("edges")
 
             )
 
@@ -3810,7 +3818,7 @@ def generate_path_findings(
 
             evidence.extend(
 
-                existing_evidence
+                summarize_defense_evidence(existing_evidence)
 
             )
 
@@ -3968,7 +3976,7 @@ def generate_path_findings(
 
                 title=(
 
-                    "Potential Attack Path Requires Review"
+                    f"Potential Attack Path: {format_defense_path_label(path, path_id)}"
 
                 ),
 
@@ -4376,7 +4384,7 @@ def generate_defense_priorities(
 
             title = (
 
-                "Prioritize Attack Path Review"
+                f"Review {normalize_string(finding.get('title'), default='Attack Path')}"
 
             )
 
@@ -4384,11 +4392,9 @@ def generate_defense_priorities(
 
             reason = (
 
-                "The attack path contributes directly to the "
+                f"Potential attack path score: {score}/100; "
 
-                "current attack-surface and potential attacker "
-
-                "progression risk."
+                f"confidence: {confidence}. Review its entry service and evidence."
 
             )
 
@@ -6309,3 +6315,71 @@ def sort_priorities(
         )
 
     )
+
+# ==========================================
+# COMPACT PATH EVIDENCE
+# ==========================================
+
+def summarize_defense_evidence(evidence, max_items=6, max_chars=220):
+    """Keep source evidence concise without claiming CVE candidates are confirmed."""
+    result = []
+    seen = set()
+    if not isinstance(evidence, list):
+        return result
+    for item in evidence:
+        if not isinstance(item, str):
+            continue
+        item = item.strip()
+        if not item:
+            continue
+        # Large candidate lists do not establish validated applicability.
+        if len(item) > max_chars:
+            item = item[:max_chars - 3].rstrip() + "..."
+        key = item.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(item)
+        if len(result) >= max_items:
+            break
+    return result
+
+# ==========================================
+# HUMAN-READABLE ATTACK PATH LABELS
+# ==========================================
+
+def format_defense_path_label(path, fallback="Attack Path"):
+    """Format service-entry metadata without exposing raw dictionaries in titles.
+
+    This changes presentation only; it does not alter risk or confidence.
+    """
+    if not isinstance(path, dict):
+        return normalize_string(fallback, default="Attack Path")
+
+    for field in ("title", "service_label", "service_name"):
+        value = path.get(field)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+
+    service = path.get("service")
+    if isinstance(service, dict):
+        name = normalize_string(
+            service.get("name") or service.get("service") or service.get("product")
+        )
+        port = normalize_port_number(
+            service.get("port", service.get("port_number"))
+        )
+        protocol = normalize_string(service.get("protocol"), default="tcp").upper()
+        if protocol not in {"TCP", "UDP"}:
+            protocol = "TCP"
+        if name and port is not None:
+            return f"{name} ({protocol} {port})"
+        if port is not None:
+            return f"{protocol} {port}"
+        if name:
+            return name
+    elif isinstance(service, str) and service.strip():
+        return service.strip()
+
+    return normalize_string(fallback, default="Attack Path")
+

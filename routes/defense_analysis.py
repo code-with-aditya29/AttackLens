@@ -1,3 +1,4 @@
+
 # ==========================================
 # DEFENSE ANALYSIS ROUTES
 # ==========================================
@@ -35,7 +36,8 @@ from flask import (
     session,
     flash,
     redirect,
-    url_for
+    url_for,
+    request
 )
 
 
@@ -172,12 +174,107 @@ def defense_analysis():
 
 
     # ======================================
+    # HOST / ASSET SELECTION
+    # ======================================
+    #
+    # Preserve the complete authorized asset
+    # list for the dropdown.
+    #
+    # Only an asset belonging to the current
+    # user may be selected.
+    #
+    # No selection means all assets.
+    # ======================================
+
+    available_assets = sorted(
+
+        assets,
+
+        key=lambda asset: (
+
+            str(
+                asset.get(
+                    "target",
+                    ""
+                )
+            ).lower(),
+
+            str(
+                asset.get(
+                    "_id",
+                    ""
+                )
+            )
+
+        )
+
+    )
+
+
+    selected_asset_id = (
+
+        request.args.get(
+            "asset_id",
+            "all"
+        )
+
+        or "all"
+
+    ).strip()
+
+
+    selected_asset = None
+
+
+    if selected_asset_id.lower() == "all":
+
+        selected_asset_id = "all"
+
+    else:
+
+        selected_assets = [
+
+            asset
+
+            for asset in available_assets
+
+            if str(
+                asset.get("_id")
+            ) == selected_asset_id
+
+        ]
+
+
+        if not selected_assets:
+
+            flash(
+                "Selected asset was not found "
+                "or is not accessible.",
+                "error"
+            )
+
+            return redirect(
+                url_for(
+                    "defense_analysis.defense_analysis"
+                )
+            )
+
+
+        selected_asset = selected_assets[0]
+
+        assets = selected_assets
+
+
+    # ======================================
     # GENERATE ATTACK GRAPH
     # ======================================
     #
     # Defense Analysis depends on the same
     # Attack Path Engine output used by the
     # Attack Paths page.
+    #
+    # The selected asset scope is passed
+    # to the Attack Path Engine.
     # ======================================
 
     try:
@@ -364,6 +461,31 @@ def defense_analysis():
 
         attack_paths=(
             attack_paths
+        ),
+
+        # ==================================
+        # HOST SELECTION TEMPLATE VARIABLES
+        # ==================================
+
+        available_assets=(
+            available_assets
+        ),
+
+        selected_asset_id=(
+            selected_asset_id
+        ),
+
+        selected_asset=(
+            selected_asset
+        ),
+
+        analyzed_asset_count=(
+            len(assets)
         )
 
     )
+
+
+# ==========================================
+# END OF DEFENSE ANALYSIS ROUTES
+# ==========================================

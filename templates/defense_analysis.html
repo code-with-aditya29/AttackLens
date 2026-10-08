@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}
@@ -12,7 +13,203 @@ Defense Analysis
 Prioritize defensive areas based on current assets and potential attack paths
 {% endblock %}
 
+
 {% block content %}
+
+<style>
+    /* ==========================================
+       DEFENSE ANALYSIS PAGE-SPECIFIC STYLES
+       Uses existing dashboard theme variables
+       and classes wherever possible.
+       ========================================== */
+
+    .defense-analysis-page .defense-scope-card {
+        margin-bottom: 24px;
+    }
+
+    .defense-analysis-page .defense-scope-form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .defense-analysis-page .defense-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1 1 280px;
+        max-width: 460px;
+    }
+
+    .defense-analysis-page .defense-field label {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .defense-analysis-page .defense-asset-select {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 12px;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        border-radius: 8px;
+        background: var(--card-bg, var(--bg-card, #1e1b2e));
+        color: var(--text-primary, #f4f4f5);
+        font: inherit;
+    }
+
+    .defense-analysis-page .defense-asset-select:focus {
+        outline: 2px solid #8b5cf6;
+        outline-offset: 2px;
+    }
+
+    .defense-analysis-page .defense-analyze-btn {
+        min-height: 42px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #7c3aed;
+        color: #ffffff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .defense-analysis-page .defense-analyze-btn:hover {
+        background: #6d28d9;
+    }
+
+    .defense-analysis-page .defense-scope-info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        font-size: 13px;
+    }
+
+    .defense-analysis-page .defense-scope-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        background: rgba(139, 92, 246, 0.12);
+        color: var(--text-primary, #f4f4f5);
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .defense-analysis-page .defense-table-title {
+        display: block;
+        min-width: 170px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+
+    .defense-analysis-page .defense-target {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .defense-analysis-page .defense-level {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .defense-analysis-page .defense-level-critical {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+
+    .defense-analysis-page .defense-level-high {
+        background: rgba(249, 115, 22, 0.15);
+        color: #f97316;
+    }
+
+    .defense-analysis-page .defense-level-medium {
+        background: rgba(234, 179, 8, 0.15);
+        color: #eab308;
+    }
+
+    .defense-analysis-page .defense-level-low {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+    }
+
+    .defense-analysis-page .defense-level-unknown {
+        background: rgba(148, 163, 184, 0.15);
+        color: #94a3b8;
+    }
+
+    .defense-analysis-page .defense-score {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .defense-analysis-page .defense-reason {
+        min-width: 220px;
+        max-width: 440px;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .defense-analysis-page .defense-evidence-details {
+        min-width: 170px;
+        max-width: 340px;
+    }
+
+    .defense-analysis-page .defense-evidence-details summary {
+        color: #a78bfa;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .defense-analysis-page .defense-evidence-details summary:hover {
+        text-decoration: underline;
+    }
+
+    .defense-analysis-page .defense-evidence-list {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        line-height: 1.6;
+    }
+
+    .defense-analysis-page .defense-evidence-list li {
+        margin-bottom: 8px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .defense-analysis-page .defense-muted {
+        color: var(--text-secondary, #a1a1aa);
+        font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+        .defense-analysis-page .defense-field {
+            max-width: none;
+        }
+
+        .defense-analysis-page .defense-analyze-btn {
+            width: 100%;
+        }
+
+        .defense-analysis-page .defense-reason {
+            min-width: 180px;
+        }
+    }
+</style>
+
 
 <section class="dashboard-overview defense-analysis-page">
 
@@ -41,6 +238,127 @@ Prioritize defensive areas based on current assets and potential attack paths
 
 
     <!-- ==========================================
+         HOST / ASSET SELECTION
+         ========================================== -->
+
+    <section class="dashboard-card defense-scope-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h3>
+                    Analysis Scope
+                </h3>
+
+                <p>
+                    Select all authorized assets or analyze
+                    an individual host.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="GET"
+            action="{{ url_for('defense_analysis.defense_analysis') }}"
+            class="defense-scope-form"
+        >
+
+            <div class="defense-field">
+
+                <label for="defense-asset-select">
+                    Select Asset / Host
+                </label>
+
+                <select
+                    id="defense-asset-select"
+                    name="asset_id"
+                    class="defense-asset-select"
+                >
+
+                    <option
+                        value="all"
+                        {% if selected_asset_id|default('all') == 'all' %}
+                            selected
+                        {% endif %}
+                    >
+                        All Authorized Assets
+                    </option>
+
+                    {% for asset in available_assets|default([]) %}
+
+                        {% set asset_id = asset.get('_id')|string %}
+
+                        {% set asset_name = (
+                            asset.get('target')
+                            or asset.get('ip_address')
+                            or asset.get('hostname')
+                            or asset_id
+                        ) %}
+
+                        <option
+                            value="{{ asset_id }}"
+                            {% if selected_asset_id|default('all') == asset_id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ asset_name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="defense-analyze-btn"
+            >
+                Analyze
+            </button>
+
+        </form>
+
+
+        <div class="defense-scope-info">
+
+            {% if selected_asset|default(none) %}
+
+                <span class="defense-scope-badge">
+                    Selected Host:
+                    {{
+                        selected_asset.get('target')
+                        or selected_asset.get('ip_address')
+                        or selected_asset.get('hostname')
+                        or selected_asset.get('_id')
+                    }}
+                </span>
+
+            {% else %}
+
+                <span class="defense-scope-badge">
+                    All Authorized Assets
+                </span>
+
+            {% endif %}
+
+
+            <span class="defense-muted">
+                Assets analyzed:
+                {{ analyzed_asset_count|default(0) }}
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
          SUMMARY STATISTICS
          ========================================== -->
 
@@ -64,12 +382,7 @@ Prioritize defensive areas based on current assets and potential attack paths
             </div>
 
             <div class="stat-value">
-
-                {{
-                    defense_statistics.total_findings
-                    | default(0)
-                }}
-
+                {{ defense_statistics.total_findings|default(0) }}
             </div>
 
             <p class="stat-description">
@@ -97,12 +410,7 @@ Prioritize defensive areas based on current assets and potential attack paths
             </div>
 
             <div class="stat-value">
-
-                {{
-                    defense_statistics.total_priorities
-                    | default(0)
-                }}
-
+                {{ defense_statistics.total_priorities|default(0) }}
             </div>
 
             <p class="stat-description">
@@ -132,15 +440,9 @@ Prioritize defensive areas based on current assets and potential attack paths
             <div class="stat-value">
 
                 {{
-                    (
-                        defense_statistics.high_priorities
-                        | default(0)
-                    )
+                    (defense_statistics.high_priorities|default(0))
                     +
-                    (
-                        defense_statistics.critical_priorities
-                        | default(0)
-                    )
+                    (defense_statistics.critical_priorities|default(0))
                 }}
 
             </div>
@@ -170,12 +472,7 @@ Prioritize defensive areas based on current assets and potential attack paths
             </div>
 
             <div class="stat-value">
-
-                {{
-                    graph_statistics.total_paths
-                    | default(0)
-                }}
-
+                {{ graph_statistics.total_paths|default(0) }}
             </div>
 
             <p class="stat-description">
@@ -184,7 +481,6 @@ Prioritize defensive areas based on current assets and potential attack paths
             </p>
 
         </div>
-
 
     </section>
 
@@ -224,35 +520,13 @@ Prioritize defensive areas based on current assets and potential attack paths
                     <thead>
 
                         <tr>
-
-                            <th>
-                                Priority
-                            </th>
-
-                            <th>
-                                Type
-                            </th>
-
-                            <th>
-                                Target
-                            </th>
-
-                            <th>
-                                Level
-                            </th>
-
-                            <th>
-                                Score
-                            </th>
-
-                            <th>
-                                Confidence
-                            </th>
-
-                            <th>
-                                Reason
-                            </th>
-
+                            <th>Priority</th>
+                            <th>Type</th>
+                            <th>Target</th>
+                            <th>Level</th>
+                            <th>Score</th>
+                            <th>Confidence</th>
+                            <th>Reason</th>
                         </tr>
 
                     </thead>
@@ -262,17 +536,28 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                         {% for priority in defense_priorities %}
 
+                            {% set priority_level = (
+                                priority.priority_level
+                                | default('UNKNOWN', true)
+                                | string
+                                | lower
+                            ) %}
+
                             <tr>
 
                                 <td>
 
-                                    {{
-                                        priority.title
-                                        | default(
-                                            "Defense Priority",
-                                            true
-                                        )
-                                    }}
+                                    <span class="defense-table-title">
+
+                                        {{
+                                            priority.title
+                                            | default(
+                                                "Defense Priority",
+                                                true
+                                            )
+                                        }}
+
+                                    </span>
 
                                 </td>
 
@@ -281,28 +566,19 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                     {{
                                         priority.priority_type
-                                        | default(
-                                            "general",
-                                            true
-                                        )
-                                        | replace(
-                                            "_",
-                                            " "
-                                        )
+                                        | default("general", true)
+                                        | replace("_", " ")
                                         | title
                                     }}
 
                                 </td>
 
 
-                                <td>
+                                <td class="defense-target">
 
                                     {{
                                         priority.target
-                                        | default(
-                                            "--",
-                                            true
-                                        )
+                                        | default("--", true)
                                     }}
 
                                 </td>
@@ -310,24 +586,34 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                 <td>
 
-                                    {{
-                                        priority.priority_level
-                                        | default(
-                                            "UNKNOWN",
-                                            true
-                                        )
-                                    }}
+                                    <span
+                                        class="
+                                            defense-level
+                                            defense-level-{{ priority_level if priority_level in ['critical', 'high', 'medium', 'low'] else 'unknown' }}
+                                        "
+                                    >
+
+                                        {{
+                                            priority.priority_level
+                                            | default("UNKNOWN", true)
+                                        }}
+
+                                    </span>
 
                                 </td>
 
 
                                 <td>
 
-                                    {{
-                                        priority.score
-                                        | default(0)
-                                    }}
-                                    / 100
+                                    <span class="defense-score">
+
+                                        {{
+                                            priority.score
+                                            | default(0)
+                                        }}
+                                        / 100
+
+                                    </span>
 
                                 </td>
 
@@ -336,16 +622,13 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                     {{
                                         priority.confidence
-                                        | default(
-                                            "UNKNOWN",
-                                            true
-                                        )
+                                        | default("UNKNOWN", true)
                                     }}
 
                                 </td>
 
 
-                                <td>
+                                <td class="defense-reason">
 
                                     {{
                                         priority.reason
@@ -380,11 +663,9 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </h4>
 
                 <p>
-
                     AttackLens did not identify sufficient
                     evidence to create a defensive priority
                     for the current environment.
-
                 </p>
 
             </div>
@@ -427,35 +708,13 @@ Prioritize defensive areas based on current assets and potential attack paths
                     <thead>
 
                         <tr>
-
-                            <th>
-                                Finding
-                            </th>
-
-                            <th>
-                                Type
-                            </th>
-
-                            <th>
-                                Target
-                            </th>
-
-                            <th>
-                                Severity
-                            </th>
-
-                            <th>
-                                Score
-                            </th>
-
-                            <th>
-                                Confidence
-                            </th>
-
-                            <th>
-                                Evidence
-                            </th>
-
+                            <th>Finding</th>
+                            <th>Type</th>
+                            <th>Target</th>
+                            <th>Severity</th>
+                            <th>Score</th>
+                            <th>Confidence</th>
+                            <th>Evidence</th>
                         </tr>
 
                     </thead>
@@ -465,17 +724,28 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                         {% for finding in defense_findings %}
 
+                            {% set finding_severity = (
+                                finding.severity
+                                | default('UNKNOWN', true)
+                                | string
+                                | lower
+                            ) %}
+
                             <tr>
 
                                 <td>
 
-                                    {{
-                                        finding.title
-                                        | default(
-                                            "Defense Finding",
-                                            true
-                                        )
-                                    }}
+                                    <span class="defense-table-title">
+
+                                        {{
+                                            finding.title
+                                            | default(
+                                                "Defense Finding",
+                                                true
+                                            )
+                                        }}
+
+                                    </span>
 
                                 </td>
 
@@ -484,28 +754,19 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                     {{
                                         finding.finding_type
-                                        | default(
-                                            "general",
-                                            true
-                                        )
-                                        | replace(
-                                            "_",
-                                            " "
-                                        )
+                                        | default("general", true)
+                                        | replace("_", " ")
                                         | title
                                     }}
 
                                 </td>
 
 
-                                <td>
+                                <td class="defense-target">
 
                                     {{
                                         finding.target
-                                        | default(
-                                            "--",
-                                            true
-                                        )
+                                        | default("--", true)
                                     }}
 
                                 </td>
@@ -513,24 +774,34 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                 <td>
 
-                                    {{
-                                        finding.severity
-                                        | default(
-                                            "UNKNOWN",
-                                            true
-                                        )
-                                    }}
+                                    <span
+                                        class="
+                                            defense-level
+                                            defense-level-{{ finding_severity if finding_severity in ['critical', 'high', 'medium', 'low'] else 'unknown' }}
+                                        "
+                                    >
+
+                                        {{
+                                            finding.severity
+                                            | default("UNKNOWN", true)
+                                        }}
+
+                                    </span>
 
                                 </td>
 
 
                                 <td>
 
-                                    {{
-                                        finding.score
-                                        | default(0)
-                                    }}
-                                    / 100
+                                    <span class="defense-score">
+
+                                        {{
+                                            finding.score
+                                            | default(0)
+                                        }}
+                                        / 100
+
+                                    </span>
 
                                 </td>
 
@@ -539,10 +810,7 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                     {{
                                         finding.confidence
-                                        | default(
-                                            "UNKNOWN",
-                                            true
-                                        )
+                                        | default("UNKNOWN", true)
                                     }}
 
                                 </td>
@@ -550,16 +818,40 @@ Prioritize defensive areas based on current assets and potential attack paths
 
                                 <td>
 
-                                    {% if finding.evidence|default([])|length > 0 %}
+                                    {% set evidence_items = finding.evidence|default([], true) %}
 
-                                        {{
-                                            finding.evidence
-                                            | join(" ")
-                                        }}
+                                    {% if evidence_items is string %}
+                                        {% set evidence_items = [evidence_items] %}
+                                    {% endif %}
+
+                                    {% if evidence_items|length > 0 %}
+
+                                        <details class="defense-evidence-details">
+
+                                            <summary>
+                                                View Evidence
+                                                ({{ evidence_items|length }})
+                                            </summary>
+
+                                            <ul class="defense-evidence-list">
+
+                                                {% for evidence in evidence_items %}
+
+                                                    <li>
+                                                        {{ evidence }}
+                                                    </li>
+
+                                                {% endfor %}
+
+                                            </ul>
+
+                                        </details>
 
                                     {% else %}
 
-                                        No additional evidence available.
+                                        <span class="defense-muted">
+                                            No additional evidence available.
+                                        </span>
 
                                     {% endif %}
 
@@ -588,11 +880,9 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </h4>
 
                 <p>
-
                     No current asset, relationship, or
                     attack-path evidence met the threshold
                     for a Defense Analysis finding.
-
                 </p>
 
             </div>
@@ -629,6 +919,8 @@ Prioritize defensive areas based on current assets and potential attack paths
         <div class="stats-grid defense-context-grid">
 
 
+            <!-- GRAPH NODES -->
+
             <div class="stat-card">
 
                 <div class="stat-card-header">
@@ -640,12 +932,7 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </div>
 
                 <div class="stat-value">
-
-                    {{
-                        graph_statistics.total_nodes
-                        | default(0)
-                    }}
-
+                    {{ graph_statistics.total_nodes|default(0) }}
                 </div>
 
                 <p class="stat-description">
@@ -655,6 +942,8 @@ Prioritize defensive areas based on current assets and potential attack paths
 
             </div>
 
+
+            <!-- RELATIONSHIPS -->
 
             <div class="stat-card">
 
@@ -667,12 +956,7 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </div>
 
                 <div class="stat-value">
-
-                    {{
-                        graph_statistics.total_edges
-                        | default(0)
-                    }}
-
+                    {{ graph_statistics.total_edges|default(0) }}
                 </div>
 
                 <p class="stat-description">
@@ -682,6 +966,8 @@ Prioritize defensive areas based on current assets and potential attack paths
 
             </div>
 
+
+            <!-- ATTACK PATHS -->
 
             <div class="stat-card">
 
@@ -694,12 +980,7 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </div>
 
                 <div class="stat-value">
-
-                    {{
-                        graph_statistics.total_paths
-                        | default(0)
-                    }}
-
+                    {{ graph_statistics.total_paths|default(0) }}
                 </div>
 
                 <p class="stat-description">
@@ -709,6 +990,8 @@ Prioritize defensive areas based on current assets and potential attack paths
 
             </div>
 
+
+            <!-- HIGHEST PRIORITY -->
 
             <div class="stat-card">
 
@@ -721,12 +1004,7 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </div>
 
                 <div class="stat-value">
-
-                    {{
-                        defense_statistics.highest_priority_score
-                        | default(0)
-                    }}
-
+                    {{ defense_statistics.highest_priority_score|default(0) }}
                 </div>
 
                 <p class="stat-description">
@@ -735,7 +1013,6 @@ Prioritize defensive areas based on current assets and potential attack paths
                 </p>
 
             </div>
-
 
         </div>
 
@@ -777,7 +1054,6 @@ Prioritize defensive areas based on current assets and potential attack paths
             </h4>
 
             <p>
-
                 Defense Analysis evaluates current asset risk,
                 external exposure, vulnerabilities,
                 security-sensitive services, graph
@@ -789,7 +1065,6 @@ Prioritize defensive areas based on current assets and potential attack paths
                 Detailed mitigation instructions are generated
                 separately by the Mitigation Recommendation
                 Engine.
-
             </p>
 
         </div>

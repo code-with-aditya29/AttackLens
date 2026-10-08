@@ -1807,7 +1807,7 @@ def generate_service_entry_paths(assets, max_paths_per_asset=3):
     return [path for path in paths if isinstance(path, dict)]
 
 def build_service_entry_candidate(asset, service):
-    """Build one potential entry-route candidate for an open service."""
+    """Build a conservative, bounded potential entry-route candidate."""
     if not isinstance(asset, dict) or not isinstance(service, dict):
         return None
 
@@ -1827,33 +1827,33 @@ def build_service_entry_candidate(asset, service):
     if not findings:
         return None
 
-    finding_score = 0.0
-    confidence_values = []
+    # The strongest finding dominates. Additional findings add diminishing
+    # corroboration instead of summing without limit and saturating at 100.
+    weighted_findings = []
     summaries = []
-
     for finding in findings:
         severity = normalize_risk_level(finding.get("severity"))
-        confidence = normalize_confidence(finding.get("confidence"))
-        confidence_values.append(confidence)
-        severity_points = {"CRITICAL": 30, "HIGH": 22, "MEDIUM": 12, "LOW": 5, "UNKNOWN": 2}.get(severity, 2)
-        confidence_factor = {"HIGH": 1.0, "MEDIUM": 0.75, "LOW": 0.4, "UNKNOWN": 0.2}.get(confidence, 0.2)
-        finding_score += severity_points * confidence_factor
+        finding_confidence = normalize_confidence(finding.get("confidence"))
+        severity_points = {
+            "CRITICAL": 30, "HIGH": 22, "MEDIUM": 12,
+            "LOW": 5, "UNKNOWN": 2
+        }.get(severity, 2)
+        confidence_factor = {
+            "HIGH": 1.0, "MEDIUM": 0.75,
+            "LOW": 0.4, "UNKNOWN": 0.2
+        }.get(finding_confidence, 0.2)
+        weighted_findings.append((severity_points * confidence_factor, finding_confidence))
         summary = get_finding_summary(finding)
         if summary and summary not in summaries:
             summaries.append(summary)
 
+    weighted_findings.sort(key=lambda item: item[0], reverse=True)
+    strongest_points, confidence = weighted_findings[0]
+    strongest_contribution = min(60.0, strongest_points * 2.0)
+    corroboration = min(20.0, sum(points * 0.15 for points, _ in weighted_findings[1:]))
     exposure_bonus = 12 if normalize_exposure(asset.get("exposure")) == "EXTERNAL" else 0
     sensitive_bonus = 8 if port in SENSITIVE_PORTS else 0
-    score = normalize_score(min(100, finding_score + exposure_bonus + sensitive_bonus))
-
-    if "HIGH" in confidence_values:
-        confidence = "HIGH"
-    elif "MEDIUM" in confidence_values:
-        confidence = "MEDIUM"
-    elif "LOW" in confidence_values:
-        confidence = "LOW"
-    else:
-        confidence = "UNKNOWN"
+    score = normalize_score(min(100, strongest_contribution + corroboration + exposure_bonus + sensitive_bonus))
 
     risk_level = determine_path_risk_level(score)
     target = str(asset.get("target") or asset.get("hostname") or asset.get("_id"))
@@ -1880,11 +1880,8 @@ def build_service_entry_candidate(asset, service):
         "progression": [
             "Potential attacker",
             entry,
-            (
-                f"Applicable finding: {summaries[0]}"
-                if summaries
-                else "Applicable vulnerability / security finding"
-            ),
+            (f"Applicable finding: {summaries[0]}" if summaries
+             else "Applicable vulnerability / security finding"),
             f"Potential access or service impact on {target}"
         ],
         "disclaimer": (
@@ -1893,9 +1890,19 @@ def build_service_entry_candidate(asset, service):
         )
     }
 
+
 def get_findings_for_service(asset, service):
-    """Associate active CVE/non-CVE findings with a discovered service."""
+    """Associate active findings using explicit service evidence, not descriptions.
+
+    An explicit mismatching port/protocol is disqualifying. If no port is
+    recorded, require a match in structured service/product fields. This is
+    an association check, not independent validation of CVE applicability.
+    """
+    if not isinstance(asset, dict) or not isinstance(service, dict):
+        return []
+
     port = normalize_port_number(service.get("port"))
+    protocol = str(service.get("protocol", "tcp") or "tcp").strip().lower()
     tokens = {
         str(service.get(key, "") or "").strip().lower()
         for key in ("service", "name", "product")
@@ -1905,10 +1912,7 @@ def get_findings_for_service(asset, service):
 
     findings = []
     seen = set()
-    raw_findings = []
-    raw_findings.extend(normalize_list(asset.get("vulnerabilities")))
-    raw_findings.extend(get_attack_security_findings(asset))
-
+    raw_findings = normalize_list(asset.get("vulnerabilities")) + get_attack_security_findings(asset)
     for finding in raw_findings:
         if not isinstance(finding, dict):
             continue
@@ -1917,31 +1921,32 @@ def get_findings_for_service(asset, service):
             continue
 
         finding_port = normalize_port_number(finding.get("port"))
-        port_match = port is not None and finding_port == port
+        if finding_port is not None and finding_port != port:
+            continue
+        finding_protocol = str(finding.get("protocol") or "").strip().lower()
+        if finding_protocol and finding_protocol != protocol:
+            continue
 
-        searchable = " ".join(
-            str(finding.get(key, "") or "").lower()
-            for key in (
-                "service", "service_name", "product", "affected_product", "title",
-                "name", "description", "evidence", "endpoint", "cpe"
-            )
+        structured = {
+            str(finding.get(key, "") or "").strip().lower()
+            for key in ("service", "service_name", "product", "affected_product")
+        }
+        structured.discard("")
+        structured_match = any(
+            token == field or (len(token) >= 5 and token in field.split(" "))
+            for token in tokens for field in structured
         )
-        token_match = any(token in searchable for token in tokens)
-
-        if not (port_match or token_match):
+        if finding_port != port and not structured_match:
             continue
 
         identity = str(
-            finding.get("cve_id")
-            or finding.get("finding_id")
-            or finding.get("id")
-            or get_finding_summary(finding)
+            finding.get("cve_id") or finding.get("finding_id")
+            or finding.get("id") or get_finding_summary(finding)
         ).strip().lower()
         if not identity or identity in seen:
             continue
         seen.add(identity)
         findings.append(finding)
-
     return findings
 
 def get_finding_summary(finding):
@@ -5003,9 +5008,9 @@ def get_asset_open_ports(asset):
 
     AttackLens has evolved across scan/asset versions, so
 
-    network evidence may be stored in \`\`ports\`\`, \`\`services\`\`
+    network evidence may be stored in ``ports``, ``services``
 
-    or \`\`open_ports\`\`.  The attack-path engine accepts all
+    or ``open_ports``.  The attack-path engine accepts all
 
     three representations and merges them conservatively.
 
