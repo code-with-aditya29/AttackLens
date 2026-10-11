@@ -30,6 +30,8 @@
 
 
 
+import re
+
 from models.mitigation_model import (
 
     create_mitigation_document,
@@ -1239,16 +1241,10 @@ def generate_sensitive_service_recommendations(
 
 
 
-        score = normalize_score(
-
-            max(
-
-                risk_score,
-
-                defense_score
-
-            )
-
+        score = calculate_mitigation_priority(
+            evidence_score=min(80, 35 + 3 * len(sensitive_ports)),
+            asset_risk_score=risk_score,
+            defense_score=defense_score
         )
 
 
@@ -1599,18 +1595,10 @@ def generate_external_exposure_recommendations(
 
 
 
-        score = normalize_score(
-
-            max(
-
-                risk_score,
-
-                defense_score,
-
-                25
-
-            )
-
+        score = calculate_mitigation_priority(
+            evidence_score=65,
+            asset_risk_score=risk_score,
+            defense_score=defense_score
         )
 
 
@@ -1939,18 +1927,10 @@ def generate_vulnerability_recommendations(
 
 
 
-        score = normalize_score(
-
-            max(
-
-                risk_score,
-
-                defense_score,
-
-                severity_score
-
-            )
-
+        score = calculate_mitigation_priority(
+            evidence_score=severity_score,
+            asset_risk_score=risk_score,
+            defense_score=defense_score
         )
 
 
@@ -2007,7 +1987,7 @@ def generate_vulnerability_recommendations(
 
                     ", ".join(
 
-                        cve_ids
+                        cve_ids[:8]
 
                     )
 
@@ -2020,6 +2000,17 @@ def generate_vulnerability_recommendations(
             )
 
 
+
+        if len(cve_ids) > 8:
+            evidence.append(
+                f"Showing 8 of {len(cve_ids)} referenced CVE IDs; "
+                "the full list remains in related_cves."
+            )
+
+        evidence.append(
+            "CVE references are evidence records, not proof of "
+            "successful exploitation; confirm applicability and status."
+        )
 
         actions = [
 
@@ -2135,17 +2126,7 @@ def generate_vulnerability_recommendations(
 
 
 
-                confidence=(
-
-                    "HIGH"
-
-                    if cve_ids
-
-                    else
-
-                    "MEDIUM"
-
-                ),
+                confidence=get_highest_finding_confidence(vulnerabilities),
 
 
 
@@ -2270,12 +2251,10 @@ def generate_security_finding_recommendations(
                 20
             )
 
-            score = normalize_score(
-                max(
-                    risk_score,
-                    defense_score,
-                    severity_score
-                )
+            score = calculate_mitigation_priority(
+                evidence_score=severity_score,
+                asset_risk_score=risk_score,
+                defense_score=defense_score
             )
 
             priority_level = determine_priority_level(score)
@@ -2703,6 +2682,12 @@ def generate_relationship_recommendations(
 
 
 
+        # Do not display findings associated with an unauthorized asset.
+        if asset_id and asset_id not in asset_index:
+            continue
+        if target and target not in asset_index and not asset_id:
+            continue
+
         score = normalize_score(
 
             finding.get(
@@ -2936,6 +2921,82 @@ def generate_relationship_recommendations(
 
 
 # ==========================================
+# EVIDENCE-GROUNDED ATTACK-PATH GUIDANCE
+# ==========================================
+
+
+def build_attack_path_guidance(path, evidence):
+    """Return display text and actions grounded in the current path evidence.
+
+    A TCP port identifies a potential entry point, not an exploitable service.
+    Product-specific advice is used only if the path's own evidence identifies
+    that product. Full internal path identifiers remain in related_path_ids.
+    """
+    path_id = normalize_text(path.get("id"))
+    evidence_text = " ".join(normalize_evidence(evidence))
+    port_match = re.search(r"(?:^|:)tcp:(\d{1,5})(?:$|:)", path_id, re.I)
+    if not port_match:
+        port_match = re.search(r"\bTCP\s*/\s*(\d{1,5})\b", evidence_text, re.I)
+    port = normalize_port_number(port_match.group(1)) if port_match else None
+    endpoint = f"TCP/{port}" if port is not None else "the identified entry point"
+
+    # A product is never inferred from a port number alone.
+    service = None
+    if re.search(r"\bproftpd\b", evidence_text, re.I):
+        service = "ProFTPD"
+    elif re.search(r"\b(?:isc\s+bind|bind\s+9(?:\.|\b))", evidence_text, re.I):
+        service = "ISC BIND"
+    elif re.search(r"\b(?:samba|smbd)\b", evidence_text, re.I):
+        service = "Samba"
+
+    if service == "ProFTPD":
+        actions = [
+            f"Confirm the detected ProFTPD version and whether FTP on {endpoint} is required.",
+            "Review applicable vendor advisories and validate any associated findings before selecting a patch or upgrade.",
+            "Restrict FTP access to approved clients or network segments; disable the service if unnecessary.",
+            "Review FTP authentication, anonymous access, and file permissions against operational requirements.",
+            "Re-scan the authorized host and regenerate the attack graph after changes."
+        ]
+    elif service == "ISC BIND":
+        actions = [
+            f"Confirm the ISC BIND version and the intended DNS role exposed on {endpoint}.",
+            "Review applicable ISC security advisories and validate whether recorded findings affect this configuration.",
+            "Restrict recursion and DNS queries or zone transfers to approved clients where appropriate; preserve required authoritative DNS access.",
+            "Apply a supported BIND update or configuration hardening after assessing service dependencies.",
+            "Re-scan DNS exposure and regenerate the potential attack graph after changes."
+        ]
+    elif service == "Samba":
+        actions = [
+            f"Confirm the Samba version and the SMB/NetBIOS function reachable on {endpoint}.",
+            "Review applicable Samba advisories and verify which recorded findings apply to the deployed configuration.",
+            "Limit SMB/NetBIOS access to trusted hosts and segments using appropriate host or network controls.",
+            "Review share permissions, guest access, and supported SMB protocol settings; disable unnecessary legacy access.",
+            "Re-scan the authorized host and regenerate the potential attack graph after changes."
+        ]
+    else:
+        actions = [
+            f"Identify and validate the service and version associated with {endpoint}.",
+            "Review the specific findings and relationships supporting this potential entry point.",
+            "Restrict unnecessary reachability to approved hosts or network segments.",
+            "Apply vendor-supported remediation only for findings validated as applicable.",
+            "Re-scan and regenerate the attack graph to evaluate the remaining potential path."
+        ]
+
+    label = f"{service} — {endpoint}" if service else endpoint
+    title = f"Review Potential {label} Attack Entry"
+    description = (
+        f"AttackLens identified a potential attack-path entry associated with {label}. "
+        "This is evidence for defensive review, not confirmation of exploitation "
+        "or end-to-end attacker reachability."
+    )
+    expected_effect = (
+        f"Reduced unnecessary exposure or weakness at {label}, subject to "
+        "validation and a subsequent authorized assessment."
+    )
+    return title, description, actions, expected_effect
+
+
+# ==========================================
 
 # ATTACK PATH RECOMMENDATIONS
 
@@ -3063,6 +3124,30 @@ def generate_attack_path_recommendations(
 
 
 
+        # Support the current Attack Path Engine's node_ids while
+        # retaining compatibility with older graphs using nodes.
+        current_node_ids = path.get("node_ids")
+        if isinstance(current_node_ids, list) and current_node_ids:
+            nodes = current_node_ids
+
+        # A graph path must not cross outside the authorized asset scope.
+        # Synthetic attacker nodes are allowed, but unknown asset nodes
+        # must not be used to associate another tenant's assets.
+        graph_nodes = attack_graph.get("nodes", [])
+        graph_asset_ids = {
+            str(node.get("id"))
+            for node in graph_nodes
+            if isinstance(node, dict)
+            and str(node.get("node_type", node.get("type", ""))).lower()
+            in {"asset", "host"}
+        }
+        if any(
+            str(node_id) in graph_asset_ids
+            and str(node_id) not in asset_index
+            for node_id in nodes
+        ):
+            continue
+
         target_asset = None
 
 
@@ -3102,6 +3187,11 @@ def generate_attack_path_recommendations(
                 break
 
 
+
+        if target_asset is None:
+            explicit_asset_id = str(path.get("asset_id") or "").strip()
+            if explicit_asset_id in asset_index:
+                target_asset = asset_index[explicit_asset_id]
 
         if target_asset is None:
 
@@ -3153,18 +3243,10 @@ def generate_attack_path_recommendations(
 
 
 
-        recommendation_score = normalize_score(
-
-            max(
-
-                path_score,
-
-                asset_risk_score,
-
-                defense_score
-
-            )
-
+        recommendation_score = calculate_mitigation_priority(
+            evidence_score=path_score,
+            asset_risk_score=asset_risk_score,
+            defense_score=defense_score
         )
 
 
@@ -3243,6 +3325,10 @@ def generate_attack_path_recommendations(
 
 
 
+        guidance_title, guidance_description, guidance_actions, guidance_effect = (
+            build_attack_path_guidance(path, evidence)
+        )
+
         recommendation = (
 
             create_mitigation_recommendation(
@@ -3265,23 +3351,11 @@ def generate_attack_path_recommendations(
 
 
 
-                title=
-
-                    "Prioritize Attack Path Disruption",
+                title=guidance_title,
 
 
 
-                description=(
-
-                    "A generated potential attack path "
-
-                    "includes this asset and should be "
-
-                    "reviewed for controls that break or "
-
-                    "reduce the supported progression."
-
-                ),
+                description=guidance_description,
 
 
 
@@ -3321,69 +3395,9 @@ def generate_attack_path_recommendations(
 
 
 
-                actions=[
+                actions=guidance_actions,
 
-                    (
-
-                        "Review the services and "
-
-                        "relationships supporting this "
-
-                        "generated attack path."
-
-                    ),
-
-                    (
-
-                        "Prioritize controls at the "
-
-                        "highest-value entry or choke "
-
-                        "points."
-
-                    ),
-
-                    (
-
-                        "Restrict unnecessary service "
-
-                        "exposure and network reachability."
-
-                    ),
-
-                    (
-
-                        "Remediate identified "
-
-                        "vulnerabilities contributing to "
-
-                        "the path when supported by scan "
-
-                        "evidence."
-
-                    ),
-
-                    (
-
-                        "Regenerate the attack graph after "
-
-                        "changes to evaluate whether the "
-
-                        "potential path remains."
-
-                    )
-
-                ],
-
-
-
-                expected_effect=(
-
-                    "Reduced support for the generated "
-
-                    "attacker progression path."
-
-                ),
+                expected_effect=guidance_effect,
 
 
 
@@ -3425,6 +3439,23 @@ def generate_attack_path_recommendations(
 
 # ==========================================
 
+
+
+# ==========================================
+# RECOMMENDATION-SPECIFIC PRIORITY
+# ==========================================
+
+def calculate_mitigation_priority(evidence_score, asset_risk_score=0, defense_score=0):
+    """Rank a specific mitigation, not the entire asset.
+
+    Evidence contributes 80%; asset and Defense Analysis context contribute
+    at most 10% each. This is a prioritization heuristic, not CVSS,
+    exploitability probability, or a guaranteed reduction in risk.
+    """
+    evidence = normalize_score(evidence_score)
+    asset = normalize_score(asset_risk_score)
+    defense = normalize_score(defense_score)
+    return normalize_score(round(0.80 * evidence + 0.10 * asset + 0.10 * defense))
 
 
 def determine_priority_level(
@@ -4817,6 +4848,14 @@ def deduplicate_recommendations(
         )
 
 
+
+        # Distinct attack paths must not collapse into a single
+        # recommendation merely because they share an asset/title.
+        if str(recommendation.get("category", "")) == "attack_path_disruption":
+            key = key + (
+                str(recommendation.get("recommendation_id", "")),
+                tuple(str(x) for x in (recommendation.get("related_path_ids") or []))
+            )
 
         if key in seen:
 

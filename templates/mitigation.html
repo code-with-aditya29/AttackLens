@@ -1,43 +1,1001 @@
+
+
 {% extends "base.html" %}
 
 
+
 {% block title %}
+
 Mitigation Recommendations | AttackLens
+
 {% endblock %}
+
 
 
 {% block page_title %}
+
 Mitigation Recommendations
+
 {% endblock %}
+
 
 
 {% block page_subtitle %}
+
 Evidence-based defensive actions derived from current security analysis
+
 {% endblock %}
+
 
 
 {% block content %}
 
+
+
+<style>
+
+    /* ==========================================
+
+       MITIGATION PAGE-SPECIFIC STYLES
+
+       ========================================== */
+
+
+
+    .mitigation-page,
+
+    .mitigation-page .dashboard-card {
+
+        min-width: 0;
+
+    }
+
+
+
+    /* ==========================================
+
+       HOST SELECTION
+
+       ========================================== */
+
+
+
+    .mitigation-filter-card {
+
+        margin-bottom: 24px;
+
+    }
+
+
+
+    .mitigation-filter-layout {
+
+        display: flex;
+
+        align-items: flex-end;
+
+        justify-content: space-between;
+
+        gap: 20px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+
+    .mitigation-filter-info {
+
+        flex: 1 1 260px;
+
+        min-width: 0;
+
+    }
+
+
+
+    .mitigation-filter-info h3 {
+
+        margin: 0 0 8px;
+
+    }
+
+
+
+    .mitigation-filter-info p {
+
+        margin: 0;
+
+        opacity: 0.78;
+
+        line-height: 1.6;
+
+    }
+
+
+
+    .mitigation-filter-form {
+
+        display: flex;
+
+        align-items: flex-end;
+
+        flex-wrap: wrap;
+
+        gap: 12px;
+
+        flex: 1 1 330px;
+
+        max-width: 540px;
+
+    }
+
+
+
+    .mitigation-filter-field {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 8px;
+
+        flex: 1 1 220px;
+
+        min-width: 0;
+
+    }
+
+
+
+    .mitigation-filter-field label {
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+    }
+
+
+
+    .mitigation-filter-select {
+
+        width: 100%;
+
+        min-height: 44px;
+
+        padding: 10px 14px;
+
+        border: 1px solid rgba(150, 130, 210, 0.4);
+
+        border-radius: 10px;
+
+        background: #211b37;
+
+        color: #f5f2ff;
+
+        font: inherit;
+
+        outline: none;
+
+    }
+
+
+
+    .mitigation-filter-select:focus {
+
+        border-color: #a78bfa;
+
+        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.16);
+
+    }
+
+
+
+    .mitigation-filter-button {
+
+        min-height: 44px;
+
+        padding: 10px 22px;
+
+        border: 1px solid #8b5cf6;
+
+        border-radius: 10px;
+
+        background: #7c3aed;
+
+        color: #fff;
+
+        font: inherit;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition: background 0.2s ease;
+
+    }
+
+
+
+    .mitigation-filter-button:hover {
+
+        background: #6d28d9;
+
+    }
+
+
+
+    .mitigation-filter-summary {
+
+        margin-top: 16px;
+
+        padding: 12px 14px;
+
+        border: 1px solid rgba(167, 139, 250, 0.2);
+
+        border-radius: 10px;
+
+        background: rgba(139, 92, 246, 0.07);
+
+        line-height: 1.6;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    /* ==========================================
+
+       RECOMMENDATION TABLE
+
+       ========================================== */
+
+
+
+    .mitigation-page .mitigation-table-wrapper {
+
+        width: 100%;
+
+        max-width: 100%;
+
+        overflow-x: auto;
+
+        -webkit-overflow-scrolling: touch;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table {
+
+        width: 100%;
+
+        min-width: 980px;
+
+        border-collapse: collapse;
+
+        table-layout: fixed;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th,
+
+    .mitigation-page .mitigation-table td {
+
+        vertical-align: top;
+
+        padding: 14px 12px;
+
+        overflow-wrap: anywhere;
+
+        word-break: normal;
+
+        white-space: normal;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(1) {
+
+        width: 22%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(2) {
+
+        width: 13%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(3) {
+
+        width: 13%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(4) {
+
+        width: 11%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(5) {
+
+        width: 9%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(6) {
+
+        width: 11%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table th:nth-child(7) {
+
+        width: 21%;
+
+    }
+
+
+
+    .mitigation-page .mitigation-table strong,
+
+    .mitigation-page .mitigation-description {
+
+        display: block;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-page .mitigation-description {
+
+        margin-top: 6px;
+
+        line-height: 1.55;
+
+    }
+
+
+
+    .mitigation-expected-effect-cell {
+
+        line-height: 1.55;
+
+        overflow-wrap: anywhere;
+
+        white-space: normal;
+
+    }
+
+
+
+    .mitigation-page .mitigation-badge,
+
+    .mitigation-page .confidence-badge {
+
+        display: inline-block;
+
+        max-width: 100%;
+
+        white-space: normal;
+
+    }
+
+
+
+    /* ==========================================
+
+       PRIORITY SCORE PRESENTATION
+
+       ========================================== */
+
+
+
+    .mitigation-priority-score {
+
+        display: inline-flex;
+
+        align-items: baseline;
+
+        gap: 3px;
+
+        font-weight: 700;
+
+        font-variant-numeric: tabular-nums;
+
+        color: #ddd6fe;
+
+    }
+
+
+
+    .mitigation-priority-score small {
+
+        font-size: 11px;
+
+        font-weight: 400;
+
+        opacity: 0.7;
+
+    }
+
+
+
+    .mitigation-score-track {
+
+        height: 5px;
+
+        width: 100%;
+
+        margin-top: 8px;
+
+        border-radius: 20px;
+
+        background: rgba(167, 139, 250, 0.14);
+
+        overflow: hidden;
+
+    }
+
+
+
+    .mitigation-score-fill {
+
+        height: 100%;
+
+        border-radius: inherit;
+
+        background: #8b5cf6;
+
+    }
+
+
+
+    .mitigation-score-fill.critical {
+
+        background: #ef4444;
+
+    }
+
+
+
+    .mitigation-score-fill.high {
+
+        background: #f97316;
+
+    }
+
+
+
+    .mitigation-score-fill.medium {
+
+        background: #eab308;
+
+    }
+
+
+
+    .mitigation-score-fill.low {
+
+        background: #22c55e;
+
+    }
+
+
+
+    /* ==========================================
+
+       RECOMMENDATION DETAILS
+
+       ========================================== */
+
+
+
+    .mitigation-page .mitigation-recommendation-card {
+
+        min-width: 0;
+
+        overflow: hidden;
+
+    }
+
+
+
+    .mitigation-page .mitigation-recommendation-header {
+
+        gap: 16px;
+
+        flex-wrap: wrap;
+
+    }
+
+
+
+    .mitigation-page .mitigation-detail-grid {
+
+        min-width: 0;
+
+    }
+
+
+
+    .mitigation-page .mitigation-detail-panel {
+
+        min-width: 0;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-page .mitigation-detail-panel li {
+
+        line-height: 1.7;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-page .mitigation-effect {
+
+        min-width: 0;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-page .mitigation-effect p {
+
+        margin-top: 8px;
+
+        line-height: 1.7;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-detail-score {
+
+        display: flex;
+
+        align-items: center;
+
+        flex-wrap: wrap;
+
+        gap: 10px;
+
+        margin-top: 12px;
+
+    }
+
+
+
+    .mitigation-detail-score-label {
+
+        font-size: 12px;
+
+        opacity: 0.75;
+
+    }
+
+
+
+    .mitigation-detail-score-value {
+
+        font-weight: 700;
+
+        font-variant-numeric: tabular-nums;
+
+        color: #ddd6fe;
+
+    }
+
+
+
+    /* ==========================================
+
+       COLLAPSIBLE EVIDENCE
+
+       ========================================== */
+
+
+
+    .mitigation-evidence-details {
+
+        min-width: 0;
+
+        margin: 8px 0;
+
+        border: 1px solid rgba(167, 139, 250, 0.22);
+
+        border-radius: 10px;
+
+        background: rgba(139, 92, 246, 0.05);
+
+        overflow: hidden;
+
+    }
+
+
+
+    .mitigation-evidence-details summary {
+
+        display: list-item;
+
+        padding: 12px 14px;
+
+        cursor: pointer;
+
+        font-weight: 600;
+
+        color: #c4b5fd;
+
+        line-height: 1.5;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-evidence-details summary:hover {
+
+        background: rgba(139, 92, 246, 0.09);
+
+        color: #ddd6fe;
+
+    }
+
+
+
+    .mitigation-evidence-details summary:focus-visible,
+
+    .mitigation-cve-details summary:focus-visible {
+
+        outline: 2px solid #a78bfa;
+
+        outline-offset: -2px;
+
+    }
+
+
+
+    .mitigation-evidence-details[open] summary {
+
+        border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+
+    }
+
+
+
+    .mitigation-evidence-list {
+
+        margin: 0;
+
+        padding: 14px 18px 14px 34px;
+
+        max-height: 320px;
+
+        overflow-y: auto;
+
+        overflow-x: hidden;
+
+    }
+
+
+
+    .mitigation-evidence-list li {
+
+        margin-bottom: 8px;
+
+        line-height: 1.65;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-evidence-list li:last-child {
+
+        margin-bottom: 0;
+
+    }
+
+
+
+    .mitigation-evidence-empty {
+
+        margin: 8px 0;
+
+        opacity: 0.75;
+
+        line-height: 1.6;
+
+    }
+
+
+
+    /* ==========================================
+
+       COLLAPSIBLE CVE AND RELATED EVIDENCE
+
+       ========================================== */
+
+
+
+    .mitigation-related-evidence {
+
+        min-width: 0;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-related-item {
+
+        display: block;
+
+        margin: 10px 0;
+
+        line-height: 1.65;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-cve-details {
+
+        margin: 12px 0;
+
+        padding: 12px 14px;
+
+        border: 1px solid rgba(167, 139, 250, 0.24);
+
+        border-radius: 10px;
+
+        background: rgba(139, 92, 246, 0.06);
+
+        min-width: 0;
+
+    }
+
+
+
+    .mitigation-cve-details summary {
+
+        cursor: pointer;
+
+        font-weight: 600;
+
+        color: #c4b5fd;
+
+        line-height: 1.6;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-cve-details summary:hover {
+
+        color: #ddd6fe;
+
+    }
+
+
+
+    .mitigation-cve-list {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+        margin-top: 14px;
+
+    }
+
+
+
+    .mitigation-cve-chip {
+
+        display: inline-block;
+
+        padding: 6px 10px;
+
+        border: 1px solid rgba(167, 139, 250, 0.24);
+
+        border-radius: 8px;
+
+        background: rgba(139, 92, 246, 0.1);
+
+        color: inherit;
+
+        font-size: 12px;
+
+        line-height: 1.5;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-cve-note {
+
+        margin: 12px 0 0;
+
+        font-size: 12px;
+
+        opacity: 0.8;
+
+        line-height: 1.65;
+
+    }
+
+
+
+    .mitigation-related-path-list {
+
+        margin: 8px 0 0;
+
+        padding-left: 20px;
+
+        overflow-wrap: anywhere;
+
+    }
+
+
+
+    .mitigation-related-path-list li {
+
+        margin-bottom: 4px;
+
+    }
+
+
+
+    .mitigation-evidence-note {
+
+        margin-top: 12px;
+
+        font-size: 12px;
+
+        opacity: 0.78;
+
+        line-height: 1.6;
+
+    }
+
+
+
+    /* ==========================================
+
+       RESPONSIVE LAYOUT
+
+       ========================================== */
+
+
+
+    @media (max-width: 768px) {
+
+        .mitigation-filter-layout {
+
+            align-items: stretch;
+
+        }
+
+
+
+        .mitigation-filter-form {
+
+            max-width: none;
+
+            width: 100%;
+
+        }
+
+
+
+        .mitigation-filter-button {
+
+            width: 100%;
+
+        }
+
+
+
+        .mitigation-page .mitigation-detail-grid {
+
+            grid-template-columns: minmax(0, 1fr);
+
+        }
+
+
+
+        .mitigation-page .mitigation-table {
+
+            min-width: 900px;
+
+        }
+
+
+
+        .mitigation-evidence-list {
+
+            max-height: 260px;
+
+        }
+
+    }
+
+</style>
+
+
+
 <section class="dashboard-overview mitigation-page">
 
 
+
     <!-- ==========================================
+
          INTRODUCTION
-    =========================================== -->
+
+         ========================================== -->
+
+
 
     <section class="welcome-section">
 
         <div>
 
-            <h3>
-                Mitigation Recommendations
-            </h3>
+            <h3>Mitigation Recommendations</h3>
 
             <p>
+
                 AttackLens converts current asset,
+
                 vulnerability, exposure, defense-analysis,
+
                 and attack-path evidence into prioritized
+
                 defensive actions.
+
             </p>
 
         </div>
@@ -45,180 +1003,503 @@ Evidence-based defensive actions derived from current security analysis
     </section>
 
 
+
     <!-- ==========================================
-         SUMMARY
-    =========================================== -->
+
+         HOST SELECTION
+
+         ========================================== -->
+
+
+
+    <section class="dashboard-card mitigation-filter-card">
+
+
+
+        <div class="mitigation-filter-layout">
+
+
+
+            <div class="mitigation-filter-info">
+
+                <h3>Select Analysis Scope</h3>
+
+                <p>
+
+                    View mitigation recommendations for all
+
+                    your authorized assets or select one host
+
+                    for an individual analysis.
+
+                </p>
+
+            </div>
+
+
+
+            <form
+
+                class="mitigation-filter-form"
+
+                method="GET"
+
+                action="{{ url_for('mitigation.mitigation') }}"
+
+            >
+
+
+
+                <div class="mitigation-filter-field">
+
+
+
+                    <label for="mitigation-asset-select">
+
+                        Select Host
+
+                    </label>
+
+
+
+                    <select
+
+                        id="mitigation-asset-select"
+
+                        name="asset_id"
+
+                        class="mitigation-filter-select"
+
+                    >
+
+
+
+                        <option
+
+                            value="all"
+
+                            {% if selected_asset_id|default('all') == 'all' %}
+
+                                selected
+
+                            {% endif %}
+
+                        >
+
+                            All Assets
+
+                        </option>
+
+
+
+                        {% for asset in available_assets|default([]) %}
+
+
+
+                            {% set asset_identifier = asset.get('_id')|string %}
+
+
+
+                            <option
+
+                                value="{{ asset_identifier }}"
+
+                                {% if selected_asset_id|default('all') == asset_identifier %}
+
+                                    selected
+
+                                {% endif %}
+
+                            >
+
+                                {{
+
+                                    asset.get('target')
+
+                                    or asset.get('hostname')
+
+                                    or asset_identifier
+
+                                }}
+
+                            </option>
+
+
+
+                        {% endfor %}
+
+
+
+                    </select>
+
+
+
+                </div>
+
+
+
+                <button
+
+                    type="submit"
+
+                    class="mitigation-filter-button"
+
+                >
+
+                    Analyze
+
+                </button>
+
+
+
+            </form>
+
+
+
+        </div>
+
+
+
+        <div class="mitigation-filter-summary">
+
+
+
+            <strong>Current Scope:</strong>
+
+
+
+            {% if selected_asset_id|default('all') == 'all' %}
+
+
+
+                All authorized assets
+
+
+
+            {% else %}
+
+
+
+                {{
+
+                    (
+
+                        selected_asset.get('target')
+
+                        or selected_asset.get('hostname')
+
+                        or 'Selected Host'
+
+                    )
+
+                    if selected_asset
+
+                    else 'Selected Host'
+
+                }}
+
+
+
+            {% endif %}
+
+
+
+            <span>
+
+                —
+
+                {{ analyzed_asset_count|default(0) }}
+
+                asset(s) analyzed
+
+            </span>
+
+
+
+        </div>
+
+
+
+    </section>
+
+
+
+    <!-- ==========================================
+
+         SUMMARY STATISTICS
+
+         ========================================== -->
+
+
 
     <div class="stats-grid">
 
 
-        <!-- TOTAL -->
+
+        <!-- TOTAL RECOMMENDATIONS -->
+
+
 
         <article class="stat-card">
+
+
 
             <div class="stat-card-header">
 
                 <span class="stat-label">
+
                     Recommendations
+
                 </span>
 
-                <span class="stat-icon">
-                    ✓
-                </span>
+                <span class="stat-icon">✓</span>
 
             </div>
+
+
 
             <div class="stat-value">
+
                 {{
+
                     mitigation_statistics
+
                     .total_recommendations
+
                     |default(0)
+
                 }}
+
             </div>
 
+
+
             <p class="stat-description">
+
                 Evidence-based defensive actions
-                generated for the current environment
+
+                generated for the selected scope
+
             </p>
 
+
+
         </article>
+
 
 
         <!-- HIGH PRIORITY -->
 
+
+
         <article class="stat-card">
+
+
 
             <div class="stat-card-header">
 
                 <span class="stat-label">
+
                     High Priority
+
                 </span>
 
-                <span class="stat-icon">
-                    !
-                </span>
+                <span class="stat-icon">!</span>
 
             </div>
+
+
 
             <div class="stat-value">
+
                 {{
+
                     mitigation_statistics
+
                     .high_priority_recommendations
+
                     |default(0)
+
                 }}
+
             </div>
 
+
+
             <p class="stat-description">
+
                 High or critical recommendations
+
                 requiring greater attention
+
             </p>
 
+
+
         </article>
+
 
 
         <!-- AFFECTED ASSETS -->
 
+
+
         <article class="stat-card">
+
+
 
             <div class="stat-card-header">
 
                 <span class="stat-label">
+
                     Assets
+
                 </span>
 
-                <span class="stat-icon">
-                    ◇
-                </span>
+                <span class="stat-icon">◇</span>
 
             </div>
+
+
 
             <div class="stat-value">
+
                 {{
+
                     mitigation_statistics
+
                     .affected_assets
+
                     |default(0)
+
                 }}
+
             </div>
 
+
+
             <p class="stat-description">
+
                 Assets associated with generated
+
                 defensive recommendations
+
             </p>
+
+
 
         </article>
 
 
-        <!-- HIGHEST SCORE -->
+
+        <!-- HIGHEST PRIORITY SCORE -->
+
+
 
         <article class="stat-card">
+
+
 
             <div class="stat-card-header">
 
                 <span class="stat-label">
+
                     Highest Priority
+
                 </span>
 
-                <span class="stat-icon">
-                    △
-                </span>
+                <span class="stat-icon">△</span>
 
             </div>
+
+
 
             <div class="stat-value">
+
                 {{
+
                     mitigation_statistics
+
                     .highest_score
+
                     |default(0)
+
                 }}
+
             </div>
+
+
 
             <p class="stat-description">
 
-                {% if
-                    mitigation_statistics
-                    .highest_priority
-                    |default("NONE")
-                    != "NONE"
-                %}
+
+
+                {% if mitigation_statistics.highest_priority|default("NONE") != "NONE" %}
+
+
 
                     {{
+
                         mitigation_statistics
+
                         .highest_priority
+
                     }}
+
                     recommendation priority
+
+
 
                 {% else %}
 
+
+
                     No recommendation priority available
+
+
 
                 {% endif %}
 
+
+
             </p>
 
+
+
         </article>
+
 
 
     </div>
 
 
+
     <!-- ==========================================
+
          PRIORITIZED RECOMMENDATIONS
-    =========================================== -->
+
+         ========================================== -->
+
+
 
     <section class="dashboard-card">
+
+
 
         <div class="card-header">
 
             <div>
 
-                <h3>
-                    Prioritized Recommendations
-                </h3>
+                <h3>Prioritized Recommendations</h3>
 
                 <p>
+
                     Defensive actions ranked using
+
                     evidence already identified by
+
                     AttackLens.
+
                 </p>
 
             </div>
@@ -226,235 +1507,345 @@ Evidence-based defensive actions derived from current security analysis
         </div>
 
 
+
         {% if recommendations %}
+
+
 
             <div class="mitigation-table-wrapper">
 
+
+
                 <table class="mitigation-table">
+
+
 
                     <thead>
 
                         <tr>
 
-                            <th>
-                                Recommendation
-                            </th>
+                            <th scope="col">Recommendation</th>
 
-                            <th>
-                                Category
-                            </th>
+                            <th scope="col">Category</th>
 
-                            <th>
-                                Target
-                            </th>
+                            <th scope="col">Target</th>
 
-                            <th>
-                                Priority
-                            </th>
+                            <th scope="col">Priority</th>
 
-                            <th>
-                                Score
-                            </th>
+                            <th scope="col">Score</th>
 
-                            <th>
-                                Confidence
-                            </th>
+                            <th scope="col">Confidence</th>
 
-                            <th>
-                                Expected Effect
-                            </th>
+                            <th scope="col">Expected Effect</th>
 
                         </tr>
 
                     </thead>
 
 
+
                     <tbody>
+
+
 
                         {% for recommendation in recommendations %}
 
+
+
+                            {% set priority_class = recommendation.priority_level|default('LOW')|lower %}
+
+                            {% set display_score = recommendation.score|default(0)|float %}
+
+
+
                             <tr>
+
+
+
+                                <!-- RECOMMENDATION -->
+
+
 
                                 <td>
 
                                     <strong>
-                                        {{
-                                            recommendation
-                                            .title
-                                        }}
+
+                                        {{ recommendation.title }}
+
                                     </strong>
+
+
 
                                     <span class="mitigation-description">
 
-                                        {{
-                                            recommendation
-                                            .description
-                                        }}
+                                        {{ recommendation.description }}
 
                                     </span>
 
                                 </td>
 
 
+
+                                <!-- CATEGORY -->
+
+
+
                                 <td>
 
                                     {{
-                                        recommendation
-                                        .category
+
+                                        recommendation.category
+
                                         |replace("_", " ")
+
                                         |title
+
                                     }}
 
                                 </td>
+
+
+
+                                <!-- TARGET -->
+
 
 
                                 <td>
 
                                     {{
-                                        recommendation
-                                        .target
-                                        or
-                                        "Environment"
+
+                                        recommendation.target
+
+                                        or "Environment"
+
                                     }}
 
                                 </td>
 
 
+
+                                <!-- PRIORITY -->
+
+
+
                                 <td>
 
-                                    <span
-                                        class="mitigation-badge
-                                        {{
-                                            recommendation
-                                            .priority_level
-                                            |lower
-                                        }}"
-                                    >
+                                    <span class="mitigation-badge {{ priority_class }}">
 
-                                        {{
-                                            recommendation
-                                            .priority_level
-                                        }}
+                                        {{ recommendation.priority_level }}
 
                                     </span>
 
                                 </td>
 
 
+
+                                <!-- SCORE -->
+
+
+
                                 <td>
 
-                                    {{
-                                        recommendation
-                                        .score
-                                    }}
-                                    / 100
+
+
+                                    <span class="mitigation-priority-score">
+
+                                        {{ recommendation.score }}
+
+                                        <small>/ 100</small>
+
+                                    </span>
+
+
+
+                                    <div
+
+                                        class="mitigation-score-track"
+
+                                        role="progressbar"
+
+                                        aria-label="Mitigation priority score"
+
+                                        aria-valuemin="0"
+
+                                        aria-valuemax="100"
+
+                                        aria-valuenow="{{ display_score|int }}"
+
+                                    >
+
+                                        <div
+
+                                            class="mitigation-score-fill {{ priority_class }}"
+
+                                            style="width: {{ [0, [display_score, 100]|min]|max }}%;"
+
+                                        ></div>
+
+                                    </div>
+
+
 
                                 </td>
+
+
+
+                                <!-- CONFIDENCE -->
+
 
 
                                 <td>
 
                                     <span
-                                        class="confidence-badge
-                                        {{
-                                            recommendation
-                                            .confidence
-                                            |lower
+
+                                        class="confidence-badge {{
+
+                                            recommendation.confidence|lower
+
                                         }}"
+
                                     >
 
-                                        {{
-                                            recommendation
-                                            .confidence
-                                        }}
+                                        {{ recommendation.confidence }}
 
                                     </span>
 
                                 </td>
 
 
-                                <td>
+
+                                <!-- EXPECTED EFFECT -->
+
+
+
+                                <td class="mitigation-expected-effect-cell">
 
                                     {{
-                                        recommendation
-                                        .expected_effect
-                                        or
-                                        "Not specified"
+
+                                        recommendation.expected_effect
+
+                                        or "Not specified"
+
                                     }}
 
                                 </td>
+
+
 
                             </tr>
 
+
+
                         {% endfor %}
+
+
 
                     </tbody>
 
+
+
                 </table>
 
+
+
             </div>
+
+
 
         {% else %}
 
+
+
             <div class="empty-state">
 
-                <div class="empty-icon">
-                    ✓
-                </div>
 
-                <h4>
-                    No Mitigation Recommendations
-                </h4>
+
+                <div class="empty-icon">✓</div>
+
+
+
+                <h4>No Mitigation Recommendations</h4>
+
+
 
                 <p>
 
-                    {% if
-                        graph_statistics
-                        .total_assets
-                        |default(0)
-                        == 0
-                    %}
+
+
+                    {% if graph_statistics.total_assets|default(0) == 0 %}
+
+
+
+                        No assets are available in the
+
+                        selected analysis scope.
 
                         Complete an authorized security
-                        scan to generate evidence for
-                        mitigation analysis.
+
+                        scan to generate evidence.
+
+
 
                     {% else %}
 
+
+
                         The current evidence does not
+
                         support a specific mitigation
+
                         recommendation.
+
+
 
                     {% endif %}
 
+
+
                 </p>
+
+
 
             </div>
 
+
+
         {% endif %}
+
+
 
     </section>
 
 
+
     <!-- ==========================================
+
          RECOMMENDATION DETAILS
-    =========================================== -->
+
+         ========================================== -->
+
+
 
     {% if recommendations %}
 
+
+
         <section class="dashboard-card">
+
+
 
             <div class="card-header">
 
                 <div>
 
-                    <h3>
-                        Recommendation Details
-                    </h3>
+                    <h3>Recommendation Details</h3>
 
                     <p>
+
                         Evidence, recommended actions,
+
                         and expected defensive effects.
+
                     </p>
 
                 </div>
@@ -462,379 +1853,908 @@ Evidence-based defensive actions derived from current security analysis
             </div>
 
 
+
             <div class="mitigation-recommendation-list">
 
+
+
                 {% for recommendation in recommendations %}
+
+
 
                     <article class="mitigation-recommendation-card">
 
 
+
+                        <!-- RECOMMENDATION HEADER -->
+
+
+
                         <div class="mitigation-recommendation-header">
+
+
 
                             <div>
 
+
+
                                 <span class="section-label">
+
                                     {{
-                                        recommendation
-                                        .category
+
+                                        recommendation.category
+
                                         |replace("_", " ")
+
                                         |upper
+
                                     }}
+
                                 </span>
 
+
+
                                 <h4>
-                                    {{
-                                        recommendation
-                                        .title
-                                    }}
+
+                                    {{ recommendation.title }}
+
                                 </h4>
+
+
 
                                 <p>
 
                                     Target:
 
                                     <strong>
+
                                         {{
-                                            recommendation
-                                            .target
-                                            or
-                                            "Environment"
+
+                                            recommendation.target
+
+                                            or "Environment"
+
                                         }}
+
                                     </strong>
 
                                 </p>
 
+
+
+                                <!-- PRIORITY SCORE -->
+
+
+
+                                <div class="mitigation-detail-score">
+
+
+
+                                    <span class="mitigation-detail-score-label">
+
+                                        Priority Score:
+
+                                    </span>
+
+
+
+                                    <span class="mitigation-detail-score-value">
+
+                                        {{ recommendation.score }} / 100
+
+                                    </span>
+
+
+
+                                    <span class="confidence-badge {{ recommendation.confidence|lower }}">
+
+                                        {{ recommendation.confidence }}
+
+                                        Confidence
+
+                                    </span>
+
+
+
+                                </div>
+
+
+
                             </div>
 
 
+
                             <span
-                                class="mitigation-badge
-                                {{
-                                    recommendation
-                                    .priority_level
-                                    |lower
+
+                                class="mitigation-badge {{
+
+                                    recommendation.priority_level|lower
+
                                 }}"
+
                             >
 
-                                {{
-                                    recommendation
-                                    .priority_level
-                                }}
+                                {{ recommendation.priority_level }}
 
                             </span>
 
+
+
                         </div>
+
+
+
+                        <!-- ==================================
+
+                             RECOMMENDATION DESCRIPTION
+
+                             ================================== -->
+
+
+
+                        <p class="mitigation-evidence-note">
+
+                            {{ recommendation.description }}
+
+                        </p>
+
+
+
+                        <!-- ==================================
+
+                             EVIDENCE AND ACTIONS
+
+                             ================================== -->
+
 
 
                         <div class="mitigation-detail-grid">
 
 
+
                             <!-- EVIDENCE -->
+
+
 
                             <div class="mitigation-detail-panel">
 
-                                <h5>
-                                    Evidence
-                                </h5>
+
+
+                                <h5>Evidence</h5>
+
+
 
                                 {% if recommendation.evidence %}
 
-                                    <ul>
 
-                                        {% for evidence in recommendation.evidence %}
 
-                                            <li>
-                                                {{ evidence }}
-                                            </li>
+                                    <details class="mitigation-evidence-details">
 
-                                        {% endfor %}
 
-                                    </ul>
+
+                                        <summary>
+
+                                            View Supporting Evidence
+
+                                            ({{ recommendation.evidence|length }})
+
+                                            — Show / Hide
+
+                                        </summary>
+
+
+
+                                        <ul class="mitigation-evidence-list">
+
+
+
+                                            {% for evidence in recommendation.evidence %}
+
+
+
+                                                <li>
+
+                                                    {{ evidence }}
+
+                                                </li>
+
+
+
+                                            {% endfor %}
+
+
+
+                                        </ul>
+
+
+
+                                    </details>
+
+
+
+                                    <p class="mitigation-evidence-note">
+
+                                        Supporting evidence is derived
+
+                                        from the available analysis.
+
+                                        Potential attack paths do not
+
+                                        establish confirmed exploitation.
+
+                                    </p>
+
+
 
                                 {% else %}
 
-                                    <p>
+
+
+                                    <p class="mitigation-evidence-empty">
+
                                         No additional evidence available.
+
                                     </p>
 
+
+
                                 {% endif %}
+
+
 
                             </div>
 
 
-                            <!-- ACTIONS -->
+
+                            <!-- RECOMMENDED ACTIONS -->
+
+
 
                             <div class="mitigation-detail-panel">
 
-                                <h5>
-                                    Recommended Actions
-                                </h5>
+
+
+                                <h5>Recommended Actions</h5>
+
+
 
                                 {% if recommendation.actions %}
 
+
+
                                     <ol>
+
+
 
                                         {% for action in recommendation.actions %}
 
+
+
                                             <li>
+
                                                 {{ action }}
+
                                             </li>
+
+
 
                                         {% endfor %}
 
+
+
                                     </ol>
 
+
+
+                                {% else %}
+
+
+
+                                    <p>
+
+                                        No additional actions available.
+
+                                    </p>
+
+
+
                                 {% endif %}
+
+
 
                             </div>
 
 
+
                         </div>
+
+
+
+                        <!-- ==================================
+
+                             EXPECTED DEFENSIVE EFFECT
+
+                             ================================== -->
+
 
 
                         <div class="mitigation-effect">
 
+
+
                             <strong>
+
                                 Expected Defensive Effect
+
                             </strong>
 
+
+
                             <p>
+
                                 {{
-                                    recommendation
-                                    .expected_effect
-                                    or
-                                    "No expected effect available."
+
+                                    recommendation.expected_effect
+
+                                    or "No expected effect available."
+
                                 }}
+
                             </p>
+
+
 
                         </div>
 
 
+
+                        <!-- ==================================
+
+                             RELATED EVIDENCE
+
+                             ================================== -->
+
+
+
                         {% if
+
                             recommendation.related_cves
-                            or
-                            recommendation.related_ports
-                            or
-                            recommendation.related_path_ids
+
+                            or recommendation.related_ports
+
+                            or recommendation.related_path_ids
+
+                            or recommendation.related_finding_ids
+
                         %}
+
+
 
                             <div class="mitigation-related-evidence">
 
 
+
+                                <!-- CVE REFERENCES -->
+
+
+
                                 {% if recommendation.related_cves %}
 
-                                    <span>
 
-                                        CVEs:
 
-                                        <strong>
-                                            {{
-                                                recommendation
-                                                .related_cves
-                                                |join(", ")
-                                            }}
-                                        </strong>
+                                    <details class="mitigation-cve-details">
 
-                                    </span>
+
+
+                                        <summary>
+
+                                            CVE References
+
+                                            ({{ recommendation.related_cves|length }})
+
+                                            — Show / Hide
+
+                                        </summary>
+
+
+
+                                        <div class="mitigation-cve-list">
+
+
+
+                                            {% for cve in recommendation.related_cves %}
+
+
+
+                                                <span class="mitigation-cve-chip">
+
+                                                    {{ cve }}
+
+                                                </span>
+
+
+
+                                            {% endfor %}
+
+
+
+                                        </div>
+
+
+
+                                        <p class="mitigation-cve-note">
+
+                                            These identifiers come from
+
+                                            stored vulnerability findings.
+
+                                            A CVE reference does not by
+
+                                            itself establish confirmed
+
+                                            exploitability or successful
+
+                                            exploitation of this asset.
+
+                                            Verify product, version,
+
+                                            configuration, and vendor
+
+                                            advisory applicability before
+
+                                            treating a reference as confirmed.
+
+                                        </p>
+
+
+
+                                    </details>
+
+
 
                                 {% endif %}
+
+
+
+                                <!-- PORT REFERENCES -->
+
 
 
                                 {% if recommendation.related_ports %}
 
-                                    <span>
 
-                                        Ports:
+
+                                    <div class="mitigation-related-item">
+
+
 
                                         <strong>
-                                            {{
-                                                recommendation
-                                                .related_ports
-                                                |join(", ")
-                                            }}
+
+                                            Related Open Ports:
+
                                         </strong>
 
-                                    </span>
+
+
+                                        {{
+
+                                            recommendation.related_ports
+
+                                            |join(", ")
+
+                                        }}
+
+
+
+                                    </div>
+
+
 
                                 {% endif %}
+
+
+
+                                <!-- SECURITY FINDING REFERENCES -->
+
+
+
+                                {% if recommendation.related_finding_ids %}
+
+
+
+                                    <div class="mitigation-related-item">
+
+
+
+                                        <strong>
+
+                                            Related Security Findings:
+
+                                        </strong>
+
+
+
+                                        {{
+
+                                            recommendation.related_finding_ids
+
+                                            |length
+
+                                        }}
+
+
+
+                                    </div>
+
+
+
+                                {% endif %}
+
+
+
+                                <!-- ATTACK PATH REFERENCES -->
+
 
 
                                 {% if recommendation.related_path_ids %}
 
-                                    <span>
 
-                                        Attack Paths:
+
+                                    <div class="mitigation-related-item">
+
+
 
                                         <strong>
-                                            {{
-                                                recommendation
-                                                .related_path_ids
-                                                |length
-                                            }}
+
+                                            Related Potential Attack Paths:
+
                                         </strong>
 
-                                    </span>
+
+
+                                        {{
+
+                                            recommendation.related_path_ids
+
+                                            |length
+
+                                        }}
+
+
+
+<details class="mitigation-cve-details">
+    <summary>View Related Attack Paths — Show / Hide</summary>
+    <ul class="mitigation-related-path-list">
+        {% for path_id in recommendation.related_path_ids %}
+            {% set path_text = path_id|string %}
+            {% set segments = path_text.split(':') %}
+            {% if segments|length >= 5 and segments[0] == 'path' and segments[1] == 'service-entry' and segments[-2]|lower in ['tcp', 'udp'] and segments[-1].isdigit() %}
+                {% set path_protocol = segments[-2]|upper %}
+                {% set path_port = segments[-1] %}
+                <li>
+                    <strong>Potential Attack Entry</strong>
+                    {% if path_port == '53' %}
+                        — DNS
+                    {% elif path_port == '139' %}
+                        — SMB / NetBIOS
+                    {% elif path_port == '2121' %}
+                        — FTP service
+                    {% elif path_port == '21' %}
+                        — FTP
+                    {% elif path_port == '22' %}
+                        — SSH
+                    {% elif path_port == '80' or path_port == '8080' %}
+                        — HTTP
+                    {% elif path_port == '443' %}
+                        — HTTPS
+                    {% elif path_port == '445' %}
+                        — SMB
+                    {% elif path_port == '3306' %}
+                        — MySQL
+                    {% else %}
+                        — Network service
+                    {% endif %}
+                    ({{ path_protocol }}/{{ path_port }})
+                    <details class="mitigation-path-technical">
+                        <summary>Technical reference</summary>
+                        <code>{{ path_text }}</code>
+                    </details>
+                </li>
+            {% else %}
+                <li>
+                    <strong>Potential Attack Path</strong>
+                    <details class="mitigation-path-technical">
+                        <summary>Technical reference</summary>
+                        <code>{{ path_text }}</code>
+                    </details>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</details>
+
+
+
+                                    </div>
+
+
 
                                 {% endif %}
 
 
+
                             </div>
+
+
 
                         {% endif %}
 
 
+
                     </article>
+
+
 
                 {% endfor %}
 
+
+
             </div>
 
+
+
         </section>
+
+
 
     {% endif %}
 
 
+
     <!-- ==========================================
+
          ANALYSIS CONTEXT
-    =========================================== -->
+
+         ========================================== -->
+
+
 
     <section class="dashboard-card">
+
+
 
         <div class="card-header">
 
             <div>
 
-                <h3>
-                    Recommendation Context
-                </h3>
+                <h3>Recommendation Context</h3>
 
                 <p>
+
                     How AttackLens generates mitigation
-                    recommendations.
+
+                    recommendations for the selected scope.
+
                 </p>
 
             </div>
 
         </div>
+
 
 
         <div class="mitigation-context-grid">
 
 
+
+            <!-- DEFENSE FINDINGS -->
+
+
+
             <div class="mitigation-context-card">
 
-                <span>
-                    Defense Findings
-                </span>
+
+
+                <span>Defense Findings</span>
+
+
 
                 <strong>
+
                     {{
+
                         defense_statistics
+
                         .total_findings
+
                         |default(0)
+
                     }}
+
                 </strong>
 
+
+
                 <p>
+
                     Findings considered during
+
                     recommendation generation
+
                 </p>
+
+
 
             </div>
 
 
+
+            <!-- ATTACK PATHS -->
+
+
+
             <div class="mitigation-context-card">
 
-                <span>
-                    Attack Paths
-                </span>
+
+
+                <span>Attack Paths</span>
+
+
 
                 <strong>
+
                     {{
+
                         graph_statistics
+
                         .total_paths
+
                         |default(
+
                             graph_statistics
+
                             .attack_paths
+
                             |default(0)
+
                         )
+
                     }}
+
                 </strong>
 
+
+
                 <p>
+
                     Potential attacker progression
+
                     paths considered
+
                 </p>
+
+
 
             </div>
 
 
+
+            <!-- RECOMMENDATIONS -->
+
+
+
             <div class="mitigation-context-card">
 
-                <span>
-                    Recommendations
-                </span>
+
+
+                <span>Recommendations</span>
+
+
 
                 <strong>
+
                     {{
+
                         mitigation_statistics
+
                         .total_recommendations
+
                         |default(0)
+
                     }}
+
                 </strong>
 
+
+
                 <p>
+
                     Evidence-supported defensive
+
                     actions generated
+
                 </p>
 
+
+
             </div>
+
+
+
+            <!-- HIGHEST SCORE -->
+
 
 
             <div class="mitigation-context-card">
 
-                <span>
-                    Highest Score
-                </span>
+
+
+                <span>Highest Score</span>
+
+
 
                 <strong>
+
                     {{
+
                         mitigation_statistics
+
                         .highest_score
+
                         |default(0)
+
                     }}
+
                 </strong>
 
+
+
                 <p>
+
                     Highest current mitigation
+
                     priority score
+
                 </p>
 
+
+
             </div>
+
 
 
         </div>
 
+
+
     </section>
 
 
+
     <!-- ==========================================
+
          EXPLANATION
-    =========================================== -->
+
+         ========================================== -->
+
+
 
     <section class="dashboard-card">
+
+
 
         <div class="card-header">
 
             <div>
 
-                <h3>
-                    How Mitigation Works
-                </h3>
+                <h3>How Mitigation Works</h3>
 
                 <p>
+
                     Evidence-based defensive guidance,
+
                     not automatic remediation.
+
                 </p>
 
             </div>
@@ -842,31 +2762,71 @@ Evidence-based defensive actions derived from current security analysis
         </div>
 
 
+
         <div class="mitigation-explanation">
 
-            <div class="empty-icon">
-                ✓
-            </div>
+
+
+            <div class="empty-icon">✓</div>
+
+
 
             <h4>
+
                 Evidence-Based Mitigation
+
             </h4>
 
+
+
             <p>
+
                 AttackLens generates recommendations
+
                 only when current scan, asset,
+
                 vulnerability, exposure, defense,
+
                 relationship, or attack-path evidence
+
                 supports them. Recommendations describe
+
                 defensive actions for review and do not
+
                 automatically modify the analyzed systems.
+
             </p>
 
+
+
+            <p class="mitigation-evidence-note">
+
+                Recommendation priority scores are
+
+                relative defensive prioritization
+
+                indicators. A high score does not
+
+                establish confirmed exploitation,
+
+                guaranteed reachability, or guaranteed
+
+                risk reduction.
+
+            </p>
+
+
+
         </div>
+
+
 
     </section>
 
 
+
 </section>
+
+
 
 {% endblock %}
