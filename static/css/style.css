@@ -12725,98 +12725,142 @@ tbody tr:hover td {
 /* =========================================================
    END OF PART 6 — DEFENSE ANALYSIS
    ========================================================= */
+/* =========================================================
 
-   /* =========================================================
    PART 7 — MITIGATION
+
    File: static/css/style.css
+
    Scope: .mitigation-page
 
    Theme Rule:
+
    LIGHT MODE = light cards, tables and inner surfaces
+
    DARK MODE  = dark cards, tables and inner surfaces
 
    Contains:
-   7.1   Page Root
-   7.2   Introduction
-   7.3   Summary Grid
-   7.4   Summary Cards
-   7.5   Main Dashboard Cards
-   7.6   Card Headers
-   7.7   Recommendations Table
-   7.8   Recommendation Table Columns
-   7.9   Recommendation Description
-   7.10  Priority Badges
-   7.11  Confidence Badges
-   7.12  Empty State
-   7.13  Recommendation Details
-   7.14  Recommendation Detail Header
-   7.15  Evidence / Action Panels
-   7.16  Expected Effect
-   7.17  Related Evidence
-   7.18  Recommendation Context
-   7.19  Explanation
-   7.20  Dark Theme
-   7.21  Responsive Preparation
-   ========================================================= */
 
+   7.1   Page Root
+
+   7.2   Introduction
+
+   7.3   Summary Grid
+
+   7.4   Summary Cards
+
+   7.5   Main Dashboard Cards
+
+   7.6   Card Headers
+
+   7.7   Recommendations Table
+
+   7.8   Recommendation Table Columns
+
+   7.9   Recommendation Description
+
+   7.10  Priority Badges
+
+   7.11  Confidence Badges
+
+   7.12  Empty State
+
+   7.13  Recommendation Details
+
+   7.14  Recommendation Detail Header
+
+   7.15  Evidence / Action Panels
+
+   7.16  Expected Effect
+
+   7.17  Related Evidence
+
+   7.18  Recommendation Context
+
+   7.19  Explanation
+
+   7.20  Dark Theme
+
+   7.21  Responsive Preparation
+
+   ========================================================= */
 
 /* =========================================================
+
    7.1 — PAGE ROOT
+
    ========================================================= */
 
-.dashboard-overview.mitigation-page {
+.dashboard-overview\.mitigation-page {
 
     width: 100%;
+
     max-width: 1600px;
 
     margin: 0 auto;
 
     display: flex;
+
     flex-direction: column;
 
     gap: 24px;
 
 }
 
-
 /* =========================================================
+
    7.2 — INTRODUCTION
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .welcome-section {
 
     width: 100%;
 
     position: relative;
+
     overflow: hidden;
 
     padding: 27px 30px;
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(124, 58, 237, 0.10),
+
             rgba(124, 58, 237, 0.025) 48%,
+
             transparent 75%
+
         ),
+
         #ffffff;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.38);
 
     border-radius: 17px;
 
     box-shadow:
+
         0 10px 30px
+
         rgba(30, 20, 60, 0.08);
 
 }
 
-
 .mitigation-page
+
 .welcome-section::before {
 
     content: "";
@@ -12824,40 +12868,51 @@ tbody tr:hover td {
     position: absolute;
 
     top: 0;
+
     left: 0;
 
     width: 100%;
+
     height: 3px;
 
     background:
+
         linear-gradient(
+
             90deg,
+
             #8b5cf6,
+
             #a855f7,
+
             #7c3aed,
+
             transparent 82%
+
         );
 
 }
 
-
 .mitigation-page
+
 .welcome-section h3 {
 
     margin: 0;
 
     color:
+
         var(--text-primary);
 
     font-size: 22px;
+
     font-weight: 750;
 
     line-height: 1.3;
 
 }
 
-
 .mitigation-page
+
 .welcome-section p {
 
     max-width: 850px;
@@ -12865,6 +12920,7 @@ tbody tr:hover td {
     margin: 8px 0 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 14px;
@@ -12873,12 +12929,14 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.3 — SUMMARY GRID
+
    ========================================================= */
 
 .mitigation-page
+
 .stats-grid {
 
     width: 100%;
@@ -12886,59 +12944,81 @@ tbody tr:hover td {
     display: grid;
 
     grid-template-columns:
+
         repeat(4, minmax(0, 1fr));
 
     gap: 18px;
 
 }
 
-
 /* =========================================================
+
    7.4 — SUMMARY CARDS
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .stats-grid
+
 .stat-card {
 
     min-width: 0;
+
     min-height: 150px;
 
     position: relative;
+
     overflow: hidden;
 
     padding: 22px 24px;
 
     background:
+
         linear-gradient(
+
             145deg,
+
             rgba(139, 92, 246, 0.09),
+
             rgba(124, 58, 237, 0.018) 62%,
+
             transparent
+
         ),
+
         #ffffff;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.38);
 
     border-radius: 14px;
 
     box-shadow:
+
         0 7px 20px
+
         rgba(30, 20, 60, 0.07);
 
     transition:
+
         border-color 0.2s ease,
+
         transform 0.2s ease,
+
         box-shadow 0.2s ease;
 
 }
 
-
 .mitigation-page
+
 .stats-grid
+
 .stat-card::before {
 
     content: "";
@@ -12946,94 +13026,117 @@ tbody tr:hover td {
     position: absolute;
 
     top: 0;
+
     left: 0;
 
     width: 100%;
+
     height: 3px;
 
     background:
+
         linear-gradient(
+
             90deg,
+
             #8b5cf6,
+
             #c084fc
+
         );
 
 }
 
-
 .mitigation-page
+
 .stats-grid
+
 .stat-card:hover {
 
     border-color:
+
         rgba(168, 85, 247, 0.60);
 
     transform:
+
         translateY(-2px);
 
     box-shadow:
+
         0 10px 24px
+
         rgba(30, 20, 60, 0.10);
 
 }
 
-
 .mitigation-page
+
 .stat-card-header {
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 14px;
 
 }
 
-
 .mitigation-page
+
 .stat-label {
 
     color:
+
         #7c3aed;
 
     font-size: 13px;
+
     font-weight: 750;
 
     letter-spacing: 0.25px;
 
 }
 
-
 .mitigation-page
+
 .stat-icon {
 
     width: 38px;
+
     height: 38px;
 
     flex-shrink: 0;
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.30);
 
     border-radius: 10px;
 
     background:
+
         rgba(124, 58, 237, 0.09);
 
     color:
+
         #7c3aed;
 
     font-size: 18px;
 
 }
 
-
 .mitigation-page
+
 .stat-value {
 
     margin-top: 20px;
@@ -13045,22 +13148,25 @@ tbody tr:hover td {
     background: transparent;
 
     color:
+
         var(--text-primary);
 
     font-size: 30px;
+
     font-weight: 800;
 
     line-height: 1;
 
 }
 
-
 .mitigation-page
+
 .stat-description {
 
     margin: 12px 0 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 12px;
@@ -13069,43 +13175,58 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.5 — MAIN DASHBOARD CARDS
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .dashboard-card {
 
     width: 100%;
+
     min-width: 0;
 
     position: relative;
+
     overflow: hidden;
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(124, 58, 237, 0.035),
+
             transparent 42%
+
         ),
+
         #ffffff;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.34);
 
     border-radius: 16px;
 
     box-shadow:
+
         0 8px 24px
+
         rgba(30, 20, 60, 0.07);
 
 }
 
-
 .mitigation-page
+
 .dashboard-card::before {
 
     content: "";
@@ -13113,70 +13234,87 @@ tbody tr:hover td {
     position: absolute;
 
     top: 0;
+
     left: 0;
 
     width: 100%;
+
     height: 2px;
 
     z-index: 4;
 
     background:
+
         linear-gradient(
+
             90deg,
+
             #8b5cf6,
+
             #a855f7,
+
             transparent 76%
+
         );
 
 }
 
-
 /* =========================================================
+
    7.6 — CARD HEADERS
+
    ========================================================= */
 
 .mitigation-page
+
 .card-header {
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 20px;
 
     padding:
+
         25px
+
         30px
+
         21px;
 
 }
 
-
 .mitigation-page
+
 .card-header > div {
 
     min-width: 0;
 
 }
 
-
 .mitigation-page
+
 .card-header h3 {
 
     margin: 0;
 
     color:
+
         var(--text-primary);
 
     font-size: 20px;
+
     font-weight: 750;
 
     line-height: 1.35;
 
 }
 
-
 .mitigation-page
+
 .card-header p {
 
     max-width: 930px;
@@ -13184,6 +13322,7 @@ tbody tr:hover td {
     margin: 7px 0 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 13px;
@@ -13192,33 +13331,44 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.7 — RECOMMENDATIONS TABLE WRAPPER
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-table-wrapper {
 
     width:
+
         calc(100% - 60px);
 
     max-width:
+
         calc(100% - 60px);
 
     margin:
+
         4px
+
         30px
+
         28px;
 
     overflow-x: auto;
 
     background:
+
         #ffffff !important;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.30);
 
     border-radius: 11px;
@@ -13226,50 +13376,61 @@ tbody tr:hover td {
     scrollbar-width: thin;
 
     scrollbar-color:
+
         rgba(139, 92, 246, 0.70)
+
         rgba(124, 58, 237, 0.08);
 
 }
 
-
 .mitigation-page
+
 .mitigation-table-wrapper::-webkit-scrollbar {
 
     height: 8px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table-wrapper::-webkit-scrollbar-track {
 
     background:
+
         rgba(124, 58, 237, 0.07);
 
 }
 
-
 .mitigation-page
+
 .mitigation-table-wrapper::-webkit-scrollbar-thumb {
 
     background:
+
         linear-gradient(
+
             90deg,
+
             #7c3aed,
+
             #a855f7
+
         );
 
     border-radius: 999px;
 
 }
 
-
 /* =========================================================
+
    MITIGATION TABLE
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-table {
 
     width: 100%;
@@ -13281,44 +13442,55 @@ tbody tr:hover td {
     border-collapse: collapse;
 
     background:
+
         #ffffff !important;
 
     font-size: 12px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table thead {
 
     background:
+
         transparent;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table th {
 
     padding: 14px;
 
     background:
+
         linear-gradient(
+
             180deg,
+
             rgba(124, 58, 237, 0.15),
+
             rgba(124, 58, 237, 0.065)
+
         ) !important;
 
     color:
+
         #6d28d9;
 
     border-bottom:
+
         1px solid
+
         rgba(139, 92, 246, 0.34);
 
     text-align: left;
 
     font-size: 11px;
+
     font-weight: 800;
 
     line-height: 1.35;
@@ -13329,32 +13501,38 @@ tbody tr:hover td {
 
 }
 
-
 .mitigation-page
+
 .mitigation-table tbody,
 
 .mitigation-page
+
 .mitigation-table tbody tr,
 
 .mitigation-page
+
 .mitigation-table tbody td {
 
     background:
+
         #ffffff !important;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table td {
 
     padding: 15px 14px;
 
     color:
+
         var(--text-secondary);
 
     border-bottom:
+
         1px solid
+
         var(--border-color);
 
     vertical-align: middle;
@@ -13363,66 +13541,76 @@ tbody tr:hover td {
 
 }
 
-
 .mitigation-page
+
 .mitigation-table tbody tr:last-child td {
 
     border-bottom: none;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table tbody tr:hover td {
 
     background:
+
         rgba(124, 58, 237, 0.055) !important;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table td strong {
 
     color:
+
         var(--text-primary);
 
 }
 
-
 /* =========================================================
+
    7.8 — RECOMMENDATION TABLE COLUMNS
+
    ========================================================= */
 
 /* Recommendation */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(1),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(1) {
 
     width: 250px;
 
 }
 
-
 /* Category */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(2),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(2) {
 
     width: 150px;
 
 }
 
-
 /* Target */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(3),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(3) {
 
     width: 160px;
@@ -13431,12 +13619,14 @@ tbody tr:hover td {
 
 }
 
-
 /* Priority */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(4),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(4) {
 
     width: 105px;
@@ -13445,12 +13635,14 @@ tbody tr:hover td {
 
 }
 
-
 /* Score */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(5),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(5) {
 
     width: 90px;
@@ -13459,12 +13651,14 @@ tbody tr:hover td {
 
 }
 
-
 /* Confidence */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(6),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(6) {
 
     width: 110px;
@@ -13473,20 +13667,22 @@ tbody tr:hover td {
 
 }
 
-
 /* Expected Effect */
 
 .mitigation-page
+
 .mitigation-table th:nth-child(7),
+
 .mitigation-page
+
 .mitigation-table td:nth-child(7) {
 
     width: 300px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-table td:nth-child(7) {
 
     white-space: normal;
@@ -13495,12 +13691,14 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.9 — RECOMMENDATION DESCRIPTION
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-description {
 
     display: block;
@@ -13508,6 +13706,7 @@ tbody tr:hover td {
     margin-top: 6px;
 
     color:
+
         var(--text-secondary);
 
     font-size: 11px;
@@ -13520,27 +13719,34 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.10 — PRIORITY BADGES
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-badge {
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     min-width: 70px;
 
     padding:
+
         6px
+
         10px;
 
     border-radius: 999px;
 
     font-size: 10px;
+
     font-weight: 800;
 
     line-height: 1;
@@ -13551,109 +13757,136 @@ tbody tr:hover td {
 
 }
 
-
 /* Critical */
 
 .mitigation-page
+
 .mitigation-badge.critical {
 
     color:
+
         #dc2626;
 
     background:
+
         rgba(239, 68, 68, 0.10);
 
     border:
+
         1px solid
+
         rgba(239, 68, 68, 0.30);
 
 }
 
-
 /* High */
 
 .mitigation-page
+
 .mitigation-badge.high {
 
     color:
+
         #ea580c;
 
     background:
+
         rgba(249, 115, 22, 0.10);
 
     border:
+
         1px solid
+
         rgba(249, 115, 22, 0.30);
 
 }
 
-
 /* Medium */
 
 .mitigation-page
+
 .mitigation-badge.medium {
 
     color:
+
         #b45309;
 
     background:
+
         rgba(245, 158, 11, 0.11);
 
     border:
+
         1px solid
+
         rgba(245, 158, 11, 0.32);
 
 }
 
-
 /* Low */
 
 .mitigation-page
+
 .mitigation-badge.low {
 
     color:
+
         #047857;
 
     background:
+
         rgba(16, 185, 129, 0.10);
 
     border:
+
         1px solid
+
         rgba(16, 185, 129, 0.28);
 
 }
 
-
 /* =========================================================
+
    7.11 — CONFIDENCE BADGES
+
    ========================================================= */
 
 .mitigation-page
+
 .confidence-badge {
 
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     min-width: 68px;
 
     padding:
+
         6px
+
         10px;
 
     border:
+
         1px solid
+
         rgba(124, 58, 237, 0.28);
 
     border-radius: 999px;
 
     background:
+
         rgba(124, 58, 237, 0.08);
 
     color:
+
         #6d28d9;
 
     font-size: 10px;
+
     font-weight: 800;
 
     line-height: 1;
@@ -13664,106 +13897,128 @@ tbody tr:hover td {
 
 }
 
-
 .mitigation-page
+
 .confidence-badge.high {
 
     color:
+
         #047857;
 
     background:
+
         rgba(16, 185, 129, 0.10);
 
     border-color:
+
         rgba(16, 185, 129, 0.28);
 
 }
 
-
 .mitigation-page
+
 .confidence-badge.medium {
 
     color:
+
         #b45309;
 
     background:
+
         rgba(245, 158, 11, 0.10);
 
     border-color:
+
         rgba(245, 158, 11, 0.30);
 
 }
 
-
 /* =========================================================
+
    7.12 — EMPTY STATE
+
    ========================================================= */
 
 .mitigation-page
+
 .empty-state {
 
     min-height: 225px;
 
     display: flex;
+
     flex-direction: column;
 
     align-items: center;
+
     justify-content: center;
 
     padding:
+
         38px
+
         30px
+
         42px;
 
     text-align: center;
 
 }
 
-
 .mitigation-page
+
 .empty-icon {
 
     width: 58px;
+
     height: 58px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     margin-bottom: 16px;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.40);
 
     border-radius: 15px;
 
     background:
+
         rgba(124, 58, 237, 0.09);
 
     color:
+
         #7c3aed;
 
     font-size: 22px;
 
 }
 
-
 .mitigation-page
+
 .empty-state h4 {
 
     margin: 0;
 
     color:
+
         var(--text-primary);
 
     font-size: 17px;
+
     font-weight: 750;
 
 }
 
-
 .mitigation-page
+
 .empty-state p {
 
     max-width: 680px;
@@ -13771,6 +14026,7 @@ tbody tr:hover td {
     margin: 10px 0 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 13px;
@@ -13779,58 +14035,76 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.13 — RECOMMENDATION DETAILS LIST
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-recommendation-list {
 
     display: flex;
+
     flex-direction: column;
 
     gap: 18px;
 
     padding:
+
         4px
+
         30px
+
         30px;
 
 }
 
-
 /* =========================================================
+
    RECOMMENDATION DETAIL CARD
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-recommendation-card {
 
     position: relative;
+
     overflow: hidden;
 
     padding: 22px;
 
     background:
+
         linear-gradient(
+
             145deg,
+
             rgba(124, 58, 237, 0.055),
+
             transparent 70%
+
         ),
+
         #ffffff !important;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.32);
 
     border-radius: 13px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-recommendation-card::before {
 
     content: "";
@@ -13838,30 +14112,41 @@ tbody tr:hover td {
     position: absolute;
 
     top: 0;
+
     left: 0;
 
     width: 3px;
+
     height: 100%;
 
     background:
+
         linear-gradient(
+
             180deg,
+
             #8b5cf6,
+
             #a855f7
+
         );
 
 }
 
-
 /* =========================================================
+
    7.14 — RECOMMENDATION DETAIL HEADER
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-recommendation-header {
 
     display: flex;
+
     align-items: flex-start;
+
     justify-content: space-between;
 
     gap: 22px;
@@ -13870,16 +14155,16 @@ tbody tr:hover td {
 
 }
 
-
 .mitigation-page
+
 .mitigation-recommendation-header > div {
 
     min-width: 0;
 
 }
 
-
 .mitigation-page
+
 .section-label {
 
     display: inline-block;
@@ -13887,72 +14172,81 @@ tbody tr:hover td {
     margin-bottom: 7px;
 
     color:
+
         #7c3aed;
 
     font-size: 10px;
+
     font-weight: 800;
 
     letter-spacing: 0.75px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-recommendation-header h4 {
 
     margin: 0;
 
     color:
+
         var(--text-primary);
 
     font-size: 17px;
+
     font-weight: 750;
 
     line-height: 1.4;
 
 }
 
-
 .mitigation-page
+
 .mitigation-recommendation-header p {
 
     margin: 7px 0 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 12px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-recommendation-header p strong {
 
     color:
+
         var(--text-primary);
 
 }
 
-
 /* =========================================================
+
    7.15 — EVIDENCE / ACTION PANELS
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-detail-grid {
 
     display: grid;
 
     grid-template-columns:
+
         repeat(2, minmax(0, 1fr));
 
     gap: 16px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-detail-panel {
 
     min-width: 0;
@@ -13960,84 +14254,101 @@ tbody tr:hover td {
     padding: 18px;
 
     background:
+
         rgba(124, 58, 237, 0.045) !important;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.23);
 
     border-radius: 11px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-detail-panel h5 {
 
     margin:
+
         0
+
         0
+
         12px;
 
     color:
+
         #6d28d9;
 
     font-size: 12px;
+
     font-weight: 800;
 
     letter-spacing: 0.2px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-detail-panel ul,
 
 .mitigation-page
+
 .mitigation-detail-panel ol {
 
     margin:
+
         0;
 
     padding-left:
+
         19px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-detail-panel li {
 
     margin-bottom:
+
         8px;
 
     color:
+
         var(--text-secondary);
 
     font-size:
+
         12px;
 
     line-height:
+
         1.55;
 
 }
 
-
 .mitigation-page
+
 .mitigation-detail-panel li:last-child {
 
     margin-bottom:
+
         0;
 
 }
 
-
 .mitigation-page
+
 .mitigation-detail-panel p {
 
     margin: 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 12px;
@@ -14046,13 +14357,16 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.16 — EXPECTED DEFENSIVE EFFECT
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-effect {
 
     margin-top: 16px;
@@ -14060,22 +14374,29 @@ tbody tr:hover td {
     padding: 17px 18px;
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(16, 185, 129, 0.065),
+
             rgba(124, 58, 237, 0.025)
+
         ) !important;
 
     border:
+
         1px solid
+
         rgba(16, 185, 129, 0.22);
 
     border-radius: 11px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-effect strong {
 
     display: block;
@@ -14083,9 +14404,11 @@ tbody tr:hover td {
     margin-bottom: 7px;
 
     color:
+
         #047857;
 
     font-size: 11px;
+
     font-weight: 800;
 
     text-transform: uppercase;
@@ -14094,13 +14417,14 @@ tbody tr:hover td {
 
 }
 
-
 .mitigation-page
+
 .mitigation-effect p {
 
     margin: 0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 12px;
@@ -14109,16 +14433,20 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.17 — RELATED EVIDENCE
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-related-evidence {
 
     display: flex;
+
     flex-wrap: wrap;
 
     gap: 10px;
@@ -14128,81 +14456,99 @@ tbody tr:hover td {
     padding-top: 16px;
 
     border-top:
+
         1px solid
+
         rgba(139, 92, 246, 0.18);
 
 }
 
-
 .mitigation-page
+
 .mitigation-related-evidence span {
 
     display: inline-flex;
+
     align-items: center;
 
     gap: 5px;
 
     padding:
+
         6px
+
         9px;
 
     background:
+
         rgba(124, 58, 237, 0.065);
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.22);
 
     border-radius: 7px;
 
     color:
+
         var(--text-secondary);
 
     font-size: 10px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-related-evidence strong {
 
     color:
+
         var(--text-primary);
 
     overflow-wrap:
+
         anywhere;
 
 }
 
-
 /* =========================================================
+
    7.18 — RECOMMENDATION CONTEXT
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-context-grid {
 
     display: grid;
 
     grid-template-columns:
+
         repeat(4, minmax(0, 1fr));
 
     gap: 18px;
 
     padding:
+
         4px
+
         30px
+
         30px;
 
 }
 
-
 /* Context card — LIGHT */
 
 .mitigation-page
+
 .mitigation-context-card {
 
     min-width: 0;
+
     min-height: 145px;
 
     position: relative;
@@ -14210,39 +14556,49 @@ tbody tr:hover td {
     padding: 20px;
 
     background:
+
         linear-gradient(
+
             145deg,
+
             rgba(124, 58, 237, 0.065),
+
             transparent 72%
+
         ),
+
         #ffffff !important;
 
     border:
+
         1px solid
+
         rgba(139, 92, 246, 0.32);
 
     border-radius: 12px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-context-card > span {
 
     display: block;
 
     color:
+
         #7c3aed;
 
     font-size: 11px;
+
     font-weight: 800;
 
     letter-spacing: 0.35px;
 
 }
 
-
 .mitigation-page
+
 .mitigation-context-card > strong {
 
     display: block;
@@ -14250,25 +14606,31 @@ tbody tr:hover td {
     margin-top: 15px;
 
     color:
+
         var(--text-primary);
 
     font-size: 27px;
+
     font-weight: 800;
 
     line-height: 1;
 
 }
 
-
 .mitigation-page
+
 .mitigation-context-card p {
 
     margin:
+
         12px
+
         0
+
         0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 11px;
@@ -14277,75 +14639,98 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
+
    7.19 — EXPLANATION
+
    LIGHT MODE
+
    ========================================================= */
 
 .mitigation-page
+
 .mitigation-explanation {
 
     min-height: 205px;
 
     display: flex;
+
     flex-direction: column;
 
     align-items: center;
+
     justify-content: center;
 
     margin:
+
         4px
+
         30px
+
         28px;
 
     padding:
+
         28px
+
         32px;
 
     border:
+
         1px dashed
+
         rgba(139, 92, 246, 0.36);
 
     border-radius: 12px;
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(124, 58, 237, 0.055),
+
             rgba(124, 58, 237, 0.015)
+
         ) !important;
 
     text-align: center;
 
 }
 
-
 .mitigation-page
+
 .mitigation-explanation h4 {
 
     margin: 0;
 
     color:
+
         var(--text-primary);
 
     font-size: 17px;
+
     font-weight: 750;
 
 }
 
-
 .mitigation-page
+
 .mitigation-explanation p {
 
     max-width: 880px;
 
     margin:
+
         10px
+
         0
+
         0;
 
     color:
+
         var(--text-secondary);
 
     font-size: 13px;
@@ -14354,561 +14739,1103 @@ tbody tr:hover td {
 
 }
 
-
 /* =========================================================
-   7.20 — DARK THEME
-   ========================================================= */
 
+   7.20 — DARK THEME
+
+   ========================================================= */
 
 /* Introduction */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .welcome-section {
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(139, 92, 246, 0.15),
+
             rgba(139, 92, 246, 0.035) 48%,
+
             transparent 75%
+
         ),
+
         #181522;
 
     box-shadow:
+
         0 10px 30px
+
         rgba(0, 0, 0, 0.13);
 
 }
 
-
 /* Summary cards */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .stats-grid
+
 .stat-card {
 
     background:
+
         linear-gradient(
+
             145deg,
+
             rgba(139, 92, 246, 0.14),
+
             rgba(139, 92, 246, 0.03) 62%,
+
             transparent
+
         ),
+
         #181522;
 
     box-shadow:
+
         0 7px 20px
+
         rgba(0, 0, 0, 0.10);
 
 }
 
-
 /* Summary labels */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .stat-label {
 
     color:
+
         #ad7cff;
 
 }
-
 
 /* Summary icons */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .stat-icon {
 
     background:
+
         rgba(124, 58, 237, 0.18);
 
     color:
+
         #a970ff;
 
 }
-
 
 /* Main dashboard cards */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .dashboard-card {
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(139, 92, 246, 0.05),
+
             transparent 42%
+
         ),
+
         #181522;
 
     box-shadow:
+
         0 8px 24px
+
         rgba(0, 0, 0, 0.11);
 
 }
 
-
 /* Recommendation table wrapper */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table-wrapper {
 
     background:
+
         #100d18 !important;
 
 }
-
 
 /* Recommendation table */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table {
 
     background:
+
         #100d18 !important;
 
 }
-
 
 /* Table headers */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table th {
 
     background:
+
         linear-gradient(
+
             180deg,
+
             rgba(139, 92, 246, 0.19),
+
             rgba(124, 58, 237, 0.07)
+
         ) !important;
 
     color:
+
         #c4b5fd;
 
 }
-
 
 /* Table body */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table tbody,
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table tbody tr,
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table tbody td {
 
     background:
+
         #100d18 !important;
 
 }
-
 
 /* Table hover */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-table tbody tr:hover td {
 
     background:
+
         #171220 !important;
 
 }
 
-
 /* Priority badges */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-badge.critical {
 
     color:
+
         #f87171;
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-badge.high {
 
     color:
+
         #fb923c;
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-badge.medium {
 
     color:
+
         #fbbf24;
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-badge.low {
 
     color:
+
         #34d399;
 
 }
-
 
 /* Confidence badge */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .confidence-badge {
 
     color:
+
         #c4b5fd;
 
     background:
+
         rgba(124, 58, 237, 0.13);
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .confidence-badge.high {
 
     color:
+
         #34d399;
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .confidence-badge.medium {
 
     color:
+
         #fbbf24;
 
 }
 
-
 /* Empty icon */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .empty-icon {
 
     background:
+
         rgba(124, 58, 237, 0.16);
 
     color:
+
         #a970ff;
 
 }
 
-
 /* Recommendation detail card */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-recommendation-card {
 
     background:
+
         linear-gradient(
+
             145deg,
+
             rgba(124, 58, 237, 0.08),
+
             transparent 70%
+
         ),
+
         #100d18 !important;
 
 }
-
 
 /* Detail category label */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .section-label {
 
     color:
+
         #ad7cff;
 
 }
-
 
 /* Evidence / Action panels */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-detail-panel {
 
     background:
+
         #15121e !important;
 
     border-color:
+
         rgba(139, 92, 246, 0.28);
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-detail-panel h5 {
 
     color:
+
         #c4b5fd;
 
 }
 
-
 /* Expected defensive effect */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-effect {
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(16, 185, 129, 0.08),
+
             rgba(124, 58, 237, 0.04)
+
         ),
+
         #15121e !important;
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-effect strong {
 
     color:
+
         #34d399;
 
 }
 
-
 /* Related evidence */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-related-evidence span {
 
     background:
+
         rgba(124, 58, 237, 0.10);
 
 }
 
-
 /* Context cards */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-context-card {
 
     background:
+
         linear-gradient(
+
             145deg,
+
             rgba(124, 58, 237, 0.09),
+
             transparent 72%
+
         ),
+
         #100d18 !important;
 
 }
 
-
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-context-card > span {
 
     color:
+
         #ad7cff;
 
 }
 
-
 /* Explanation */
 
 [data-theme="dark"]
+
 .mitigation-page
+
 .mitigation-explanation {
 
     background:
+
         linear-gradient(
+
             135deg,
+
             rgba(124, 58, 237, 0.07),
+
             rgba(124, 58, 237, 0.025)
+
         ),
+
         #100d18 !important;
 
 }
 
-
 /* =========================================================
+
    7.21 — RESPONSIVE PREPARATION
+
    ========================================================= */
 
 @media (max-width: 1100px) {
 
     .mitigation-page
+
     .stats-grid {
 
         grid-template-columns:
+
             repeat(2, minmax(0, 1fr));
 
     }
 
-
     .mitigation-page
+
     .mitigation-context-grid {
 
         grid-template-columns:
+
             repeat(2, minmax(0, 1fr));
 
     }
 
 }
-
 
 @media (max-width: 850px) {
 
     .mitigation-page
+
     .mitigation-detail-grid {
 
         grid-template-columns:
+
             1fr;
 
     }
 
 }
-
 
 @media (max-width: 700px) {
 
     .mitigation-page
+
     .stats-grid {
 
         grid-template-columns:
+
             1fr;
 
     }
 
-
     .mitigation-page
+
     .mitigation-context-grid {
 
         grid-template-columns:
+
             1fr;
 
     }
 
-
     .mitigation-page
+
     .welcome-section {
 
         padding:
+
             23px
+
             20px;
 
     }
 
-
     .mitigation-page
+
     .card-header {
 
         padding:
+
             22px
+
             20px
+
             18px;
 
     }
 
-
     .mitigation-page
+
     .mitigation-table-wrapper {
 
         width:
+
             calc(100% - 36px);
 
         max-width:
+
             calc(100% - 36px);
 
         margin-left:
+
             18px;
 
         margin-right:
+
             18px;
 
     }
 
-
     .mitigation-page
+
     .mitigation-recommendation-list {
 
         padding-left:
+
             18px;
 
         padding-right:
+
             18px;
 
     }
 
-
     .mitigation-page
+
     .mitigation-recommendation-header {
 
         flex-direction:
+
             column;
 
     }
 
-
     .mitigation-page
+
     .mitigation-context-grid {
 
         padding-left:
+
             18px;
 
         padding-right:
+
             18px;
 
     }
 
-
     .mitigation-page
+
     .mitigation-explanation {
 
         margin-left:
+
             18px;
 
         margin-right:
+
             18px;
 
         padding:
+
             24px
+
             20px;
 
     }
 
 }
 
+/* =========================================================
+
+   END OF PART 7 — MITIGATION
+
+   ========================================================= */
+
 
 /* =========================================================
-   END OF PART 7 — MITIGATION
+   PART 8 — RISK COMPARISON (SAFE, PAGE-SCOPED ADDITIONS)
+   Scope: .risk-comparison-page
+   Apply this class to the risk comparison page root.
+   Existing mitigation rules above remain unchanged.
    ========================================================= */
+
+.risk-comparison-page {
+    --rc-border: rgba(139, 92, 246, 0.32);
+    --rc-accent: #8b5cf6;
+    --rc-muted: var(--text-secondary, #a7a0b9);
+    width: 100%;
+    min-width: 0;
+    max-width: 1600px;
+    margin-inline: auto;
+}
+
+/* Protect long content without changing global page layout. */
+.risk-comparison-page,
+.risk-comparison-page .dashboard-card,
+.risk-comparison-page .stat-card,
+.risk-comparison-page .risk-detail-card,
+.risk-comparison-page .risk-info-card {
+    min-width: 0;
+}
+
+.risk-comparison-page .risk-detail-card,
+.risk-comparison-page .risk-info-card {
+    border: 1px solid var(--rc-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.risk-comparison-page .risk-detail-card h4,
+.risk-comparison-page .risk-info-card h4 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.risk-comparison-page .risk-detail-card p,
+.risk-comparison-page .risk-info-card p,
+.risk-comparison-page .risk-explanation-text {
+    margin: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+/* Opt-in compact grids for detailed analysis. */
+.risk-comparison-page .risk-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.risk-comparison-page .risk-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.risk-comparison-page .risk-detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.16);
+}
+
+.risk-comparison-page .risk-detail-row:last-child {
+    border-bottom: 0;
+}
+
+.risk-comparison-page .risk-detail-label {
+    color: var(--rc-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.risk-comparison-page .risk-detail-value {
+    color: var(--text-primary, inherit);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Scroll only long data areas, not entire dashboard cards. */
+.risk-comparison-page .risk-scroll-area {
+    max-height: 450px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.8) rgba(139, 92, 246, 0.09);
+}
+
+.risk-comparison-page .risk-scroll-area--short { max-height: 300px; }
+.risk-comparison-page .risk-scroll-area--medium { max-height: 400px; }
+.risk-comparison-page .risk-scroll-area--long { max-height: 520px; }
+
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar-track {
+    background: rgba(139, 92, 246, 0.08);
+    border-radius: 999px;
+}
+
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.75);
+    border-radius: 999px;
+}
+
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #a855f7;
+}
+
+/* Human-readable explanation and compact list presentation. */
+.risk-comparison-page .risk-explanation-summary {
+    padding: 16px 18px;
+    border: 1px solid var(--rc-border);
+    border-radius: 12px;
+    line-height: 1.7;
+}
+
+.risk-comparison-page .risk-explanation-list,
+.risk-comparison-page .risk-compact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.risk-comparison-page .risk-explanation-item,
+.risk-comparison-page .risk-compact-item {
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    border-radius: 10px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.risk-comparison-page .risk-explanation-item strong,
+.risk-comparison-page .risk-compact-item strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.risk-comparison-page .risk-explanation-item p,
+.risk-comparison-page .risk-compact-item p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--rc-muted);
+}
+
+/* Long CVE tables: fixed header and horizontal scroll when necessary. */
+.risk-comparison-page .risk-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--rc-border);
+    border-radius: 10px;
+}
+
+.risk-comparison-page .risk-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.risk-comparison-page .risk-table th,
+.risk-comparison-page .risk-table td {
+    padding: 11px 13px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.16);
+    overflow-wrap: anywhere;
+}
+
+.risk-comparison-page .risk-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--rc-table-head, #f3efff);
+}
+
+.risk-comparison-page .risk-table tbody tr:last-child td { border-bottom: 0; }
+
+/* Preserve selection controls and avoid clipping labels. */
+.risk-comparison-page select,
+.risk-comparison-page .risk-asset-select {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.risk-comparison-page .risk-technical-id {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+    color: var(--rc-muted);
+}
+
+/* Dark theme matches the existing AttackLens purple palette. */
+[data-theme="dark"] .risk-comparison-page {
+    --rc-table-head: #21192f;
+    --rc-muted: #b8afca;
+}
+
+[data-theme="dark"] .risk-comparison-page .risk-detail-card,
+[data-theme="dark"] .risk-comparison-page .risk-info-card,
+[data-theme="dark"] .risk-comparison-page .risk-explanation-summary,
+[data-theme="dark"] .risk-comparison-page .risk-explanation-item,
+[data-theme="dark"] .risk-comparison-page .risk-compact-item {
+    background: #171221;
+}
+
+/* Light theme uses light inner surfaces. */
+[data-theme="light"] .risk-comparison-page {
+    --rc-table-head: #f3efff;
+    --rc-muted: #645c75;
+}
+
+[data-theme="light"] .risk-comparison-page .risk-detail-card,
+[data-theme="light"] .risk-comparison-page .risk-info-card,
+[data-theme="light"] .risk-comparison-page .risk-explanation-summary,
+[data-theme="light"] .risk-comparison-page .risk-explanation-item,
+[data-theme="light"] .risk-comparison-page .risk-compact-item {
+    background: #ffffff;
+}
+
+@media (max-width: 1100px) {
+    .risk-comparison-page .risk-metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .risk-comparison-page .risk-detail-grid,
+    .risk-comparison-page .risk-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .risk-comparison-page .risk-detail-card,
+    .risk-comparison-page .risk-info-card {
+        padding: 14px;
+    }
+
+    .risk-comparison-page .risk-scroll-area {
+        max-height: 360px;
+    }
+}
+
+/* END PART 8 — RISK COMPARISON */
+
+
+/* =========================================================
+   PART 9 — RISK COMPARISON: OPTIONAL INTERNAL SCROLLBARS
+   Scoped to Risk Comparison; does not alter Mitigation.
+   Apply class="rc-scroll-area" to the CONTENT of long cards.
+   ========================================================= */
+.risk-comparison-page .rc-scroll-area,
+.risk-comparison-page .risk-scroll-area {
+    max-height: 350px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #8b5cf6 transparent;
+    overscroll-behavior: contain;
+}
+.risk-comparison-page .rc-scroll-area::-webkit-scrollbar,
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar {
+    width: 7px;
+}
+.risk-comparison-page .rc-scroll-area::-webkit-scrollbar-thumb,
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar-thumb {
+    background-color: #8b5cf6;
+    border-radius: 10px;
+}
+.risk-comparison-page .rc-scroll-area::-webkit-scrollbar-track,
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+/* Taller lists and tables may opt into this modifier. */
+.risk-comparison-page .rc-scroll-area.rc-scroll-tall,
+.risk-comparison-page .risk-scroll-area.rc-scroll-tall {
+    max-height: 450px;
+}
+@media (max-width: 760px) {
+    .risk-comparison-page .rc-scroll-area,
+    .risk-comparison-page .risk-scroll-area {
+        max-height: 320px;
+    }
+    .risk-comparison-page .rc-scroll-area.rc-scroll-tall,
+    .risk-comparison-page .risk-scroll-area.rc-scroll-tall {
+        max-height: 380px;
+    }
+}
+/* END PART 9 */
+
+
+/* =========================================================
+   PART 10 — RISK COMPARISON: FINAL UI POLISH (2026-10-12)
+   Additive and scoped. Does not affect Mitigation or backend.
+   ========================================================= */
+.risk-comparison-page,
+.risk-comparison-page .dashboard-card,
+.risk-comparison-page .rc-compact-panel { min-width:0; }
+
+/* Keep the three findings panels aligned in one row on desktop. */
+.risk-comparison-page .rc-findings-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:start;
+    gap:16px;
+}
+.risk-comparison-page .rc-findings-grid > * { min-width:0; }
+
+/* Prevent long identifiers and recommendation labels from overflowing. */
+.risk-comparison-page .rc-record,
+.risk-comparison-page .rc-list li,
+.risk-comparison-page .rc-item-top,
+.risk-comparison-page .rc-readable-text,
+.risk-comparison-page .rc-compact-panel { overflow-wrap:anywhere; }
+
+/* Inner scrolling with breathing room at top/bottom, and no sideways scroll. */
+.risk-comparison-page .rc-scroll-area,
+.risk-comparison-page .risk-scroll-area {
+    box-sizing:border-box;
+    max-height:350px;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:8px 12px 12px 2px;
+    scroll-padding-top:12px;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#8b5cf6 transparent;
+}
+.risk-comparison-page .rc-scroll-area--tall,
+.risk-comparison-page .rc-scroll-area.rc-scroll-tall,
+.risk-comparison-page .risk-scroll-area.rc-scroll-tall { max-height:450px; }
+.risk-comparison-page .rc-scroll-area > :first-child,
+.risk-comparison-page .risk-scroll-area > :first-child { margin-top:0; }
+.risk-comparison-page .rc-scroll-area > :last-child,
+.risk-comparison-page .risk-scroll-area > :last-child { margin-bottom:0; }
+.risk-comparison-page .rc-scroll-area::-webkit-scrollbar,
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar { width:7px; }
+.risk-comparison-page .rc-scroll-area::-webkit-scrollbar-thumb,
+.risk-comparison-page .risk-scroll-area::-webkit-scrollbar-thumb {
+    background:#8b5cf6;
+    border-radius:12px;
+}
+
+/* Clear, compact CVE list. No forced tall CVE cards. */
+.risk-comparison-page .rc-list { gap:6px; }
+.risk-comparison-page .rc-list li { padding:9px 11px; line-height:1.35; }
+.risk-comparison-page .rc-list .rc-item-top { gap:8px; }
+
+/* Consistent card text and nested disclosures. */
+.risk-comparison-page .rc-record { line-height:1.5; }
+.risk-comparison-page .rc-record h4 { line-height:1.4; }
+.risk-comparison-page .rc-section-toggle:focus-visible,
+.risk-comparison-page summary:focus-visible,
+.risk-comparison-page select:focus-visible { outline:2px solid #bda5ff; outline-offset:3px; }
+.risk-comparison-page .rc-collapse > .dashboard-card { margin-top:0; }
+
+/* Permanently visible methodology section in updated HTML. */
+.risk-comparison-page .rc-methodology-section { margin-top:22px; }
+.risk-comparison-page .rc-methodology-section .dashboard-card { margin:0; }
+
+@media(max-width:1100px) {
+    .risk-comparison-page .rc-findings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:740px) {
+    .risk-comparison-page .rc-findings-grid { grid-template-columns:1fr; }
+    .risk-comparison-page .rc-scroll-area,
+    .risk-comparison-page .risk-scroll-area { max-height:320px; }
+    .risk-comparison-page .rc-scroll-area--tall,
+    .risk-comparison-page .rc-scroll-area.rc-scroll-tall,
+    .risk-comparison-page .risk-scroll-area.rc-scroll-tall { max-height:380px; }
+}
+/* END PART 10 */
+
 
    /* =========================================================
    PART 8 — RISK COMPARISON
