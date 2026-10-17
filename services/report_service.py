@@ -26,6 +26,7 @@ handled separately by services/pdf_service.py.
 """
 
 from datetime import datetime, timezone
+from math import isfinite
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from models.report_model import (
@@ -282,7 +283,11 @@ def generate_report_data(
     mitigation_analysis=None,
     risk_comparison=None,
     created_by=None,
-    timezone_name=None
+    timezone_name=None,
+    scan_metadata=None,
+    report_id=None,
+    report_number=None,
+    db=None
 ):
     """
     Generate the complete normalized AttackLens report data.
@@ -392,6 +397,18 @@ def generate_report_data(
     executive_summary = build_executive_summary(statistics)
     scope = build_report_scope(assets)
     time_metadata = build_report_time_metadata(timezone_name)
+    scan_metadata = build_report_scan_metadata(assets, scan_metadata)
+
+    # Report identity is presentation/audit metadata, not security evidence.
+    # The route should pass the application's MongoDB database for persistent
+    # sequential numbering, or pass a previously saved report_id on re-export.
+    report_target = scan_metadata.get("target")
+    if not report_target and len(scope.get("targets", [])) == 1:
+        report_target = scope["targets"][0]
+
+    if report_id is None and report_number is None and db is not None and report_target:
+        report_number = allocate_report_number(db)
+
 
     # --------------------------------------------------------
     # FINAL REPORT
@@ -409,7 +426,14 @@ def generate_report_data(
         mitigation_analysis=mitigation_analysis,
         risk_comparison=risk_comparison,
         readiness=readiness,
-        statistics=statistics
+        statistics=statistics,
+        security_finding_summary=security_finding_summary,
+        scan_metadata=scan_metadata,
+        report_id=report_id,
+        report_number=report_number,
+        report_target=report_target,
+        report_timezone="Asia/Kolkata",
+        generated_at=datetime.fromisoformat(time_metadata["generated_at_utc"])
     )
 
     # Keep timezone/presentation metadata outside the security
@@ -419,9 +443,62 @@ def generate_report_data(
         report["generated_at_utc"] = time_metadata["generated_at_utc"]
         report["generated_at_local"] = time_metadata["generated_at_local"]
         report["generated_at_display"] = time_metadata["generated_at_display"]
+        # Retain the original top-level alias for older Reports/PDF consumers.
         report["security_finding_summary"] = security_finding_summary
 
     return report
+
+
+# ============================================================
+# PERSISTENT REPORT NUMBER ALLOCATION
+# ============================================================
+
+def allocate_report_number(db):
+    """Atomically allocate a report number from MongoDB.
+
+    Uses one global counter, so AL-001, AL-002, ... are not reused
+    after a report is deleted. MongoDB must be available; no unsafe
+    in-memory or collection-count fallback is used.
+    """
+    from pymongo import ReturnDocument
+
+    counter = db["report_counters"].find_one_and_update(
+        {"_id": "attacklens_report_number"},
+        {"$inc": {"sequence": 1}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+    if not isinstance(counter, dict) or not isinstance(counter.get("sequence"), int):
+        raise RuntimeError("Could not allocate a persistent report number")
+    return counter["sequence"]
+
+
+# ============================================================
+# SELECTED SCAN METADATA
+# ============================================================
+
+def build_report_scan_metadata(assets, scan_metadata=None):
+    """Preserve the caller's selected-scan identity without mixing scans.
+
+    When the caller supplies explicit metadata, it takes precedence.
+    Otherwise only metadata present on the selected report asset is used.
+    No current inventory evidence or unrelated scan is queried here.
+    """
+    metadata = dict(scan_metadata) if isinstance(scan_metadata, dict) else {}
+    if len(assets) == 1 and isinstance(assets[0], dict):
+        asset = assets[0]
+        for destination, source in (
+            ("scan_id", "scan_id"),
+            ("target", "target"),
+            ("scan_profile", "scan_profile"),
+            ("scan_status", "scan_status"),
+            ("created_at", "created_at"),
+            ("started_at", "started_at"),
+            ("completed_at", "completed_at"),
+        ):
+            if metadata.get(destination) is None and asset.get(source) is not None:
+                metadata[destination] = asset[source]
+    return metadata
 
 
 # ============================================================
@@ -571,10 +648,10 @@ def build_executive_summary(statistics):
 
     return create_executive_summary(
         overall_risk_score=statistics.get(
-            "current_risk_score", 0
+            "current_risk_score"
         ),
         overall_risk_level=statistics.get(
-            "current_risk_level", "LOW"
+            "current_risk_level"
         ),
         asset_count=statistics.get(
             "total_assets", 0
@@ -592,10 +669,10 @@ def build_executive_summary(statistics):
             "recommendations", 0
         ),
         projected_risk_score=statistics.get(
-            "projected_risk_score", 0
+            "projected_risk_score"
         ),
         projected_risk_level=statistics.get(
-            "projected_risk_level", "LOW"
+            "projected_risk_level"
         ),
         projected_reduction=statistics.get(
             "risk_reduction", 0
@@ -628,29 +705,20 @@ def build_report_readiness(
 
     has_assets = bool(assets)
 
-    attack_path_ready = (
-        has_assets
-        and isinstance(attack_graph, dict)
-    )
+    # An analysis dictionary, including {}, represents supplied analysis.
+    # A report still requires at least one authorized asset.
+    attack_path_ready = has_assets and isinstance(attack_graph, dict)
+    defense_ready = has_assets and isinstance(defense_analysis, dict)
+    mitigation_ready = has_assets and isinstance(mitigation_analysis, dict)
+    comparison_ready = has_assets and isinstance(risk_comparison, dict)
 
-    defense_ready = (
-        has_assets
-        and isinstance(defense_analysis, dict)
-    )
-
-    mitigation_ready = (
-        has_assets
-        and isinstance(mitigation_analysis, dict)
-    )
-
-    comparison_ready = (
-        has_assets
-        and isinstance(risk_comparison, dict)
-    )
+    # Readiness is distinct from a measured risk score: unknown risk
+    # scores must remain None in report statistics.
+    risk_assessment_ready = has_assets
 
     return create_report_readiness(
         asset_inventory=has_assets,
-        risk_assessment=has_assets,
+        risk_assessment=risk_assessment_ready,
         attack_path_analysis=attack_path_ready,
         defense_analysis=defense_ready,
         mitigation_recommendations=mitigation_ready,
@@ -702,19 +770,13 @@ def build_report_statistics(
         )
     )
 
-    total_vulnerabilities = safe_integer(
-        current_state.get(
-            "vulnerability_count",
-            0
-        )
-    )
-
-    vulnerable_assets = safe_integer(
-        current_state.get(
-            "vulnerable_assets",
-            0
-        )
-    )
+    # The Executive Summary and the CVE table must count the same
+    # evidence: CVE records actually present in the selected scan assets.
+    # Risk-comparison metrics may count a broader set of actionable findings
+    # (including non-CVE weaknesses), so they are not a reliable CVE total.
+    cve_summary = build_vulnerability_summary(assets)
+    total_vulnerabilities = cve_summary["vulnerability_count"]
+    vulnerable_assets = cve_summary["vulnerable_assets"]
 
     open_ports = safe_integer(
         current_state.get(
@@ -745,33 +807,11 @@ def build_report_statistics(
         mitigation_analysis
     )
 
-    current_risk_score = safe_number(
-        current_state.get(
-            "risk_score",
-            0
-        )
-    )
-
-    current_risk_level = safe_risk_level(
-        current_state.get(
-            "risk_level",
-            "LOW"
-        )
-    )
-
-    projected_risk_score = safe_number(
-        projected_state.get(
-            "risk_score",
-            current_risk_score
-        )
-    )
-
-    projected_risk_level = safe_risk_level(
-        projected_state.get(
-            "risk_level",
-            current_risk_level
-        )
-    )
+    # Unknown scores remain unavailable, rather than becoming 0 / LOW.
+    current_risk_score = optional_risk_score(current_state.get("risk_score"))
+    current_risk_level = optional_risk_level(current_state.get("risk_level"))
+    projected_risk_score = optional_risk_score(projected_state.get("risk_score"))
+    projected_risk_level = optional_risk_level(projected_state.get("risk_level"))
 
     risk_reduction = safe_number(
         comparison_statistics.get(
@@ -793,7 +833,7 @@ def build_report_statistics(
         )
     )
 
-    return create_report_statistics(
+    report_statistics = create_report_statistics(
         total_assets=total_assets,
         total_vulnerabilities=total_vulnerabilities,
         vulnerable_assets=vulnerable_assets,
@@ -809,6 +849,20 @@ def build_report_statistics(
         risk_reduction=risk_reduction,
         risk_reduction_percentage=risk_reduction_percentage
     )
+
+    # Keep broader risk-model counts visible for auditing without
+    # presenting them as confirmed CVE vulnerabilities. These additions
+    # do not alter the risk engine or any existing statistic fields.
+    if isinstance(report_statistics, dict):
+        report_statistics["security_finding_count"] = sum(
+            len(get_asset_security_findings(asset)) for asset in assets
+        )
+        report_statistics["risk_model_finding_count"] = safe_integer(
+            current_state.get("vulnerability_count", 0)
+        )
+        report_statistics["cve_vulnerability_count"] = total_vulnerabilities
+
+    return report_statistics
 
 
 # ============================================================
@@ -1209,7 +1263,7 @@ def safe_integer(value):
 
     try:
         normalized = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return 0
 
     return max(0, normalized)
@@ -1220,7 +1274,10 @@ def safe_number(value):
 
     try:
         normalized = float(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
+        return 0.0
+
+    if not isfinite(normalized):
         return 0.0
 
     normalized = max(
@@ -1256,3 +1313,28 @@ def safe_risk_level(value):
         return "LOW"
 
     return normalized
+
+
+def optional_risk_score(value):
+    """Return None for absent/invalid risk evidence, preserving valid zero."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        score = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not isfinite(score):
+        return None
+    return round(max(0.0, min(100.0, score)), 2)
+
+
+def is_valid_risk_score(value):
+    return optional_risk_score(value) is not None
+
+
+def optional_risk_level(value):
+    """Return None when a classification was not actually calculated."""
+    if not isinstance(value, str):
+        return None
+    level = value.strip().upper()
+    return level if level in {"LOW", "MEDIUM", "HIGH", "CRITICAL"} else None

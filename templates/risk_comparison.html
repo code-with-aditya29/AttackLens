@@ -1,66 +1,24 @@
-
-
-
-
 {% extends "base.html" %}
-
-
-
-
-
-
 
 {% block title %}
 
-
-
 AttackLens | Risk Comparison
 
-
-
 {% endblock %}
-
-
-
-
-
-
 
 {% block page_title %}
 
-
-
 Before vs After Risk Comparison
 
-
-
 {% endblock %}
-
-
-
-
-
-
 
 {% block page_subtitle %}
 
-
-
 Compare the current security state with the projected post-mitigation state
-
-
 
 {% endblock %}
 
-
-
-
-
-
-
 {% block content %}
-
-
 
 {# Human-readable, nested values; technical identifiers stay collapsed. #}
 
@@ -116,11 +74,7 @@ Compare the current security state with the projected post-mitigation state
 
 {% endmacro %}
 
-
-
-
-
-<style>
+<style nonce="{{ csp_nonce|default('') }}">
 
 /* Scoped improvements to existing AttackLens risk comparison classes. */
 
@@ -170,132 +124,144 @@ Compare the current security state with the projected post-mitigation state
 
 @media(max-width:700px) { .risk-comparison-page .rc-readable-row { grid-template-columns:1fr; gap:4px; } .risk-comparison-page .rc-asset-selector { padding:14px; } }
 
-
 /* Risk Comparison v2: scoped, responsive, compact and accessible */
+
 .risk-comparison-page .rc-section-toggle { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:19px 22px; }
+
 .risk-comparison-page .rc-section-toggle::-webkit-details-marker { display:none; }
+
 .risk-comparison-page .rc-section-toggle::after { content:"⌄"; color:#b99aff; font-size:1.55rem; transition:transform .2s; flex-shrink:0; }
+
 .risk-comparison-page details[open] > .rc-section-toggle::after { transform:rotate(180deg); }
+
 .risk-comparison-page .rc-section-toggle h3 { margin:0 0 5px; font-size:1.15rem; }
+
 .risk-comparison-page .rc-section-toggle p { margin:0; font-size:.84rem; opacity:.75; }
+
 .risk-comparison-page .rc-collapse { padding:0 22px 22px; min-width:0; }
+
 .risk-comparison-page .rc-compact-panel { border:1px solid rgba(167,139,250,.22); border-radius:12px; background:rgba(139,92,246,.045); min-width:0; padding:15px; }
+
 .risk-comparison-page .rc-compact-panel h4 { margin:0 0 9px; font-size:1rem; overflow-wrap:anywhere; }
+
 .risk-comparison-page .rc-scroll-area { max-height:350px; overflow-y:auto; overflow-x:hidden; scrollbar-width:thin; scrollbar-color:#8b5cf6 transparent; padding-right:7px; }
+
 .risk-comparison-page .rc-scroll-area::-webkit-scrollbar { width:7px; }
+
 .risk-comparison-page .rc-scroll-area::-webkit-scrollbar-thumb { background:#8b5cf6; border-radius:8px; }
+
 .risk-comparison-page .rc-scroll-area--tall { max-height:450px; }
+
 .risk-comparison-page .rc-findings-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; align-items:start; }
+
 .risk-comparison-page .rc-list { list-style:none; padding:0; margin:0; display:grid; gap:6px; }
+
 .risk-comparison-page .rc-list li { padding:9px 11px; border:1px solid rgba(167,139,250,.17); border-radius:8px; background:rgba(18,14,29,.4); overflow-wrap:anywhere; font-size:.88rem; }
+
 .risk-comparison-page .rc-item-top { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+
 .risk-comparison-page .rc-pill { font-size:.72rem; border:1px solid rgba(167,139,250,.35); border-radius:20px; padding:3px 8px; color:#cdbaff; white-space:nowrap; }
+
 .risk-comparison-page .rc-item-details { margin-top:9px; border-top:1px solid rgba(167,139,250,.17); padding-top:9px; }
+
 .risk-comparison-page .rc-item-details summary { cursor:pointer; color:#c4b5fd; font-size:.82rem; }
+
 .risk-comparison-page .rc-projection-summary { line-height:1.7; margin:0 0 15px; font-size:.93rem; }
+
 .risk-comparison-page .rc-mini-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 15px; }
+
 .risk-comparison-page .rc-mini-stat { padding:12px; border:1px solid rgba(167,139,250,.2); border-radius:10px; text-align:center; }
+
 .risk-comparison-page .rc-mini-stat strong { display:block; font-size:1.35rem; }
+
 .risk-comparison-page .rc-mini-stat span { display:block; font-size:.78rem; opacity:.78; }
+
 .risk-comparison-page .projection-context-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+
 .risk-comparison-page .rc-details-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+
 .risk-comparison-page .rc-details-grid > * { min-width:0; }
+
 .risk-comparison-page .rc-record { padding:12px 14px; border:1px solid rgba(167,139,250,.2); border-radius:10px; margin-bottom:9px; min-width:0; }
+
 .risk-comparison-page .rc-record h4 { margin:0 0 7px; font-size:.94rem; }
+
 .risk-comparison-page .rc-record p { margin:4px 0; font-size:.85rem; line-height:1.55; }
+
 .risk-comparison-page .rc-record .rc-readable-row { grid-template-columns:minmax(90px,30%) minmax(0,1fr); }
+
 .risk-comparison-page .rc-subtle { font-size:.81rem; opacity:.74; }
+
 @media(max-width:1100px) { .risk-comparison-page .rc-findings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
 @media(max-width:740px) { .risk-comparison-page .rc-findings-grid,.risk-comparison-page .rc-details-grid { grid-template-columns:1fr; } .risk-comparison-page .rc-mini-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .risk-comparison-page .rc-section-toggle { padding:15px; } .risk-comparison-page .rc-collapse { padding:0 15px 15px; } }
+
+
+/* AttackLens Risk Comparison: scoped desktop/mobile layout stabilization */
+.dashboard-overview.risk-comparison-page { display:flex; flex-direction:column; align-items:stretch; width:100%; max-width:1500px; min-width:0; margin:0 auto; padding:20px; gap:18px; box-sizing:border-box; }
+.risk-comparison-page, .risk-comparison-page * { box-sizing:border-box; }
+.risk-comparison-page > *, .risk-comparison-page .dashboard-card, .risk-comparison-page .rc-accordion { width:100%; max-width:100%; min-width:0; margin-left:0; margin-right:0; }
+.risk-comparison-page .welcome-section, .risk-comparison-page .card-header { display:flex; width:100%; min-width:0; text-align:left; justify-content:flex-start; }
+.risk-comparison-page h3, .risk-comparison-page h4, .risk-comparison-page p { word-spacing:normal; letter-spacing:normal; overflow-wrap:break-word; }
+.risk-comparison-page .stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; width:100%; align-items:stretch; }
+.risk-comparison-page .stats-grid > .stat-card { min-width:0; width:auto; max-width:none; height:auto; min-height:130px; margin:0; padding:18px; display:flex; flex-direction:column; justify-content:space-between; }
+.risk-comparison-page .stat-value { line-height:1.2; }
+.risk-comparison-page .comparison-state-grid { display:grid; grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr); gap:14px; align-items:stretch; width:100%; }
+.risk-comparison-page .comparison-state-card { width:100%; min-width:0; max-width:none; margin:0; padding:20px; }
+.risk-comparison-page .comparison-arrow { display:flex; flex-direction:column; align-items:center; justify-content:center; width:auto; min-width:0; }
+.risk-comparison-page .comparison-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; width:100%; }
+.risk-comparison-page .comparison-metric { display:flex; flex-direction:column; justify-content:space-between; min-width:0; width:auto; max-width:none; margin:0; padding:12px; text-align:left; }
+.risk-comparison-page .comparison-metric > span, .risk-comparison-page .comparison-metric > strong { min-width:0; max-width:100%; overflow-wrap:break-word; word-break:normal; white-space:normal; text-align:left; }
+.risk-comparison-page .reduction-grid, .risk-comparison-page .projection-context-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; width:100%; }
+.risk-comparison-page .reduction-item, .risk-comparison-page .projection-context-item { min-width:0; max-width:none; width:auto; margin:0; padding:16px; overflow-wrap:break-word; }
+.risk-comparison-page .rc-findings-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; width:100%; align-items:stretch; }
+.risk-comparison-page .rc-findings-grid > *, .risk-comparison-page .rc-details-grid > * { min-width:0; max-width:none; width:auto; margin:0; }
+.risk-comparison-page .rc-details-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; width:100%; }
+.risk-comparison-page .rc-accordion { display:block; overflow:hidden; border:1px solid rgba(167,139,250,.22); border-radius:12px; }
+.risk-comparison-page .rc-section-toggle { display:flex; width:100%; align-items:center; justify-content:space-between; text-align:left; }
+.risk-comparison-page .rc-collapse { width:100%; min-width:0; }
+.risk-comparison-page .rc-collapse > .dashboard-card { width:100%; margin:0; }
+.risk-comparison-page .rc-mini-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.risk-comparison-page .rc-scroll-area { width:100%; min-width:0; }
+.risk-comparison-page .rc-methodology-section, .risk-comparison-page .comparison-explanation { width:100%; min-width:0; }
+@media(max-width:1200px) { .risk-comparison-page .stats-grid, .risk-comparison-page .reduction-grid, .risk-comparison-page .projection-context-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .risk-comparison-page .rc-findings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:850px) { .risk-comparison-page .comparison-state-grid { grid-template-columns:minmax(0,1fr); } .risk-comparison-page .comparison-arrow { flex-direction:row; padding:6px; } .risk-comparison-page .comparison-arrow-icon { transform:rotate(90deg); } .risk-comparison-page .rc-findings-grid, .risk-comparison-page .rc-details-grid { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:600px) { .dashboard-overview.risk-comparison-page { padding:12px; gap:12px; } .risk-comparison-page .stats-grid, .risk-comparison-page .reduction-grid, .risk-comparison-page .projection-context-grid, .risk-comparison-page .comparison-metrics, .risk-comparison-page .rc-mini-stats { grid-template-columns:minmax(0,1fr); } .risk-comparison-page .comparison-state-card { padding:14px; } }
 </style>
-
-
-
-
-
-
-
-
 
 <section class="dashboard-overview risk-comparison-page">
 
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          INTRODUCTION
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <div class="welcome-section">
 
-
-
         <div>
-
-
 
             <h3>Risk Reduction Projection</h3>
 
-
-
             <p>
-
-
 
                 AttackLens compares the current security posture
 
-
-
                 with an estimated post-mitigation state using
-
-
 
                 evidence-supported recommendations.
 
-
-
             </p>
-
-
 
         </div>
 
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
     <!-- ==========================================
 
          ASSET SELECTION — REQUIRED BEFORE ANALYSIS
 
     =========================================== -->
-
-
 
     <section class="rc-asset-selector" aria-label="Asset selection">
 
@@ -311,15 +277,13 @@ Compare the current security state with the projected post-mitigation state
 
         </div>
 
-
-
         <form method="get" action="{{ url_for('risk_comparison.risk_comparison') }}" id="rc-asset-form">
 
             <label for="rc-asset-id">Select Asset</label>
 
             <select id="rc-asset-id" name="asset_id" required
 
-                    onchange="if (this.value) this.form.submit();">
+                    >
 
                 <option value="" {% if not has_selected_asset|default(false) %}selected{% endif %} disabled>
 
@@ -329,7 +293,7 @@ Compare the current security state with the projected post-mitigation state
 
                 {% for asset in available_assets|default([], true) %}
 
-                    <option value="{{ asset.id }}" {% if selected_asset_id|default('')|string == asset.id|string %}selected{% endif %}>
+                    <option value="{{ asset.id }}" {% if selected_asset_id|default('')|string ==  asset.id|string %}selected{% endif %}>
 
                         {{ asset.name }}{% if asset.address and asset.address != asset.name %} — {{ asset.address }}{% endif %}
 
@@ -344,8 +308,6 @@ Compare the current security state with the projected post-mitigation state
         </form>
 
     </section>
-
-
 
     {% if not has_selected_asset|default(false) %}
 
@@ -401,2923 +363,1376 @@ Compare the current security state with the projected post-mitigation state
 
     </p>
 
-
-
     <!-- ==========================================
-
-
 
          SUMMARY
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <div class="stats-grid">
 
-
-
-
-
-
-
         <!-- CURRENT RISK -->
-
-
-
-
-
-
 
         <article class="stat-card">
 
-
-
             <div class="stat-card-header">
 
-
-
                 <span class="stat-label">
-
-
 
                     Current Risk
 
-
-
                 </span>
-
-
 
                 <span class="stat-icon">!</span>
 
-
-
             </div>
 
-
-
-
-
-
-
             <div class="stat-value">
-
-
 
                 {{ current_state.risk_score|default(0) }}
 
-
-
             </div>
 
-
-
-
-
-
-
             <p class="stat-description">
-
-
 
                 {{ current_state.risk_level|default("LOW") }}
 
-
-
                 current environment risk
-
-
 
             </p>
 
-
-
         </article>
-
-
-
-
-
-
-
-
-
-
 
         <!-- PROJECTED RISK -->
 
-
-
-
-
-
-
         <article class="stat-card">
-
-
 
             <div class="stat-card-header">
 
-
-
                 <span class="stat-label">
-
-
 
                     Projected Risk
 
-
-
                 </span>
-
-
 
                 <span class="stat-icon">&darr;</span>
 
-
-
             </div>
 
-
-
-
-
-
-
             <div class="stat-value">
-
-
 
                 {{ projected_state.risk_score|default(0) }}
 
-
-
             </div>
 
-
-
-
-
-
-
             <p class="stat-description">
-
-
 
                 {{ projected_state.risk_level|default("LOW") }}
 
-
-
                 projected post-mitigation risk
-
-
 
             </p>
 
-
-
         </article>
-
-
-
-
-
-
-
-
-
-
 
         <!-- RISK REDUCTION -->
 
-
-
-
-
-
-
         <article class="stat-card">
-
-
 
             <div class="stat-card-header">
 
-
-
                 <span class="stat-label">
-
-
 
                     Risk Reduction
 
-
-
                 </span>
-
-
 
                 <span class="stat-icon">&#10003;</span>
 
-
-
             </div>
 
-
-
-
-
-
-
             <div class="stat-value">
-
-
 
                 {{ reduction.risk_points|default(0) }}
 
-
-
             </div>
 
-
-
-
-
-
-
             <p class="stat-description">
-
-
 
                 Estimated reduction in risk-score points
 
-
-
             </p>
 
-
-
         </article>
-
-
-
-
-
-
-
-
-
-
 
         <!-- REDUCTION PERCENTAGE -->
 
-
-
-
-
-
-
         <article class="stat-card">
-
-
 
             <div class="stat-card-header">
 
-
-
                 <span class="stat-label">
-
-
 
                     Reduction %
 
-
-
                 </span>
-
-
 
                 <span class="stat-icon">%</span>
 
-
-
             </div>
-
-
-
-
-
-
 
             <div class="stat-value">
 
-
-
                 {{ reduction.risk_percentage|default(0) }}%
 
-
-
             </div>
-
-
-
-
-
-
 
             <p class="stat-description">
 
-
-
                 Estimated relative risk reduction
 
-
-
             </p>
-
-
 
         </article>
 
-
-
-
-
-
-
     </div>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          CURRENT VS PROJECTED STATE
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
 
-
-
             <div>
-
-
 
                 <h3>Current vs Projected State</h3>
 
-
-
                 <p>
-
-
 
                     Security metrics before and after the projected
 
-
-
                     effect of applicable mitigation recommendations.
-
-
 
                 </p>
 
-
-
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         <div class="comparison-state-grid">
 
-
-
-
-
-
-
             <!-- CURRENT STATE -->
-
-
-
-
-
-
 
             <article class="comparison-state-card current-state">
 
-
-
-
-
-
-
                 <span class="state-label">
-
-
 
                     Current State
 
-
-
                 </span>
-
-
-
-
-
-
 
                 <h4>Before Mitigation</h4>
 
-
-
-
-
-
-
                 <div class="comparison-risk-score">
 
-
-
                     <strong>
-
-
 
                         {{ current_state.risk_score|default(0) }}
 
-
-
                     </strong>
-
-
 
                     <span>/ 100</span>
 
-
-
                 </div>
 
-
-
-
-
-
-
                 <span class="comparison-risk-level">
-
-
 
                     {{ current_state.risk_level|default("LOW") }}
 
-
-
                 </span>
-
-
-
-
-
-
 
                 <div class="comparison-metrics">
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Vulnerabilities</span>
 
-
-
                         <strong>
-
-
 
                             {{ current_state.vulnerability_count|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Vulnerable Assets</span>
 
-
-
                         <strong>
-
-
 
                             {{ current_state.vulnerable_assets|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Open Ports</span>
 
-
-
                         <strong>
-
-
 
                             {{ current_state.open_ports|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Sensitive Ports</span>
 
-
-
                         <strong>
-
-
 
                             {{ current_state.sensitive_ports|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Attack Paths</span>
 
-
-
                         <strong>
-
-
 
                             {{ current_state.attack_paths|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>High-Risk Paths</span>
 
-
-
                         <strong>
-
-
 
                             {{ current_state.high_risk_attack_paths|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                 </div>
 
-
-
             </article>
-
-
-
-
-
-
-
-
-
-
 
             <!-- PROJECTION ARROW -->
 
-
-
-
-
-
-
             <div class="comparison-arrow">
-
-
 
                 <div class="comparison-arrow-icon">
 
-
-
                     &rarr;
 
-
-
                 </div>
-
-
 
                 <span>Projected</span>
 
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
             <!-- PROJECTED STATE -->
 
-
-
-
-
-
-
             <article class="comparison-state-card projected-state">
-
-
-
-
-
-
 
                 <span class="state-label">
 
-
-
                     Projected State
 
-
-
                 </span>
-
-
-
-
-
-
 
                 <h4>After Mitigation</h4>
 
-
-
-
-
-
-
                 <div class="comparison-risk-score">
-
-
 
                     <strong>
 
-
-
                         {{ projected_state.risk_score|default(0) }}
-
-
 
                     </strong>
 
-
-
                     <span>/ 100</span>
 
-
-
                 </div>
-
-
-
-
-
-
 
                 <span class="comparison-risk-level">
 
-
-
                     {{ projected_state.risk_level|default("LOW") }}
-
-
 
                 </span>
 
-
-
-
-
-
-
                 <div class="comparison-metrics">
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Vulnerabilities</span>
 
-
-
                         <strong>
-
-
 
                             {{ projected_state.vulnerability_count|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Vulnerable Assets</span>
 
-
-
                         <strong>
-
-
 
                             {{ projected_state.vulnerable_assets|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Open Ports</span>
 
-
-
                         <strong>
-
-
 
                             {{ projected_state.open_ports|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Sensitive Ports</span>
 
-
-
                         <strong>
-
-
 
                             {{ projected_state.sensitive_ports|default(0) }}
 
-
-
                         </strong>
-
-
 
                     </div>
 
-
-
-
-
-
-
                     <div class="comparison-metric">
-
-
 
                         <span>Attack Paths</span>
 
-
-
                         <strong>
-
-
 
                             {{ projected_state.attack_paths|default(0) }}
 
-
-
                         </strong>
 
-
-
                     </div>
-
-
-
-
-
-
 
                     <div class="comparison-metric">
 
-
-
                         <span>High-Risk Paths</span>
-
-
 
                         <strong>
 
-
-
                             {{ projected_state.high_risk_attack_paths|default(0) }}
-
-
 
                         </strong>
 
-
-
                     </div>
-
-
-
-
-
-
 
                 </div>
 
-
-
             </article>
 
-
-
-
-
-
-
         </div>
-
-
 
     </section>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          PROJECTED REDUCTION BREAKDOWN
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <details class="rc-accordion" open><summary class="rc-section-toggle"><div><h3>Projected Reduction Breakdown</h3><p>Click to hide this analysis section</p></div></summary><div class="rc-collapse"><section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
 
-
-
             <div>
-
-
 
                 <h3>Projected Reduction Breakdown</h3>
 
-
-
                 <p>
-
-
 
                     Estimated changes supported by the currently
 
-
-
                     applicable mitigation recommendations.
-
-
 
                 </p>
 
-
-
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         <div class="reduction-grid">
 
-
-
-
-
-
-
             <article class="reduction-item">
-
-
 
                 <span>Risk Score</span>
 
-
-
                 <strong>
-
-
 
                     {{ reduction.risk_points|default(0) }}
 
-
-
                 </strong>
 
-
-
                 <p>
-
-
 
                     {{ reduction.risk_percentage|default(0) }}%
 
-
-
                     projected reduction
-
-
 
                 </p>
 
-
-
             </article>
 
-
-
-
-
-
-
             <article class="reduction-item">
-
-
 
                 <span>Vulnerabilities</span>
 
-
-
                 <strong>
-
-
 
                     {{ reduction.vulnerability_count|default(0) }}
 
-
-
                 </strong>
-
-
 
                 <p>Estimated remediated findings</p>
 
-
-
             </article>
 
-
-
-
-
-
-
             <article class="reduction-item">
-
-
 
                 <span>Sensitive Ports</span>
 
-
-
                 <strong>
-
-
 
                     {{ reduction.sensitive_ports|default(0) }}
 
-
-
                 </strong>
-
-
 
                 <p>Estimated exposure reduction</p>
 
-
-
             </article>
-
-
-
-
-
-
 
             <article class="reduction-item">
 
-
-
                 <span>Attack Paths</span>
 
-
-
                 <strong>
-
-
 
                     {{ reduction.attack_paths|default(0) }}
 
-
-
                 </strong>
-
-
 
                 <p>Estimated disrupted paths</p>
 
-
-
             </article>
-
-
-
-
-
-
 
         </div>
 
-
-
     </section></div></details>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          PROJECTION CONTEXT
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <details class="rc-accordion" ><summary class="rc-section-toggle"><div><h3>Projection Context</h3><p>Click to expand this analysis section</p></div></summary><div class="rc-collapse"><section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
 
-
-
             <div>
-
-
 
                 <h3>Projection Context</h3>
 
-
-
                 <p>
-
-
 
                     Evidence used to estimate the projected state.
 
-
-
                 </p>
-
-
 
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         <div class="projection-context-grid">
 
-
-
-
-
-
-
             <article class="projection-context-item">
 
-
-
                 <strong>
-
-
 
                     {{ statistics.recommendation_count|default(0) }}
 
-
-
                 </strong>
 
-
-
                 <span>
-
-
 
                     Total generated mitigation recommendations
 
-
-
                 </span>
-
-
 
             </article>
 
-
-
-
-
-
-
             <article class="projection-context-item">
 
-
-
                 <strong>
-
-
 
                     {{ statistics.applicable_recommendations|default(0) }}
 
-
-
                 </strong>
 
-
-
                 <span>
-
-
 
                     Recommendations used in this projection
 
-
-
                 </span>
-
-
 
             </article>
 
-
-
-
-
-
-
             <article class="projection-context-item">
 
-
-
                 <strong>
-
-
 
                     {{ statistics.affected_assets|default(0) }}
 
-
-
                 </strong>
 
-
-
                 <span>
-
-
 
                     Assets associated with projected actions
 
-
-
                 </span>
 
-
-
             </article>
-
-
-
-
-
-
 
             <article class="projection-context-item">
 
-
-
                 <strong>
-
-
 
                     {{ statistics.risk_reduction_percentage|default(0) }}%
 
-
-
                 </strong>
-
-
 
                 <span>
 
-
-
                     Estimated reduction from current risk
-
-
 
                 </span>
 
-
-
             </article>
-
-
-
-
-
-
 
         </div>
 
-
-
     </section></div></details>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          DETAILED ANALYSIS INTRODUCTION
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <div class="welcome-section">
 
-
-
         <div>
-
-
 
             <h3>Detailed Risk Comparison Analysis</h3>
 
-
-
             <p>
-
-
 
                 Review the evidence, remaining exposure,
 
-
-
                 mitigation effects and validation requirements
-
-
 
                 behind the projected security posture.
 
-
-
             </p>
 
-
-
         </div>
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          EXECUTIVE ASSESSMENT
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <details class="rc-accordion" ><summary class="rc-section-toggle"><div><h3>Executive Risk Assessment</h3><p>Click to expand this analysis section</p></div></summary><div class="rc-collapse"><section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
 
-
-
             <div>
-
-
 
                 <h3>Executive Risk Assessment</h3>
 
-
-
                 <p>
-
-
 
                     Overall interpretation of the current
 
-
-
                     and projected security posture.
-
-
 
                 </p>
 
-
-
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         {% set assessment = executive_assessment|default({}, true) %}
 
-
-
-
-
-
-
         {% if assessment %}
-
-
-
-
-
-
 
             {% if assessment is mapping %}
 
-
-
-
-
-
-
                 <div class="comparison-metrics">
-
-
-
-
-
-
 
                     {% for key, value in assessment.items() %}
 
-
-
-
-
-
-
                         <div class="comparison-metric">
-
-
-
-
-
-
 
                             <span>
 
-
-
                                 {{ key|replace("_", " ")|title }}
-
-
 
                             </span>
 
-
-
-
-
-
-
                             <strong>
-
-
 
                                 {% if value is mapping or
 
-
-
                                       (value is sequence and value is not string) %}
-
-
 
                                     {{ readable_value(value) }}
 
-
-
                                 {% else %}
-
-
 
                                     {{ value if value is not none else "Not available" }}
 
-
-
                                 {% endif %}
-
-
 
                             </strong>
 
-
-
-
-
-
-
                         </div>
-
-
-
-
-
-
 
                     {% endfor %}
 
-
-
-
-
-
-
                 </div>
 
-
-
-
-
-
-
             {% else %}
-
-
-
-
-
-
 
                 <p>{{ assessment }}</p>
 
-
-
-
-
-
-
             {% endif %}
-
-
-
-
-
-
 
         {% else %}
 
-
-
-
-
-
-
             <p>
-
-
 
                 No detailed executive assessment is available
 
-
-
                 for the current analysis.
 
-
-
             </p>
-
-
-
-
-
-
 
         {% endif %}
 
-
-
-
-
-
-
     </section></div></details>    <details class="dashboard-card rc-accordion" open>
+
         <summary class="rc-section-toggle"><div><h3>Risk Reduction Explanation</h3><p>Plain-language explanation of the projected risk change.</p></div></summary>
+
         <div class="rc-collapse">
+
             <p class="rc-projection-summary">
+
                 For <strong>{{ selected_asset_name|default('the selected asset', true) }}</strong>, AttackLens estimates a change
+
                 from <strong>{{ current_state.risk_score|default(0) }}</strong> to
+
                 <strong>{{ projected_state.risk_score|default(0) }}</strong> risk points —
+
                 a projected reduction of <strong>{{ reduction.risk_points|default(0) }} points
+
                 ({{ reduction.risk_percentage|default(0) }}%)</strong> if the relevant controls are successfully implemented.
+
                 These changes are not verified remediation results.
+
             </p>
+
             <div class="rc-mini-stats">
+
                 <div class="rc-mini-stat"><strong>{{ reduction.sensitive_ports|default(0) }}</strong><span>Potentially reduced sensitive exposures</span></div>
+
                 <div class="rc-mini-stat"><strong>{{ reduction.attack_paths|default(0) }}</strong><span>Potentially disrupted attack paths</span></div>
+
                 <div class="rc-mini-stat"><strong>{{ projected_state.vulnerability_count|default(0) }}</strong><span>Vulnerabilities still projected</span></div>
+
             </div>
+
             {% set explanations = risk_reduction_details|default([], true) %}
+
             {% if explanations is mapping %}
+
                 <div class="rc-compact-panel">{{ readable_value(explanations) }}</div>
+
             {% elif explanations is sequence and explanations is not string and explanations %}
+
                 <h4 style="margin:0 0 12px">Recommendations contributing to this estimate</h4>
+
                 <div class="rc-scroll-area rc-scroll-area--tall">
+
                 {% for item in explanations %}
+
                     {% if item is mapping %}
+
                     <article class="rc-record">
+
                         <div class="rc-item-top"><h4>{{ item.title|default(item.finding_label|default('Mitigation recommendation')) }}</h4><span class="rc-pill">{{ item.estimated_risk_points|default(0) }} risk points</span></div>
+
                         <p>{{ item.category_label|default(item.category|default('Mitigation'))|replace('_',' ')|title }} — projected contribution, subject to implementation and verification.</p>
+
                         {% if item.affected_port_labels|default([],true) %}<p><strong>Relevant services:</strong> {{ item.affected_port_labels|join(', ') }}</p>{% endif %}
+
                         {% if item.affected_paths|default([],true) %}<p><strong>Attack paths affected:</strong> {{ item.affected_paths|length }}</p>{% endif %}
+
                         {% if item.affected_findings|default([],true) %}<p><strong>Findings affected:</strong> {{ item.affected_findings|length }}</p>{% endif %}
+
                     </article>
+
                     {% else %}<div class="rc-record">{{ item }}</div>{% endif %}
+
                 {% endfor %}
+
                 </div>
+
             {% else %}<p class="rc-muted">No individual reduction explanations were returned by the analysis engine.</p>{% endif %}
+
             <p class="rc-subtle" style="margin-top:13px">A reduction in exposure does not necessarily mean an open port has been closed. Rescanning is required to verify the actual outcome.</p>
+
 </div>
+
     </details>    {# Friendly display labels: the analysis engine may put an opaque path ID in title. #}
+
     {% macro friendly_path_label(path, fallback='Attack route') -%}
+
       {%- if path is mapping -%}
+
         {%- set raw = (path.title|default('',true)|string) -%}
+
         {%- set raw_id = (path.path_id|default('',true)|string) -%}
+
         {%- set label = raw if raw and not raw.startswith('path:') else '' -%}
+
         {%- set reference = raw_id if raw_id else raw -%}
+
         {%- set port = path.port|default(path.target_port|default('',true),true) -%}
+
         {%- if not port and ':tcp:' in reference -%}
+
           {%- set port = reference.rsplit(':tcp:',1)[-1] -%}
+
         {%- endif -%}
+
         {%- if label -%}
+
           {{- label -}}{% if port and ('TCP/' ~ port) not in label %} — TCP/{{ port }}{% endif %}
+
         {%- elif port|string == '2121' -%}ProFTPD — TCP/2121
+
         {%- elif port|string == '139' -%}Samba — TCP/139
+
         {%- elif port|string == '53' -%}ISC BIND — TCP/53
+
         {%- elif port -%}Service entry — TCP/{{ port }}
+
         {%- else -%}{{ fallback }}
+
         {%- endif -%}
+
       {%- else -%}
+
         {%- set reference = path|string -%}
+
         {%- if ':tcp:' in reference -%}
+
           {%- set port = reference.rsplit(':tcp:',1)[-1] -%}
+
           {%- if port == '2121' -%}ProFTPD — TCP/2121
+
           {%- elif port == '139' -%}Samba — TCP/139
+
           {%- elif port == '53' -%}ISC BIND — TCP/53
+
           {%- else -%}Service entry — TCP/{{ port }}{%- endif -%}
+
         {%- elif reference.startswith('path:') -%}{{ fallback }}
+
         {%- else -%}{{ reference }}{%- endif -%}
+
       {%- endif -%}
+
     {%- endmacro %}
+
     <!-- THREE COMPACT FINDINGS PANELS: one horizontal row on desktop -->
+
     <section class="rc-findings-grid" aria-label="Risk findings">
+
       <article class="dashboard-card rc-compact-panel">
+
         <h3>Residual Risk Register</h3>
+
         <p class="rc-muted">CVE identifiers remaining in the projected state.</p>
+
         {% set residual_items = residual_risks|default([],true) %}
+
         <div class="rc-scroll-area rc-scroll-area--tall">
+
           {% if residual_items %}<ul class="rc-list">
+
             {% for risk in residual_items %}
+
               {% if risk is mapping %}
+
                 {% set cve = risk.title|default(risk.name|default(risk.risk_id|default(risk.finding_label|default('Unidentified finding')))) %}
+
               {% else %}{% set cve = risk %}{% endif %}
+
               <li><div class="rc-item-top"><strong>{{ cve }}</strong><span class="rc-pill">Residual</span></div></li>
+
             {% endfor %}
+
           </ul>{% else %}<p class="rc-muted">No itemized residual risks were returned; this does not establish that the asset is risk-free.</p>{% endif %}
+
         </div>
+
       </article>
+
       <article class="dashboard-card rc-compact-panel">
+
         <h3>Projected Disrupted Attack Paths</h3>
+
         <p class="rc-muted">Routes estimated to be interrupted by mitigation.</p>
+
         {% set disrupted_paths = disrupted_attack_paths|default([],true) %}
+
         <div class="rc-scroll-area rc-scroll-area--tall">
+
           {% if disrupted_paths %}<ul class="rc-list">
+
             {% for path in disrupted_paths %}
+
               <li><div class="rc-item-top"><strong>{{ friendly_path_label(path, 'Attack route ' ~ loop.index) }}</strong><span class="rc-pill">Projected</span></div>
+
                 {% if path is mapping %}<details class="rc-item-details"><summary>View supporting evidence</summary><div class="rc-readable-list">
+
                 {% for key,value in path.items() if key not in ['_id','asset_id','created_by','id','path_id','recommendation_ids'] %}
+
                 <div class="rc-readable-row"><dt>{{ key|replace('_',' ')|title }}</dt><dd>{{ readable_value(value) }}</dd></div>
+
                 {% endfor %}</div></details>{% endif %}
+
               </li>
+
             {% endfor %}
+
           </ul>{% else %}<p class="rc-muted">No individually identified disrupted paths were returned.</p>{% endif %}
+
         </div>
+
       </article>
+
       <article class="dashboard-card rc-compact-panel">
+
         <h3>Remaining Attack Paths</h3>
+
         <p class="rc-muted">Routes that may remain after mitigation.</p>
+
         {% set remaining_paths = remaining_attack_paths|default([],true) %}
+
         <div class="rc-scroll-area rc-scroll-area--tall">
+
           {% if remaining_paths %}<ul class="rc-list">
+
             {% for path in remaining_paths %}
+
               <li><div class="rc-item-top"><strong>{{ friendly_path_label(path, 'Attack route ' ~ loop.index) }}</strong><span class="rc-pill">Remaining</span></div>
+
                 {% if path is mapping %}<details class="rc-item-details"><summary>View supporting evidence</summary><div class="rc-readable-list">
+
                 {% for key,value in path.items() if key not in ['_id','asset_id','created_by','id','path_id','recommendation_ids'] %}
+
                 <div class="rc-readable-row"><dt>{{ key|replace('_',' ')|title }}</dt><dd>{{ readable_value(value) }}</dd></div>
+
                 {% endfor %}</div></details>{% endif %}
+
               </li>
+
             {% endfor %}
+
           </ul>{% else %}<p class="rc-muted">No itemized remaining paths were returned. This does not prove all attack routes are eliminated.</p>{% endif %}
+
         </div>
+
       </article>
+
     </section>    <details class="dashboard-card rc-accordion" >
+
         <summary class="rc-section-toggle"><div><h3>Mitigation Impact Analysis</h3><p>Recommendation impact, with details available on demand.</p></div></summary>
+
         <div class="rc-collapse">
+
         {% set impact_items = mitigation_impact|default([],true) %}
+
         {% if impact_items is mapping %}<div class="rc-scroll-area">{{ readable_value(impact_items) }}</div>
+
         {% elif impact_items %}<div class="rc-scroll-area rc-scroll-area--tall rc-details-grid">
+
             {% for impact in impact_items %}
+
               <article class="rc-record">
+
               {% if impact is mapping %}
+
                 <div class="rc-item-top"><h4>{{ impact.title|default(impact.finding_label|default('Mitigation ' ~ loop.index)) }}</h4><span class="rc-pill">{{ impact.estimated_risk_points|default(0) }} points</span></div>
+
                 <p>{{ impact.category_label|default(impact.category|default('Mitigation'))|replace('_',' ')|title }}</p>
+
                 <p class="rc-subtle">{{ impact.affected_findings|default([],true)|length }} findings · {{ impact.affected_ports|default([],true)|length }} ports · {{ impact.affected_paths|default([],true)|length }} paths</p>
+
                 <details class="rc-item-details"><summary>View affected services and details</summary>
+
                   {% if impact.affected_port_labels|default([],true) %}<p><strong>Services:</strong> {{ impact.affected_port_labels|join(', ') }}</p>{% endif %}
+
                   {% for key,value in impact.items() if key not in ['_id','asset_id','created_by','id','recommendation_id','asset_name','asset_address','title','finding_label','category','category_label','estimated_risk_points','affected_port_labels','affected_ports','affected_paths','affected_findings'] %}
+
                     <div class="rc-readable-row"><dt>{{ key|replace('_',' ')|title }}</dt><dd>{{ readable_value(value) }}</dd></div>
+
                   {% endfor %}
+
                 </details>
+
               {% else %}<p>{{ impact }}</p>{% endif %}
+
               </article>
+
             {% endfor %}
+
         </div>{% else %}<p class="rc-muted">No itemized mitigation impact records were returned.</p>{% endif %}
+
 </div>
+
     </details>    <details class="dashboard-card rc-accordion" >
+
         <summary class="rc-section-toggle"><div><h3>Asset-Level Risk Comparison</h3><p>Expand only the findings or metrics you need.</p></div></summary>
+
         <div class="rc-collapse">
+
         {% set asset_items = asset_comparisons|default([],true) %}
+
         {% if asset_items %}<div class="rc-scroll-area rc-scroll-area--tall">
+
           {% for asset in asset_items if not selected_asset_id|default('',true) or (asset is mapping and (asset.get('asset_id',asset.get('_id',asset.get('id','')))|string == selected_asset_id|string)) %}
+
             <article class="rc-record">
+
               {% if asset is mapping %}
+
                 <h4>{{ asset.asset_name|default(asset.name|default(asset.target|default('Selected asset'))) }}</h4>
+
                 <div class="rc-details-grid">
+
                   {% for key,value in asset.items() if key not in ['_id','asset_id','created_by','id','asset_name','name','target'] %}
+
                     <details class="rc-compact-panel"><summary style="cursor:pointer;font-weight:600">{{ key|replace('_',' ')|title }}{% if value is sequence and value is not string and value is not mapping %} ({{ value|length }}){% endif %}</summary>
+
                       <div class="rc-scroll-area" style="margin-top:10px">{{ readable_value(value) }}</div>
+
                     </details>
+
                   {% endfor %}
+
                 </div>
+
               {% else %}<p>{{ asset }}</p>{% endif %}
+
             </article>
+
           {% endfor %}
+
         </div>{% else %}<p class="rc-muted">No asset-level comparison records are available.</p>{% endif %}
+
 </div>
+
     </details>
 
-
-
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          PROJECTION ASSUMPTIONS
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <details class="rc-accordion" ><summary class="rc-section-toggle"><div><h3>Projection Assumptions and Limitations</h3><p>Click to expand this analysis section</p></div></summary><div class="rc-collapse"><section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
 
-
-
             <div>
-
-
 
                 <h3>Projection Assumptions and Limitations</h3>
 
-
-
                 <p>
-
-
 
                     Conditions and limitations affecting
 
-
-
                     the interpretation of projected results.
-
-
 
                 </p>
 
-
-
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         {% set assumptions = projection_assumptions|default([], true) %}
 
-
-
-
-
-
-
         {% if assumptions %}
-
-
-
-
-
-
 
             {% if assumptions is mapping %}
 
-
-
-
-
-
-
                 <div class="comparison-metrics">
-
-
-
-
-
-
 
                     {% for key, value in assumptions.items() %}
 
-
-
-
-
-
-
                         <div class="comparison-metric">
-
-
 
                             <span>
 
-
-
                                 {{ key|replace("_", " ")|title }}
-
-
 
                             </span>
 
-
-
                             <strong>
-
-
 
                                 {% if value is mapping or
 
-
-
                                       (value is sequence and value is not string) %}
-
-
 
                                     {{ readable_value(value) }}
 
-
-
                                 {% else %}
-
-
 
                                     {{ value if value is not none else "Not available" }}
 
-
-
                                 {% endif %}
-
-
 
                             </strong>
 
-
-
                         </div>
-
-
-
-
-
-
 
                     {% endfor %}
 
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
 
             {% else %}
 
-
-
-
-
-
-
                 <div class="comparison-metrics">
-
-
-
-
-
-
 
                     {% for assumption in assumptions %}
 
-
-
-
-
-
-
                         <div class="comparison-metric">
 
-
-
                             <span>
-
-
 
                                 Assumption {{ loop.index }}
 
-
-
                             </span>
-
-
 
                             <strong>{{ assumption }}</strong>
 
-
-
                         </div>
-
-
-
-
-
-
 
                     {% endfor %}
 
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
 
             {% endif %}
 
-
-
-
-
-
-
         {% else %}
 
-
-
-
-
-
-
             <p>
-
-
 
                 No additional assumptions were returned
 
-
-
                 by the analysis engine.
-
-
 
             </p>
 
-
-
-
-
-
-
         {% endif %}
-
-
-
-
-
-
 
         <p>
 
-
-
             A projected reduction in sensitive-port exposure
-
-
 
             does not necessarily mean the corresponding ports
 
-
-
             will be closed. Network restrictions, access-control
-
-
 
             changes and service removal have different effects.
 
-
-
         </p>
-
-
-
-
-
-
 
     </section></div></details>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          VERIFICATION STEPS
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <details class="rc-accordion" ><summary class="rc-section-toggle"><div><h3>Implementation and Verification Plan</h3><p>Click to expand this analysis section</p></div></summary><div class="rc-collapse"><section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
 
-
-
             <div>
-
-
 
                 <h3>Implementation and Verification Plan</h3>
 
-
-
                 <p>
-
-
 
                     Recommended checks before treating the
 
-
-
                     projected improvements as achieved.
-
-
 
                 </p>
 
-
-
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         {% set steps = verification_steps|default([], true) %}
 
-
-
-
-
-
-
         {% if steps %}
-
-
-
-
-
-
 
             {% if steps is mapping %}
 
-
-
-
-
-
-
                 <div class="comparison-metrics">
-
-
-
-
-
-
 
                     {% for key, value in steps.items() %}
 
-
-
-
-
-
-
                         <div class="comparison-metric">
 
-
-
                             <span>
-
-
 
                                 {{ key|replace("_", " ")|title }}
 
-
-
                             </span>
 
-
-
                             <strong>
-
-
 
                                 {% if value is mapping or
 
-
-
                                       (value is sequence and value is not string) %}
-
-
 
                                     {{ readable_value(value) }}
 
-
-
                                 {% else %}
-
-
 
                                     {{ value if value is not none else "Not available" }}
 
-
-
                                 {% endif %}
-
-
 
                             </strong>
 
-
-
                         </div>
-
-
-
-
-
-
 
                     {% endfor %}
 
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
 
             {% else %}
 
-
-
-
-
-
-
                 <div class="comparison-metrics">
-
-
-
-
-
-
 
                     {% for step in steps %}
 
-
-
-
-
-
-
                         <div class="comparison-metric">
-
-
-
-
-
-
 
                             <span>
 
-
-
                                 Step {{ loop.index }}
-
-
 
                             </span>
 
-
-
-
-
-
-
                             <strong>
-
-
 
                                 {% if step is mapping %}
 
-
-
                                     {{ readable_value(step) }}
-
-
 
                                 {% else %}
 
-
-
                                     {{ step }}
-
-
 
                                 {% endif %}
 
-
-
                             </strong>
-
-
-
-
-
-
 
                         </div>
 
-
-
-
-
-
-
                     {% endfor %}
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
             {% endif %}
-
-
-
-
-
-
 
         {% else %}
 
-
-
-
-
-
-
             <p>
-
-
 
                 No analysis-specific verification steps
 
-
-
                 were returned.
-
-
 
             </p>
 
-
-
-
-
-
-
         {% endif %}
-
-
-
-
-
-
 
         <div class="comparison-explanation">
 
-
-
-
-
-
-
             <div class="comparison-explanation-icon">
-
-
 
                 &#10003;
 
-
-
             </div>
 
-
-
-
-
-
-
             <div class="comparison-explanation-content">
-
-
-
-
-
-
 
                 <h4>Post-Mitigation Validation</h4>
 
-
-
-
-
-
-
                 <p>
-
-
 
                     Implement approved recommendations in
 
-
-
                     authorized environments, verify the relevant
-
-
 
                     controls, rescan affected assets, rerun
 
-
-
                     vulnerability and attack-path analysis,
-
-
 
                     and compare the new observed results
 
-
-
                     with this projection.
-
-
 
                 </p>
 
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
     </section></div></details>
 
-
-
-
-
-
-
-
-
-
-
     <!-- ==========================================
-
-
 
          HOW RISK COMPARISON WORKS
 
-
-
     =========================================== -->
-
-
-
-
-
-
 
     <div class="rc-methodology-section"><section class="dashboard-card">
 
-
-
-
-
-
-
         <div class="card-header">
-
-
 
             <div>
 
-
-
                 <h3>How Risk Comparison Works</h3>
 
-
-
                 <p>
-
-
 
                     Analytical projection rather than
 
-
-
                     automatic remediation.
-
-
 
                 </p>
 
-
-
             </div>
 
-
-
         </div>
-
-
-
-
-
-
 
         <div class="comparison-explanation">
 
-
-
-
-
-
-
             <div class="comparison-explanation-icon">
-
-
 
                 &darr;
 
-
-
             </div>
-
-
-
-
-
-
 
             <div class="comparison-explanation-content">
 
-
-
-
-
-
-
                 <h4>Projected Post-Mitigation State</h4>
-
-
-
-
-
-
 
                 <p>
 
-
-
                     AttackLens estimates how the current security posture
-
-
 
                     could change if the applicable mitigation recommendations
 
-
-
                     are successfully implemented.
-
-
-
-
-
-
 
                     The projected state does not indicate that AttackLens
 
-
-
                     automatically modified, patched, filtered, or reconfigured
-
-
 
                     the analyzed systems.
 
-
-
                 </p>
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
 
      </section></div>
 
-
-
-
-
-
-
     {% endif %}  {# End selected-asset analysis #}
-
-
 
 </section>
 
+<script nonce="{{ csp_nonce|default('') }}">
 
+// Risk Comparison: CSP-compatible asset selection; no external JS file.
 
+document.addEventListener("DOMContentLoaded", function () {
 
+    const assetSelect = document.getElementById("rc-asset-id");
 
+    if (assetSelect) {
 
+        assetSelect.addEventListener("change", function () {
+
+            if (this.value && this.form) this.form.submit();
+
+        });
+
+    }
+
+});
+
+</script>
 
 {% endblock %}

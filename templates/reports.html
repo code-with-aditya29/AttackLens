@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}
@@ -287,6 +288,7 @@ Generate a dedicated security assessment for a completed scan
                                     selected
                                 {% endif %}
                             >
+
                                 {{ scan.target }}
 
                                 {% if scan.scan_profile %}
@@ -296,6 +298,7 @@ Generate a dedicated security assessment for a completed scan
                                 {% if scan.completed_at %}
                                     — {{ scan.completed_at.strftime('%d %b %Y %H:%M') }}
                                 {% endif %}
+
                             </option>
 
                         {% endfor %}
@@ -322,6 +325,7 @@ Generate a dedicated security assessment for a completed scan
                     </span>
 
                     <p>
+
                         <strong>Selected target:</strong>
                         {{ selected_scan.target }}
 
@@ -336,6 +340,7 @@ Generate a dedicated security assessment for a completed scan
                             <strong>Completed:</strong>
                             {{ selected_scan.completed_at.strftime('%d %b %Y %H:%M') }}
                         {% endif %}
+
                     </p>
 
                 </div>
@@ -1160,12 +1165,27 @@ Generate a dedicated security assessment for a completed scan
 
             <!-- ======================================
                  PDF GENERATION FORM
+                 CSRF TOKEN ADDED
             ======================================= -->
 
             <form
                 method="POST"
                 action="{{ url_for('report.generate_report') }}"
             >
+
+                <!--
+                    CSRF PROTECTION
+
+                    Flask-WTF must be initialized in app.py.
+                    The report generation POST endpoint must
+                    enforce CSRF validation server-side.
+                -->
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
                 {% if selected_scan %}
 
@@ -1347,40 +1367,15 @@ Generate a dedicated security assessment for a completed scan
 
 <!-- =========================================================
      BROWSER TIMEZONE DETECTION
+
+     CSP-COMPATIBLE EXTERNAL JAVASCRIPT
+
+     Implementation: static/js/reports.js
 ========================================================= -->
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    let browserTimezone = "UTC";
-
-    try {
-        const detectedTimezone =
-            Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        if (detectedTimezone) {
-            browserTimezone = detectedTimezone;
-        }
-    } catch (error) {
-        console.warn(
-            "AttackLens could not detect the browser timezone.",
-            error
-        );
-    }
-
-    const selectionTimezone =
-        document.getElementById("report-selection-timezone");
-
-    const generationTimezone =
-        document.getElementById("report-generation-timezone");
-
-    if (selectionTimezone) {
-        selectionTimezone.value = browserTimezone;
-    }
-
-    if (generationTimezone) {
-        generationTimezone.value = browserTimezone;
-    }
-});
-</script>
+<script
+    src="{{ url_for('static', filename='js/reports.js') }}"
+    defer
+></script>
 
 {% endblock %}

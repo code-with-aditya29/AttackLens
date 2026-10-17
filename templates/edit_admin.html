@@ -1,0 +1,225 @@
+
+{% extends "base.html" %}
+
+
+{% block title %}
+Edit Admin | AttackLens
+{% endblock %}
+
+
+{% block page_title %}
+Edit Administrator
+{% endblock %}
+
+
+{% block page_subtitle %}
+Update administrator account information
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="form-container">
+
+
+    <div class="form-card">
+
+
+        <h3>
+            Edit Administrator
+        </h3>
+
+
+        <p>
+            Update the administrator's account details.
+            Leave the password fields empty to keep
+            the existing password unchanged.
+        </p>
+
+
+        <!-- ======================================
+             EDIT ADMINISTRATOR FORM
+        ======================================= -->
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'auth.edit_admin',
+                admin_id=admin._id|string
+            ) }}"
+        >
+
+
+            <!-- ======================================
+                 USERNAME
+            ======================================= -->
+
+            <div class="form-group">
+
+                <label for="username">
+
+                    Username
+
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value="{{ admin.username }}"
+                    placeholder="Enter username"
+                    autocomplete="username"
+                    maxlength="100"
+                    required
+                >
+
+            </div>
+
+
+            <!-- ======================================
+                 EMAIL ADDRESS
+            ======================================= -->
+
+            <div class="form-group">
+
+                <label for="email">
+
+                    Email Address
+
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ admin.email }}"
+                    placeholder="Enter email address"
+                    autocomplete="email"
+                    maxlength="254"
+                    required
+                >
+
+            </div>
+
+
+            <!-- ======================================
+                 ACCOUNT ROLE
+                 DISPLAY ONLY
+            ======================================= -->
+
+            <div class="form-group">
+
+                <label>
+
+                    Administrator Role
+
+                </label>
+
+                <input
+                    type="text"
+                    value="Administrator"
+                    disabled
+                >
+
+                <small>
+                    Administrator roles cannot be changed
+                    from this form.
+                </small>
+
+            </div>
+
+
+            <!-- ======================================
+                 OPTIONAL PASSWORD UPDATE
+            ======================================= -->
+
+            <div class="form-group">
+
+                <label for="password">
+
+                    New Password
+
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Leave blank to keep current password"
+                    autocomplete="new-password"
+                    minlength="8"
+                >
+
+                <small>
+                    Enter at least 8 characters if you
+                    want to change the password.
+                </small>
+
+            </div>
+
+
+            <!-- ======================================
+                 CONFIRM NEW PASSWORD
+            ======================================= -->
+
+            <div class="form-group">
+
+                <label for="confirm_password">
+
+                    Confirm New Password
+
+                </label>
+
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Confirm new password"
+                    autocomplete="new-password"
+                    minlength="8"
+                >
+
+            </div>
+
+
+            <!-- ======================================
+                 FORM ACTION BUTTONS
+            ======================================= -->
+
+            <div class="form-actions">
+
+
+                <a
+                    href="{{ url_for('auth.admin_management') }}"
+                    class="secondary-button"
+                >
+
+                    Cancel
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+
+                    Save Changes
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}

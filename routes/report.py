@@ -14,7 +14,11 @@ It delegates analysis and report construction to the
 existing AttackLens service layer.
 """
 
+
 from datetime import datetime, timezone
+from hashlib import sha256
+
+from models.report_model import generate_report_id
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import (
@@ -484,6 +488,16 @@ def generate_report():
                 )
             )
 
+        # Allocate and persist the public report identity only when a PDF
+        # is actually requested and the scan has passed readiness checks.
+        # Never consume report numbers during GET /reports page previews.
+        report_data["report_id"] = get_or_create_scan_report_id(
+            db=db,
+            scan=scan,
+            scan_id=scan_id,
+            current_user_id=current_user_id,
+        )
+
         pdf_buffer = generate_report_pdf(
             report_data,
             authorized_by=session.get(
@@ -521,6 +535,61 @@ def generate_report():
                 scan_id=scan_id
             )
         )
+
+
+# ============================================================
+# PERSISTENT, HUMAN-READABLE REPORT ID
+# ============================================================
+
+def get_or_create_scan_report_id(db, scan, scan_id, current_user_id):
+    """Return the permanent public ID for this user's completed scan.
+
+    The unique MongoDB _id prevents separate users' scans from sharing an
+    identity. An atomic upsert keeps the same ID on repeated PDF downloads.
+    The sequence is allocated by the existing report service's MongoDB
+    counter; numbers can have gaps if concurrent first-time requests race.
+    """
+    from services.report_service import allocate_report_number
+    from pymongo import ReturnDocument
+
+    target = str(scan.get("target") or "").strip()
+    if not target:
+        raise ValueError("A scanned target is required for the Report ID")
+
+    # Avoid exposing a user's account identifier in the MongoDB document key.
+    identity_key = sha256(
+        f"{current_user_id}:{scan_id}".encode("utf-8")
+    ).hexdigest()
+    collection = db["report_identities"]
+
+    existing = collection.find_one({"_id": identity_key})
+    if existing and existing.get("report_id"):
+        return existing["report_id"]
+
+    number = allocate_report_number(db)
+    created_at = datetime.now(timezone.utc)
+    candidate = generate_report_id(
+        report_number=number,
+        target=target,
+        generated_at=created_at,
+        timezone_name="Asia/Kolkata",
+    )
+    record = collection.find_one_and_update(
+        {"_id": identity_key},
+        {"$setOnInsert": {
+            "report_id": candidate,
+            "report_number": number,
+            "scan_id": str(scan_id),
+            "created_by": str(current_user_id),
+            "target": target,
+            "created_at": created_at,
+        }},
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+    if not record or not record.get("report_id"):
+        raise RuntimeError("Could not persist the Report ID")
+    return record["report_id"]
 
 
 # ============================================================
@@ -655,7 +724,7 @@ def create_empty_report_context(
     return {
         "report_id": None,
         "report_type": "security_assessment",
-        "report_version": "1.0",
+        "report_version": "1.1",
         "title": "AttackLens Security Assessment",
         "created_by": None,
         "status": "not_ready",
@@ -676,10 +745,10 @@ def create_empty_report_context(
             "attack_path_count": 0,
             "defense_finding_count": 0,
             "recommendation_count": 0,
-            "overall_risk_score": 0.0,
-            "overall_risk_level": "LOW",
-            "projected_risk_score": 0.0,
-            "projected_risk_level": "LOW",
+            "overall_risk_score": None,
+            "overall_risk_level": None,
+            "projected_risk_score": None,
+            "projected_risk_level": None,
             "projected_reduction_percentage": 0.0,
         },
 
@@ -689,6 +758,21 @@ def create_empty_report_context(
             "vulnerability_summary": {
                 "vulnerability_count": 0,
                 "vulnerable_assets": 0,
+                "findings": [],
+            },
+
+            "security_finding_summary": {
+                "security_finding_count": 0,
+                "affected_assets": 0,
+                "affected_targets": [],
+                "type_counts": {},
+                "severity_counts": {
+                    "CRITICAL": 0,
+                    "HIGH": 0,
+                    "MEDIUM": 0,
+                    "LOW": 0,
+                    "UNKNOWN": 0,
+                },
                 "findings": [],
             },
 
@@ -708,8 +792,8 @@ def create_empty_report_context(
 
             "risk_comparison": {
                 "current_state": {
-                    "risk_score": 0.0,
-                    "risk_level": "LOW",
+                    "risk_score": None,
+                    "risk_level": None,
                     "total_assets": 0,
                     "vulnerable_assets": 0,
                     "vulnerability_count": 0,
@@ -720,8 +804,8 @@ def create_empty_report_context(
                 },
 
                 "projected_state": {
-                    "risk_score": 0.0,
-                    "risk_level": "LOW",
+                    "risk_score": None,
+                    "risk_level": None,
                     "total_assets": 0,
                     "vulnerable_assets": 0,
                     "vulnerability_count": 0,
@@ -748,8 +832,8 @@ def create_empty_report_context(
                     "recommendation_count": 0,
                     "applicable_recommendations": 0,
                     "affected_assets": 0,
-                    "current_risk_score": 0.0,
-                    "projected_risk_score": 0.0,
+                    "current_risk_score": None,
+                    "projected_risk_score": None,
                     "risk_reduction": 0.0,
                     "risk_reduction_percentage": 0.0,
                 },
@@ -789,10 +873,10 @@ def create_empty_report_context(
             "attack_path_count": 0,
             "defense_finding_count": 0,
             "recommendation_count": 0,
-            "current_risk_score": 0.0,
-            "current_risk_level": "LOW",
-            "projected_risk_score": 0.0,
-            "projected_risk_level": "LOW",
+            "current_risk_score": None,
+            "current_risk_level": None,
+            "projected_risk_score": None,
+            "projected_risk_level": None,
             "risk_reduction": 0.0,
             "risk_reduction_percentage": 0.0,
         },

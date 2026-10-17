@@ -15,6 +15,7 @@ by existing AttackLens modules such as:
 - Attack Path Analysis
 - Defense Analysis
 - Mitigation
+
 - Risk Comparison
 
 The resulting document can then be consumed by:
@@ -30,6 +31,9 @@ from datetime import (
 )
 
 from uuid import uuid4
+from math import isfinite
+from zoneinfo import ZoneInfo
+import re
 
 
 # ============================================================
@@ -42,7 +46,7 @@ REPORT_STATUS_READY = "ready"
 
 REPORT_STATUS_NOT_READY = "not_ready"
 
-REPORT_VERSION = "1.0"
+REPORT_VERSION = "1.1"
 
 
 # ============================================================
@@ -63,7 +67,12 @@ def create_report_document(
     risk_comparison=None,
     readiness=None,
     statistics=None,
-    generated_at=None
+    generated_at=None,
+    security_finding_summary=None,
+    scan_metadata=None,
+    report_number=None,
+    report_target=None,
+    report_timezone="Asia/Kolkata"
 ):
     """
     Create a normalized AttackLens report document.
@@ -77,7 +86,20 @@ def create_report_document(
     )
 
     if not normalized_report_id:
-        normalized_report_id = generate_report_id()
+        # Use the human-readable identifier when the service provides
+        # a persistent report number and an authorized scan target.
+        # Otherwise retain the legacy fallback for existing callers.
+        candidate_target = report_target
+        if not candidate_target and isinstance(scope, dict):
+            scope_targets = scope.get("targets")
+            if isinstance(scope_targets, (list, tuple)) and scope_targets:
+                candidate_target = scope_targets[0]
+        normalized_report_id = generate_report_id(
+            report_number=report_number,
+            target=candidate_target,
+            generated_at=generated_at,
+            timezone_name=report_timezone,
+        )
 
     normalized_generated_at = normalize_datetime(
         generated_at
@@ -133,6 +155,13 @@ def create_report_document(
                 executive_summary
             ),
 
+        "scan_metadata": normalize_dictionary(scan_metadata),
+
+        "projection_notice": (
+            "Projected risk reflects hypothetical mitigation outcomes; "
+            "it does not confirm that remediation was implemented or verified."
+        ),
+
         "sections": {
             "assets":
                 normalize_assets(
@@ -143,6 +172,10 @@ def create_report_document(
                 normalize_dictionary(
                     vulnerability_summary
                 ),
+
+            "security_finding_summary": normalize_dictionary(
+                security_finding_summary
+            ),
 
             "attack_path_analysis":
                 normalize_dictionary(
@@ -714,9 +747,9 @@ def determine_report_status(
     ):
         return REPORT_STATUS_NOT_READY
 
-    if readiness.get(
-        "report_generation_available"
-    ):
+    # Preserve the existing public readiness contract.
+    # The report service determines when generation is available.
+    if normalize_boolean(readiness.get("report_generation_available")):
         return REPORT_STATUS_READY
 
     return REPORT_STATUS_NOT_READY
@@ -824,6 +857,8 @@ def normalize_value(
             str
         )
     ):
+        if isinstance(value, float) and not isfinite(value):
+            return None
         return value
 
     if isinstance(
@@ -865,14 +900,49 @@ def normalize_value(
 # IDENTIFIER HELPERS
 # ============================================================
 
-def generate_report_id():
+def generate_report_id(
+    report_number=None,
+    target=None,
+    generated_at=None,
+    timezone_name="Asia/Kolkata"
+):
     """
-    Generate a unique report identifier.
-    """
+    Build an AttackLens report identifier in the agreed format:
+        AL-001-192.168.56.101-20261016
 
-    return str(
-        uuid4()
-    )
+    The report number MUST be allocated persistently by the report
+    service/database. This model never guesses the next number.
+
+    Existing callers that do not yet provide the required information
+    retain a legacy UUID fallback until the service is integrated.
+    """
+    if report_number is None or target is None:
+        return str(uuid4())
+
+    if isinstance(report_number, bool):
+        raise ValueError("report_number must be a positive integer")
+    try:
+        number = int(report_number)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("report_number must be a positive integer") from exc
+    if number < 1 or str(report_number).strip() != str(number):
+        raise ValueError("report_number must be a positive integer")
+
+    # Retain dots, dashes and underscores to keep IPs/domains legible.
+    safe_target = re.sub(r"[^A-Za-z0-9._-]+", "_", str(target).strip())
+    safe_target = safe_target.strip("._-")
+    if not safe_target:
+        raise ValueError("A scanned target is required")
+
+    moment = normalize_datetime(generated_at)
+    if moment is None:
+        moment = datetime.now(timezone.utc)
+    try:
+        zone = ZoneInfo(timezone_name)
+    except (KeyError, TypeError, ValueError):
+        zone = ZoneInfo("Asia/Kolkata")
+    date_part = moment.astimezone(zone).strftime("%Y%m%d")
+    return f"AL-{number:03d}-{safe_target}-{date_part}"
 
 
 def normalize_identifier(
@@ -1038,7 +1108,7 @@ def normalize_non_negative_number(
     ):
         return 0.0
 
-    if normalized < 0:
+    if not isfinite(normalized) or normalized < 0:
         return 0.0
 
     return round(
@@ -1079,6 +1149,9 @@ def normalize_score(
     0-100 range.
     """
 
+    if value is None:
+        return None
+
     try:
         score = float(
             value
@@ -1089,6 +1162,9 @@ def normalize_score(
         ValueError
     ):
         return 0.0
+
+    if not isfinite(score):
+        return None
 
     score = max(
         0.0,
@@ -1120,6 +1196,9 @@ def normalize_percentage(
         TypeError,
         ValueError
     ):
+        return 0.0
+
+    if not isfinite(percentage):
         return 0.0
 
     percentage = max(
@@ -1154,6 +1233,9 @@ def normalize_risk_level(
     CRITICAL
     """
 
+    if value is None:
+        return None
+
     normalized = normalize_string(
         value,
         default="LOW"
@@ -1167,7 +1249,7 @@ def normalize_risk_level(
     }
 
     if normalized not in valid_levels:
-        return "LOW"
+        return None
 
     return normalized
 

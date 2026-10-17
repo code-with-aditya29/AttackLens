@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 
@@ -38,6 +39,20 @@ Create a new administrator account
         <form
             method="POST"
         >
+
+
+            <!-- ======================================
+                 CSRF SECURITY TOKEN
+                 Protects administrator creation
+                 against cross-site request forgery.
+                 Requires backend CSRF validation.
+            ======================================= -->
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
 
 
             <div class="form-group">

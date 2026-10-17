@@ -858,45 +858,12 @@ def build_current_state(assets, attack_graph):
 
 
 
-        # Keep the existing comparison-model field name for compatibility.
-
-
-
-        # Semantically this now represents active risk-bearing security
-
-
-
-        # findings: CVEs + eligible non-CVE weaknesses.
-
-
-
-        asset_security_count = cve_count + security_finding_count
-
-
-
-
-
-
-
-        vulnerability_count += asset_security_count
-
-
-
-
-
-
-
-        if asset_security_count > 0:
-
-
-
+        # The comparison model's vulnerability_count is CVE-only.
+        # Non-CVE security findings remain independent evidence and must not
+        # inflate the CVE metric shown in the generated PDF.
+        vulnerability_count += cve_count
+        if cve_count > 0:
             vulnerable_assets += 1
-
-
-
-
-
-
 
         open_ports = get_asset_open_ports(asset)
 
@@ -5300,29 +5267,30 @@ def _project_with_evidence(assets, graph, recommendations, current):
 
 
 
-    # Deduct only exact matches; never infer that a restriction closed a port.
-
+    # Keep CVE and non-CVE projections separate. A remediation for an
+    # application/configuration weakness must never remove a CVE count.
     finding_count = sum(len(v) for v in asset_findings.values())
-
     finding_reduction = len(addressed)
-
-    # Aggregated CVE counts may exceed the available itemized records.
-
+    cve_reduction = sum(1 for _, kind, _ in addressed if kind == 'cve')
+    security_finding_reduction = sum(
+        1 for _, kind, _ in addressed if kind == 'security_finding'
+    )
     current_count = normalize_non_negative_integer(current.get('vulnerability_count', 0))
-
-    projected_count = max(0, current_count - finding_reduction)
-
+    projected_count = max(0, current_count - cve_reduction)
     projected_vulnerable_assets = sum(
-
-        1 for aid in asset_ids if any(f['status'] == 'residual' for f in asset_findings[aid]))
-
-    # If aggregate-only findings exist, do not assume an asset became clean.
-
-    if current_count > finding_count:
-
-        projected_vulnerable_assets = max(projected_vulnerable_assets,
-
-            normalize_non_negative_integer(current.get('vulnerable_assets', 0)))
+        1 for aid in asset_ids
+        if any(f['type'] == 'cve' and f['status'] == 'residual'
+               for f in asset_findings[aid])
+    )
+    itemized_cve_count = sum(
+        1 for findings in asset_findings.values()
+        for finding in findings if finding['type'] == 'cve'
+    )
+    if current_count > itemized_cve_count:
+        projected_vulnerable_assets = max(
+            projected_vulnerable_assets,
+            normalize_non_negative_integer(current.get('vulnerable_assets', 0))
+        )
 
     # A matched exposure is a conditional restriction, not a confirmed port closure.
 
@@ -5400,6 +5368,22 @@ def _project_with_evidence(assets, graph, recommendations, current):
 
     )
 
+    # Additional breakdown for consumers that want to display non-CVE
+    # weaknesses separately; the PDF's existing vulnerability row stays CVE-only.
+    security_current = sum(
+        1 for findings in asset_findings.values()
+        for finding in findings if finding['type'] == 'security_finding'
+    )
+    detail['finding_count_breakdown'] = {
+        'current_cve_vulnerabilities': current_count,
+        'projected_cve_vulnerabilities': projected_count,
+        'current_risk_relevant_non_cve_findings': security_current,
+        'projected_risk_relevant_non_cve_findings': max(
+            0, security_current - security_finding_reduction
+        ),
+        'conditionally_addressed_cves': cve_reduction,
+        'conditionally_addressed_non_cve_findings': security_finding_reduction,
+    }
     return projected, detail, affected_assets
 
 

@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-
+from flask_wtf.csrf import CSRFProtect
 
 
 
@@ -317,6 +317,70 @@ def create_app():
         Config
 
     )
+
+
+    # ======================================
+    # CSRF PROTECTION - PHASE 1
+    # ======================================
+    # CSRF validation explicitly disabled for local development.
+    # WARNING: Do not deploy publicly with this setting.
+    # Keep CSRFProtect initialized to preserve existing integrations.
+
+    app.config["WTF_CSRF_ENABLED"] = False
+    app.config["WTF_CSRF_CHECK_DEFAULT"] = False
+
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+
+
+    # ======================================
+    # SESSION COOKIE SECURITY DEFAULTS
+    # ======================================
+    # Existing Config values take precedence.
+    # Enable SESSION_COOKIE_SECURE=True when using HTTPS.
+    # Do not force Secure on local HTTP development because
+    # the browser would then stop sending the session cookie.
+
+    # Keep any explicit application Config overrides.
+    if "SESSION_COOKIE_HTTPONLY" not in Config.__dict__:
+        app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+    if "SESSION_COOKIE_SAMESITE" not in Config.__dict__:
+        app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+    if "SESSION_COOKIE_SECURE" not in Config.__dict__:
+        app.config["SESSION_COOKIE_SECURE"] = False
+
+
+    # ======================================
+    # HTTP RESPONSE SECURITY HEADERS
+    # ======================================
+    # These headers do not alter routes or response bodies.
+    # CSP is deliberately not enforced here because existing
+    # templates may use inline scripts/styles and external assets.
+    # HSTS should only be enabled after HTTPS deployment.
+
+    @app.after_request
+    def add_security_headers(response):
+
+        response.headers.setdefault(
+            "X-Content-Type-Options", "nosniff"
+        )
+
+        response.headers.setdefault(
+            "X-Frame-Options", "SAMEORIGIN"
+        )
+
+        response.headers.setdefault(
+            "Referrer-Policy", "strict-origin-when-cross-origin"
+        )
+
+        response.headers.setdefault(
+            "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
+        )
+
+        return response
+
 
 
 
@@ -1581,7 +1645,7 @@ if __name__ == "__main__":
 
 
 
-        debug=True,
+        debug=False,
 
 
 

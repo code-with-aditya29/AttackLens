@@ -27,6 +27,7 @@ This module does not perform security analysis.
 
 from io import BytesIO
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
@@ -104,6 +105,8 @@ def generate_report_pdf(report_data, authorized_by=None):
             authorized_by,
             default="Not available"
         )
+
+    report_data["_scan_timing_display"] = get_scan_timing_display(report_data)
 
     buffer = BytesIO()
 
@@ -416,6 +419,33 @@ def create_pdf_styles():
 
 
 # ============================================================
+# REPORT IDENTIFIER PRESENTATION
+# ============================================================
+
+def get_report_id_display(report_data):
+    """Return the persisted human-readable Report ID for PDF presentation.
+
+    The report model/service owns identifier generation and MongoDB sequence
+    allocation. The PDF layer must never allocate a report number or silently
+    replace a stored identifier: doing so could produce duplicate or changing
+    IDs when the same report is downloaded again.
+
+    `display_report_id` and `human_report_id` are optional presentation aliases.
+    The canonical `report_id` remains supported for existing integrations and
+    historical reports, including their original UUID identifiers.
+    """
+    if not isinstance(report_data, dict):
+        return "N/A"
+
+    for field in ("display_report_id", "human_report_id", "report_id"):
+        value = safe_text(report_data.get(field), default="").strip()
+        if value:
+            return value
+
+    return "N/A"
+
+
+# ============================================================
 # COVER PAGE
 # ============================================================
 
@@ -668,12 +698,7 @@ def build_cover_page(
 
     generated_at = get_report_generated_display(report_data)
 
-    report_id = safe_text(
-        report_data.get(
-            "report_id"
-        ),
-        default="N/A"
-    )
+    report_id = get_report_id_display(report_data)
 
     story.append(
         Paragraph(
@@ -736,12 +761,7 @@ def build_report_information(
     rows = [
         [
             "Report ID",
-            safe_text(
-                report_data.get(
-                    "report_id"
-                ),
-                default="N/A"
-            ),
+            get_report_id_display(report_data),
         ],
 
         [
@@ -800,6 +820,14 @@ def build_report_information(
             ),
         ],
 
+        [
+            "Scan Started",
+            report_data["_scan_timing_display"]["started"],
+        ],
+        [
+            "Scan Completed",
+            report_data["_scan_timing_display"]["completed"],
+        ],
         [
             "Generated",
             get_report_generated_display(report_data),
@@ -2039,6 +2067,14 @@ def build_methodology_section(
             ),
         ],
         [
+            Paragraph("Scan Started", styles["authorization_label"]),
+            Paragraph(escape_text(report_data["_scan_timing_display"]["started"]), styles["authorization_value"]),
+        ],
+        [
+            Paragraph("Scan Completed", styles["authorization_label"]),
+            Paragraph(escape_text(report_data["_scan_timing_display"]["completed"]), styles["authorization_value"]),
+        ],
+        [
             Paragraph(
                 "Report Generated",
                 styles["authorization_label"]
@@ -3042,70 +3078,97 @@ def safe_number(
 # DATETIME HELPERS
 # ============================================================
 
-def get_report_generated_display(report_data):
-    """Return the report-service local timestamp, with legacy fallback."""
+def _pdf_timezone(report_data):
+    """Use the report's selected timezone; default to UTC for legacy reports."""
+    name = safe_text(report_data.get("timezone"), default="UTC")
+    try:
+        return ZoneInfo(name)
+    except (KeyError, ValueError, TypeError):
+        return timezone.utc
 
+
+def _parse_pdf_datetime(value):
+    """Parse known scan timestamp representations without fabricating a date."""
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str) and value.strip():
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    else:
+        return None
+    # MongoDB and legacy AttackLens naive datetimes are stored as UTC.
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _format_pdf_timestamp(value, report_data):
+    parsed = _parse_pdf_datetime(value)
+    if parsed is None:
+        return "Not available"
+    local = parsed.astimezone(_pdf_timezone(report_data))
+    label = "IST" if getattr(local.tzinfo, "key", None) in ("Asia/Kolkata", "Asia/Calcutta") else (local.tzname() or "UTC")
+    return f"{local.strftime('%d %B %Y, %H:%M')} {label}"
+
+
+def get_scan_timing_display(report_data):
+    """Read historical scan times without confusing them with report generation.
+
+    Uses explicit scan metadata first, then a single scan record when present.
+    A report containing several scans cannot honestly claim one start/end time
+    unless the upstream service provides aggregate scan metadata.
+    """
+    metadata = report_data.get("scan_metadata")
+    if not isinstance(metadata, dict):
+        metadata = {}
+
+    sections = report_data.get("sections")
+    if not isinstance(sections, dict):
+        sections = {}
+
+    # Only use asset timestamps if exactly one asset is in the report.
+    assets = sections.get("assets")
+    asset = assets[0] if isinstance(assets, list) and len(assets) == 1 and isinstance(assets[0], dict) else {}
+    nested_scan = asset.get("scan") if isinstance(asset.get("scan"), dict) else {}
+
+    sources = [metadata, nested_scan, asset]
+    aliases = {
+        "started": ("scan_started_at", "started_at", "start_time", "scan_start_time"),
+        "completed": ("scan_completed_at", "completed_at", "end_time", "scan_end_time", "finished_at"),
+    }
+    result = {}
+    for field, keys in aliases.items():
+        result[field] = "Not available"
+        for source in sources:
+            for key in keys:
+                value = source.get(key)
+                if _parse_pdf_datetime(value) is not None:
+                    result[field] = _format_pdf_timestamp(value, report_data)
+                    break
+            if result[field] != "Not available":
+                break
+    return result
+
+
+def get_report_generated_display(report_data):
+    """Prefer the report-service presentation timestamp and preserve its timezone."""
     if not isinstance(report_data, dict):
         return "Not available"
-
-    display_value = safe_text(
-        report_data.get("generated_at_display"),
-        default=""
-    )
-    if display_value:
-        return display_value
-
-    local_value = report_data.get("generated_at_local")
-    if isinstance(local_value, str) and local_value.strip():
-        try:
-            parsed = datetime.fromisoformat(local_value.replace("Z", "+00:00"))
-            timezone_label = parsed.tzname() or safe_text(
-                report_data.get("timezone"),
-                default="Local"
-            )
-            return f"{parsed.strftime('%d %B %Y, %H:%M')} {timezone_label}"
-        except (ValueError, TypeError):
-            pass
-
-    return format_datetime(report_data.get("generated_at"))
-
-
-def format_datetime(
-    value
-):
-    """
-    Convert legacy datetime values into a readable UTC timestamp.
-    """
-
-    if isinstance(
-        value,
-        datetime
-    ):
-
-        if value.tzinfo is None:
-
-            value = value.replace(
-                tzinfo=timezone.utc
-            )
-
-        try:
-
-            value = value.astimezone(
-                timezone.utc
-            )
-
-        except (
-            ValueError,
-            OverflowError
-        ):
-
-            pass
-
-        return value.strftime(
-            "%d %B %Y, %H:%M UTC"
-        )
-
+    display = safe_text(report_data.get("generated_at_display"), default="")
+    if display:
+        return display
+    for key in ("generated_at_local", "generated_at"):
+        result = _format_pdf_timestamp(report_data.get(key), report_data)
+        if result != "Not available":
+            return result
     return "Not available"
+
+
+def format_datetime(value):
+    """Backward-compatible UTC formatter for callers outside the PDF flow."""
+    return _format_pdf_timestamp(value, {"timezone": "UTC"})
 
 
 # ============================================================
