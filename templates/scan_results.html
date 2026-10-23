@@ -1401,6 +1401,13 @@ Review the security analysis and discovered information
             );"
         >
 
+            <!-- CSRF Protection -->
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
             <button
                 type="submit"
                 class="primary-button"

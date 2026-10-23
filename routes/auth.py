@@ -216,7 +216,8 @@ def login():
 # ==========================================
 
 @auth_bp.route(
-    "/logout"
+    "/logout",
+    methods=["POST"]
 )
 @login_required
 def logout():
@@ -758,3 +759,4 @@ def delete_admin(admin_id):
     return redirect(
         url_for("auth.admin_management")
     )
+

@@ -209,6 +209,13 @@ View and manage your previous security scans
             id="bulk-delete-form"
         >
 
+            <!-- CSRF Protection -->
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
 
             <!-- ==================================
                  BULK ACTION TOOLBAR

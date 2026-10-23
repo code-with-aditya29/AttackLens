@@ -985,6 +985,24 @@ def analyze_http_response_security(target, port, protocol, service, product, ver
 
 
 
+    # HTTPS requests currently use an unverified TLS context for lab
+    # compatibility. Record this limitation rather than implying trust.
+    if scheme == "https" and response.get("tls_certificate_verified") is False:
+        findings.append(create_security_finding(
+            finding_type="CONFIGURATION", category="TLS_CERTIFICATE_NOT_VERIFIED",
+            title="TLS Certificate Trust Not Verified by Scanner",
+            description="The scanner retrieved this HTTPS response without validating the server certificate. This is a scan limitation, not proof of a server vulnerability.",
+            target=target, port=port, protocol=protocol, service=service,
+            product=product, version=version, endpoint=endpoint,
+            severity="LOW", confidence="HIGH", status="POTENTIAL",
+            evidence=["HTTPS certificate chain and hostname were not verified by AttackLens."],
+            evidence_source="Scanner transport configuration",
+            metadata={"analysis_type": "scanner_limitation", "manual_verification_required": True},
+            created_by=created_by,
+        ))
+
+
+
     missing = []
 
 
@@ -1033,7 +1051,7 @@ def analyze_http_response_security(target, port, protocol, service, product, ver
 
 
 
-            description="The HTTP response is missing one or more defensive browser security headers.", target=target, port=port,
+            description="The observed HTTP response is missing the specific defensive browser headers listed in the evidence. This does not imply all security headers are absent.", target=target, port=port,
 
 
 
@@ -1185,7 +1203,7 @@ def analyze_forms_for_csrf(target, port, service, product, version, page_url, re
 
 
 
-            description="A state-changing form was observed without an obvious anti-CSRF token. Manual verification is required.",
+            description="A state-changing form has no recognizable CSRF token field in the observed HTML. This passive check cannot determine whether server-side CSRF protection is enforced; manual verification is required.",
 
 
 
@@ -1197,7 +1215,7 @@ def analyze_forms_for_csrf(target, port, service, product, version, page_url, re
 
 
 
-            evidence=["State-changing form detected.", "No obvious CSRF token field was identified in the form markup."],
+            evidence=["State-changing form detected.", "No recognizable CSRF token field was identified in the observed form markup.", "Server-side CSRF enforcement was not tested."],
 
 
 
@@ -1499,7 +1517,7 @@ def fetch_url(url):
 
 
 
-            return {"status": response.getcode(), "headers": dict(response.headers.items()), "set_cookies": response.headers.get_all("Set-Cookie") or [], "body": body, "url": response.geturl()}
+            return {"status": response.getcode(), "headers": dict(response.headers.items()), "set_cookies": response.headers.get_all("Set-Cookie") or [], "body": body, "url": response.geturl(), "tls_certificate_verified": False if urlparse(response.geturl()).scheme == "https" else None}
 
 
 
@@ -1527,7 +1545,7 @@ def fetch_url(url):
 
 
 
-        return {"status": exc.code, "headers": dict(exc.headers.items()) if exc.headers else {}, "set_cookies": (exc.headers.get_all("Set-Cookie") or []) if exc.headers else [], "body": body, "url": url}
+        return {"status": exc.code, "headers": dict(exc.headers.items()) if exc.headers else {}, "set_cookies": (exc.headers.get_all("Set-Cookie") or []) if exc.headers else [], "body": body, "url": url, "tls_certificate_verified": False if urlparse(url).scheme == "https" else None}
 
 
 

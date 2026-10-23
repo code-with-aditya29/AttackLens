@@ -423,16 +423,28 @@
                         </button>
 
 
-                        <!-- Logout -->
+                        <!-- Logout - CSRF Protected POST -->
 
-                        <a
-                            href="{{ url_for('auth.logout') }}"
-                            class="logout-button"
+                        <form
+                            method="POST"
+                            action="{{ url_for('auth.logout') }}"
+                            class="logout-form"
                         >
 
-                            Logout
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                value="{{ csrf_token() }}"
+                            >
 
-                        </a>
+                            <button
+                                type="submit"
+                                class="logout-button"
+                            >
+                                Logout
+                            </button>
+
+                        </form>
 
 
                     </div>

@@ -320,14 +320,16 @@ def create_app():
 
 
     # ======================================
-    # CSRF PROTECTION - PHASE 1
+    # CSRF PROTECTION - ENABLED
     # ======================================
-    # CSRF validation explicitly disabled for local development.
-    # WARNING: Do not deploy publicly with this setting.
-    # Keep CSRFProtect initialized to preserve existing integrations.
+    # Reject unsafe requests without a valid CSRF token.
+    # SECRET_KEY must be configured in the environment.
 
-    app.config["WTF_CSRF_ENABLED"] = False
-    app.config["WTF_CSRF_CHECK_DEFAULT"] = False
+    if not app.config.get("SECRET_KEY"):
+        raise RuntimeError("SECRET_KEY is not configured. Set it in your .env file.")
+
+    app.config["WTF_CSRF_ENABLED"] = True
+    app.config["WTF_CSRF_CHECK_DEFAULT"] = True
 
     csrf = CSRFProtect()
     csrf.init_app(app)
