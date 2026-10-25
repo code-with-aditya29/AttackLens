@@ -1113,9 +1113,7 @@ def build_vulnerability_section(
     report_data,
     styles
 ):
-    """
-    Render vulnerability and risk findings.
-    """
+    """Render reported CVEs with their names and short explanations."""
 
     append_section_heading(
         story,
@@ -1125,80 +1123,166 @@ def build_vulnerability_section(
 
     sections = get_dictionary(report_data, "sections")
     vulnerability_summary = get_dictionary(sections, "vulnerability_summary")
-    count = safe_integer(vulnerability_summary.get("vulnerability_count", 0))
-    vulnerable_assets = safe_integer(vulnerability_summary.get("vulnerable_assets", 0))
+    findings = vulnerability_summary.get("findings")
+    if not isinstance(findings, list):
+        findings = []
+
+    # Keep the table strictly evidence-based. Open ports and generic
+    # security findings are not treated as CVE detections.
+    cve_rows = []
+    for record in findings:
+        if not isinstance(record, dict):
+            continue
+        finding = record.get("finding")
+        if not isinstance(finding, dict):
+            continue
+        cve_id = get_report_cve_id(finding)
+        if not cve_id:
+            continue
+        cve_rows.append((record, finding, cve_id))
+
+    count = len(cve_rows)
+    vulnerable_assets = len({
+        safe_text(record.get("target"), default="-")
+        for record, _, _ in cve_rows
+    })
 
     if count == 0:
         summary_text = (
-            "No vulnerability findings were identified in the current "
+            "No CVE vulnerabilities were identified in the current "
             "authorized analysis."
         )
     else:
         finding_word = "finding" if count == 1 else "findings"
         asset_word = "asset" if vulnerable_assets == 1 else "assets"
         summary_text = (
-            f"AttackLens identified <b>{count}</b> vulnerability {finding_word} "
+            f"AttackLens identified <b>{count}</b> CVE {finding_word} "
             f"across <b>{vulnerable_assets}</b> {asset_word} in the current "
             "authorized analysis."
         )
-
     story.append(Paragraph(summary_text, styles["body"]))
 
-    findings = vulnerability_summary.get("findings")
-    if not isinstance(findings, list):
-        findings = []
+    headers = [
+        "Target", "CVE ID", "Affected Service / Port", "Vulnerability Name", "Explanation", "Severity"
+    ]
+    # A4 usable width is 178 mm with the existing 16 mm margins.
+    widths = [25 * mm, 29 * mm, 32 * mm, 29 * mm, 45 * mm, 18 * mm]
 
-    if not findings:
-        table = build_status_table(
-            headers=[
-                "Target",
-                "Finding",
-                "Severity",
-                "Score"
-            ],
-            message="No vulnerability or CVE findings are currently present in the analyzed asset data.",
+    if not cve_rows:
+        story.append(build_status_table(
+            headers=headers,
+            message="No CVE records are present in the analyzed scan data.",
             styles=styles,
-            col_widths=[
-                34 * mm,
-                82 * mm,
-                31 * mm,
-                31 * mm
-            ]
-        )
-        story.append(table)
+            col_widths=widths
+        ))
         return
 
-    table_data = [[
-        paragraph("Target", styles["table_header"]),
-        paragraph("Finding", styles["table_header"]),
-        paragraph("Severity", styles["table_header"]),
-        paragraph("Score", styles["table_header"]),
-    ]]
-
-    for record in findings:
-        if not isinstance(record, dict):
-            continue
-        finding = record.get("finding")
-        if not isinstance(finding, dict):
-            finding = {}
-        finding_name = get_finding_name(finding)
-        severity = safe_text(finding.get("severity"), default="Unknown")
-        score = get_finding_score(finding)
-        table_data.append([
+    rows = [[paragraph(header, styles["table_header"]) for header in headers]]
+    for record, finding, cve_id in cve_rows:
+        rows.append([
             paragraph(safe_text(record.get("target"), default="-"), styles["table_body"]),
-            paragraph(finding_name, styles["table_body"]),
-            paragraph(severity, styles["table_body"]),
-            paragraph(f"{score:.2f}", styles["table_body"]),
+            paragraph(cve_id, styles["table_body"]),
+            paragraph(get_report_cve_service(finding, record), styles["table_body"]),
+            paragraph(get_report_cve_name(finding, cve_id), styles["table_body"]),
+            paragraph(get_report_cve_explanation(finding), styles["table_body"]),
+            paragraph(safe_text(finding.get("severity"), default="Unknown").upper(), styles["table_body"]),
         ])
 
-    table = Table(
-        table_data,
-        colWidths=[34 * mm, 82 * mm, 31 * mm, 31 * mm],
-        repeatRows=1,
-    )
+    table = Table(rows, colWidths=widths, repeatRows=1)
     apply_standard_table_style(table)
     story.append(table)
     story.append(Spacer(1, 3 * mm))
+
+
+def get_report_cve_id(finding):
+    """Read an actual CVE identifier; never infer one from a service."""
+    import re
+
+    if not isinstance(finding, dict):
+        return ""
+    for key in ("cve_id", "cve", "id"):
+        value = finding.get(key)
+        if isinstance(value, dict):
+            value = value.get("id") or value.get("cve_id")
+        if not isinstance(value, str):
+            continue
+        match = re.search(r"\bCVE-\d{4}-\d{4,}\b", value, re.IGNORECASE)
+        if match:
+            return match.group(0).upper()
+    return ""
+
+
+def get_report_cve_service(finding, record=None):
+    """Display only service and port evidence linked to this CVE record.
+
+    An asset's other open services must not be assigned to a CVE without
+    an explicit association in the underlying vulnerability record.
+    """
+    if not isinstance(finding, dict):
+        return "Service not specified"
+
+    def first_value(source, keys):
+        if not isinstance(source, dict):
+            return ""
+        for key in keys:
+            value = source.get(key)
+            if value is not None and not isinstance(value, (dict, list, tuple)):
+                text = safe_text(value, default="").strip()
+                if text and text.lower() not in ("unknown", "n/a", "none", "null"):
+                    return text
+        return ""
+
+    service = finding.get("service")
+    if isinstance(service, dict):
+        service_name = first_value(service, ("product", "name", "service_name", "service"))
+        version = first_value(service, ("version",))
+        port = first_value(finding, ("port", "port_number", "service_port")) or first_value(service, ("port", "port_number"))
+    else:
+        service_name = first_value(finding, ("service_name", "product", "affected_service", "service"))
+        version = first_value(finding, ("service_version", "product_version"))
+        port = first_value(finding, ("port", "port_number", "service_port"))
+
+    # The wrapper may carry a service/port when the finding does not.
+    if isinstance(record, dict):
+        if not service_name:
+            service_name = first_value(record, ("service_name", "affected_service"))
+        if not port:
+            port = first_value(record, ("port", "port_number"))
+
+    if version and service_name and version not in service_name:
+        service_name = f"{service_name} {version}"
+    if service_name and port:
+        return f"{service_name} (TCP/{port})" if str(port).isdigit() else f"{service_name} ({port})"
+    if service_name:
+        return service_name
+    if port:
+        return f"TCP/{port}" if str(port).isdigit() else f"Port {port}"
+    return "Service not specified"
+
+
+def get_report_cve_name(finding, cve_id):
+    """Use a supplied vulnerability title, not the CVE identifier itself."""
+    for key in ("vulnerability_name", "name", "title", "vulnerability_type", "category"):
+        value = finding.get(key)
+        if not isinstance(value, str):
+            continue
+        value = value.strip()
+        if value and value.upper() != cve_id and value.lower() not in ("unknown", "n/a"):
+            return value
+    return "Name not provided by scan"
+
+
+def get_report_cve_explanation(finding):
+    """Display a concise, source-provided description without inventing facts."""
+    for key in ("description", "summary", "explanation", "details"):
+        value = finding.get(key)
+        if isinstance(value, str) and value.strip():
+            # Keep a compact description in the table; Paragraph wraps as needed.
+            value = " ".join(value.split())
+            if len(value) > 190:
+                value = value[:187].rsplit(" ", 1)[0].rstrip(" ,;:") + "..."
+            return value
+    return "Description not provided by scan"
 
 
 # ============================================================
@@ -1206,10 +1290,12 @@ def build_vulnerability_section(
 # ============================================================
 
 def build_security_findings_section(story, report_data, styles):
-    """Render non-CVE security findings separately from CVE vulnerabilities."""
+    """Display security findings with evidence-linked CVE and service fields.
 
+    Non-CVE findings retain an N/A CVE ID. An exposed service or a potential
+    weakness is not, by itself, evidence of a particular CVE.
+    """
     append_section_heading(story, "4. Security Findings", styles)
-
     summary = get_dictionary(report_data, "security_finding_summary")
     findings = summary.get("findings")
     if not isinstance(findings, list):
@@ -1217,77 +1303,78 @@ def build_security_findings_section(story, report_data, styles):
 
     count = safe_integer(summary.get("security_finding_count", len(findings)))
     affected_assets = safe_integer(summary.get("affected_assets", 0))
-
     story.append(Paragraph(
         f"AttackLens recorded <b>{count}</b> non-CVE security finding"
         f"{'s' if count != 1 else ''} across <b>{affected_assets}</b> affected "
-        f"asset{'s' if affected_assets != 1 else ''}. These findings are kept "
-        "separate from CVE vulnerability records and may include observed, "
-        "potential, or validated security weaknesses.",
+        f"asset{'s' if affected_assets != 1 else ''}. CVE IDs and vulnerability "
+        "names appear only when explicitly supplied by the finding evidence; "
+        "otherwise they are marked N/A.",
         styles["body"]
     ))
 
+    headers = ["Target", "Finding / Type", "CVE ID", "Vulnerability Name",
+               "Affected Service", "Severity", "Status"]
+    widths = [24 * mm, 37 * mm, 25 * mm, 29 * mm, 25 * mm, 19 * mm, 19 * mm]
     if not findings:
         story.append(build_status_table(
-            headers=["Target", "Type", "Finding", "Severity", "Status"],
+            headers=headers,
             message="No non-CVE security findings are currently present in the analyzed scan data.",
-            styles=styles,
-            col_widths=[30 * mm, 28 * mm, 64 * mm, 28 * mm, 28 * mm]
+            styles=styles, col_widths=widths
         ))
         return
 
-    rows = [[
-        paragraph("Target", styles["table_header"]),
-        paragraph("Type", styles["table_header"]),
-        paragraph("Finding", styles["table_header"]),
-        paragraph("Severity", styles["table_header"]),
-        paragraph("Status", styles["table_header"]),
-    ]]
-
+    # Smaller type for the two compact rightmost columns, without modifying
+    # the shared table style used by the rest of the report.
+    compact = ParagraphStyle(
+        "AttackLensSecurityFindingCompact", parent=styles["table_body"],
+        fontSize=7.8, leading=10
+    )
+    compact_header = ParagraphStyle(
+        "AttackLensSecurityFindingCompactHeader", parent=styles["table_header"],
+        fontSize=8, leading=10
+    )
+    rows = [[paragraph(h, compact_header) for h in headers]]
     for record in findings:
         if not isinstance(record, dict):
             continue
         finding = record.get("finding")
         if not isinstance(finding, dict):
             finding = {}
-
         finding_type = safe_text(
-            finding.get("finding_type", finding.get("type")),
-            default="Unknown"
+            finding.get("finding_type", finding.get("type")), default="Unknown"
         )
         title = safe_text(
-            finding.get("title", finding.get("category")),
-            default="Security finding"
+            finding.get("title", finding.get("category")), default="Security finding"
         )
-        severity = safe_text(finding.get("severity"), default="Unknown")
-        status = safe_text(finding.get("status"), default="Unknown")
-
+        severity = safe_text(finding.get("severity"), default="Unknown").upper()
+        status = humanize_label(safe_text(finding.get("status"), default="Unknown"))
         context = []
-        port = finding.get("port")
         endpoint = safe_text(finding.get("endpoint"), default="")
         parameter = safe_text(finding.get("parameter"), default="")
-        if port not in (None, ""):
-            context.append(f"Port {safe_text(port)}")
         if endpoint:
             context.append(endpoint)
         if parameter:
             context.append(f"Parameter: {parameter}")
         if context:
-            title = f"{title} ({'; '.join(context)})"
-
+            title += f" ({'; '.join(context)})"
+        cve_id = get_report_cve_id(finding)
+        name = get_report_cve_name(finding, cve_id) if cve_id else "N/A (non-CVE)"
+        if cve_id and name == "Name not provided by scan":
+            name = "Not provided"
+        service = get_report_cve_service(finding, record)
+        if service == "Service not specified":
+            service = "Not specified"
         rows.append([
-            paragraph(safe_text(record.get("target"), default="-"), styles["table_body"]),
-            paragraph(humanize_label(finding_type), styles["table_body"]),
-            paragraph(title, styles["table_body"]),
-            paragraph(severity.upper(), styles["table_body"]),
-            paragraph(humanize_label(status), styles["table_body"]),
+            paragraph(safe_text(record.get("target"), default="-"), compact),
+            paragraph(f"{humanize_label(finding_type)}: {title}", compact),
+            paragraph(cve_id or "N/A", compact),
+            paragraph(name, compact),
+            paragraph(service, compact),
+            paragraph(severity, compact),
+            paragraph(status, compact),
         ])
 
-    table = Table(
-        rows,
-        colWidths=[30 * mm, 28 * mm, 64 * mm, 28 * mm, 28 * mm],
-        repeatRows=1,
-    )
+    table = Table(rows, colWidths=widths, repeatRows=1)
     apply_standard_table_style(table)
     story.append(table)
     story.append(Spacer(1, 3 * mm))
@@ -1365,6 +1452,7 @@ def build_attack_path_section(
 
     table_data = [[
         paragraph("Path", styles["table_header"]),
+        paragraph("Explanation / Evidence", styles["table_header"]),
         paragraph("Score", styles["table_header"]),
         paragraph("Risk", styles["table_header"]),
     ]]
@@ -1377,20 +1465,50 @@ def build_attack_path_section(
         level = safe_risk_level(
             path_data.get("risk_level", determine_risk_level(score))
         )
+        explanation = get_report_attack_path_explanation(path_data)
         table_data.append([
             paragraph(f"{index}. {path_text}", styles["table_body"]),
+            paragraph(explanation, styles["table_body"]),
             paragraph(f"{score:.2f}", styles["table_body"]),
             paragraph(level, styles["table_body"]),
         ])
 
     table = Table(
         table_data,
-        colWidths=[112 * mm, 30 * mm, 36 * mm],
+        colWidths=[49 * mm, 91 * mm, 19 * mm, 19 * mm],
         repeatRows=1,
     )
     apply_standard_table_style(table)
     story.append(table)
     story.append(Spacer(1, 3 * mm))
+
+
+def get_report_attack_path_explanation(path_data):
+    """Use the attack-path evidence already produced by the analysis layer."""
+    if not isinstance(path_data, dict):
+        return "No supporting explanation supplied by the analysis."
+
+    # Do not turn an unverified path into a claim of successful exploitation.
+    for key in ("explanation", "description", "reasoning", "rationale",
+                "evidence_summary", "summary", "details", "narrative"):
+        value = path_data.get(key)
+        if isinstance(value, str) and value.strip():
+            return " ".join(value.split())
+
+    evidence = path_data.get("evidence")
+    if isinstance(evidence, str) and evidence.strip():
+        return " ".join(evidence.split())
+    if isinstance(evidence, dict):
+        for key in ("explanation", "description", "summary", "details"):
+            value = evidence.get(key)
+            if isinstance(value, str) and value.strip():
+                return " ".join(value.split())
+    if isinstance(evidence, list):
+        texts = [str(item).strip() for item in evidence if isinstance(item, str) and item.strip()]
+        if texts:
+            return "; ".join(texts[:5])
+    return ("Potential attack path identified by AttackLens. The scan data "
+            "does not provide a detailed path explanation; exploitation is not verified.")
 
 
 # ============================================================
