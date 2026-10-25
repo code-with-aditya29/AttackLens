@@ -3271,17 +3271,18 @@ def get_scan_timing_display(report_data):
 
 
 def get_report_generated_display(report_data):
-    """Prefer the report-service presentation timestamp and preserve its timezone."""
+    """Format the original report generation instant in its selected timezone.
+
+    Prefer UTC/ISO datetime evidence over preformatted presentation text so a
+    stale timezone label cannot leak into a regenerated PDF.
+    """
     if not isinstance(report_data, dict):
         return "Not available"
-    display = safe_text(report_data.get("generated_at_display"), default="")
-    if display:
-        return display
-    for key in ("generated_at_local", "generated_at"):
+    for key in ("generated_at_utc", "generated_at", "generated_at_local"):
         result = _format_pdf_timestamp(report_data.get(key), report_data)
         if result != "Not available":
             return result
-    return "Not available"
+    return safe_text(report_data.get("generated_at_display"), default="Not available")
 
 
 def format_datetime(value):

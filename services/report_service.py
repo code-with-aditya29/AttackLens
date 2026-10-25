@@ -169,11 +169,13 @@ def format_report_datetime(value, timezone_name=None):
         05 October 2026, 20:55 IST
     """
 
-    if not isinstance(value, datetime):
-        value = get_local_report_datetime(
-            timezone_name=timezone_name,
-            value=value
-        )
+    # Always normalize aware UTC timestamps before presentation.
+    # Legacy naive datetimes are interpreted as UTC, consistent with
+    # get_local_report_datetime; verify historical data separately.
+    value = get_local_report_datetime(
+        timezone_name=timezone_name,
+        value=value
+    )
 
     timezone_label = value.tzname()
 
@@ -432,7 +434,7 @@ def generate_report_data(
         report_id=report_id,
         report_number=report_number,
         report_target=report_target,
-        report_timezone="Asia/Kolkata",
+        report_timezone=time_metadata["timezone"],
         generated_at=datetime.fromisoformat(time_metadata["generated_at_utc"])
     )
 
